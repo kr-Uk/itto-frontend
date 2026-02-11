@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../shared/widgets/purple_button.dart';
+
+class LocationPermissionStep extends StatefulWidget {
+  final VoidCallback onNext;
+
+  const LocationPermissionStep({super.key, required this.onNext});
+
+  @override
+  State<LocationPermissionStep> createState() => _LocationPermissionStepState();
+}
+
+class _LocationPermissionStepState extends State<LocationPermissionStep> {
+  bool _agreed = false;
+
+  void _showDetailSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '위치기반서비스 이용약관',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Itto는 사용자의 위치 정보를 기반으로 주변의 인연을 찾아드립니다. '
+                '위치 정보는 서비스 이용 중에만 수집되며, 다른 사용자에게 정확한 위치가 공개되지 않습니다. '
+                '수집된 위치 정보는 서비스 제공 목적으로만 사용되며, 이용 목적 달성 후 즉시 파기됩니다.',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: PurpleButton(
+                  text: '확인',
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 40),
+          Text(
+            '인연을 찾기 위해서는\n위치기반서비스 동의가\n필요해요.',
+            style: GoogleFonts.notoSansKr(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+          GestureDetector(
+            onTap: _showDetailSheet,
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '자세히 보기',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _agreed = !_agreed;
+              });
+            },
+            child: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _agreed ? AppColors.primary : Colors.transparent,
+                    border: Border.all(
+                      color: _agreed ? AppColors.primary : AppColors.textTertiary,
+                      width: 2,
+                    ),
+                  ),
+                  child: _agreed
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  '위치기반서비스 이용에 동의합니다.',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 15,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          PurpleButton(
+            text: '다음',
+            enabled: _agreed,
+            onPressed: widget.onNext,
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
