@@ -160,6 +160,49 @@ class MockProfiles {
     ),
   ];
 
+  static final List<ProfileData> pastInyeonProfiles = [
+    ProfileData(
+      id: '50',
+      name: '예진',
+      age: 25,
+      intro: '같이 산책해요',
+      hashtags: ['#산책', '#카페', '#음악'],
+      photoGradientColors: _gradients[6],
+    ),
+    ProfileData(
+      id: '51',
+      name: '준혁',
+      age: 27,
+      intro: '커피 한잔 할래요?',
+      hashtags: ['#커피', '#독서', '#영화'],
+      photoGradientColors: _gradients[1],
+    ),
+    ProfileData(
+      id: '52',
+      name: '소희',
+      age: 24,
+      intro: '여행을 좋아하는 사람',
+      hashtags: ['#여행', '#사진', '#맛집'],
+      photoGradientColors: _gradients[4],
+    ),
+    ProfileData(
+      id: '53',
+      name: '태민',
+      age: 26,
+      intro: '운동과 음악이 취미',
+      hashtags: ['#운동', '#음악', '#헬스'],
+      photoGradientColors: _gradients[8],
+    ),
+    ProfileData(
+      id: '54',
+      name: '지수',
+      age: 23,
+      intro: '그림 그리는 것을 좋아해요',
+      hashtags: ['#그림', '#전시회', '#카페'],
+      photoGradientColors: _gradients[2],
+    ),
+  ];
+
   static final List<ProfileData> uyeonProfiles = List.generate(
     21,
     (i) {
