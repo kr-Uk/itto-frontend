@@ -6,10 +6,12 @@ import 'steps/location_permission_step.dart';
 import 'steps/nickname_step.dart';
 import 'steps/gender_step.dart';
 import 'steps/birthday_step.dart';
-import 'steps/notification_permission_step.dart';
-import 'steps/block_info_step.dart';
-import 'steps/excluded_area_info_step.dart';
-import 'steps/completion_step.dart';
+import 'steps/hobby_step.dart';
+import 'steps/intro_step.dart';
+import 'steps/signup_photo_step.dart';
+import 'steps/face_verification_step.dart';
+import 'steps/verification_waiting_step.dart';
+import 'steps/welcome_step.dart';
 
 class SignupFlowScreen extends StatefulWidget {
   const SignupFlowScreen({super.key});
@@ -22,7 +24,7 @@ class _SignupFlowScreenState extends State<SignupFlowScreen> {
   late final PageController _pageController;
   int _currentStep = 0;
 
-  static const int _totalSteps = 8;
+  static const int _totalSteps = 10;
 
   @override
   void initState() {
@@ -98,14 +100,16 @@ class _SignupFlowScreenState extends State<SignupFlowScreen> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                LocationPermissionStep(onNext: _goToNextStep),
-                NicknameStep(onNext: _goToNextStep),
-                GenderStep(onNext: _goToNextStep),
-                BirthdayStep(onNext: _goToNextStep),
-                NotificationPermissionStep(onNext: _goToNextStep),
-                BlockInfoStep(onNext: _goToNextStep),
-                ExcludedAreaInfoStep(onNext: _goToNextStep),
-                const CompletionStep(),
+                LocationPermissionStep(onNext: _goToNextStep),   // 1. 위치 동의
+                NicknameStep(onNext: _goToNextStep),             // 2. 닉네임
+                GenderStep(onNext: _goToNextStep),               // 3. 성별
+                BirthdayStep(onNext: _goToNextStep),             // 4. 생년월일
+                HobbyStep(onNext: _goToNextStep),                // 5. 취미 선택
+                IntroStep(onNext: _goToNextStep),                // 6. 자기소개
+                SignupPhotoStep(onNext: _goToNextStep),          // 7. 프로필 사진
+                FaceVerificationStep(onNext: _goToNextStep),     // 8. 얼굴 인증
+                VerificationWaitingStep(onNext: _goToNextStep),  // 9. 승인 대기
+                const WelcomeStep(),                             // 10. 환영
               ],
             ),
           ),

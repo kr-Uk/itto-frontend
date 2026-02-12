@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import 'tabs/inyeon_tab.dart';
 import 'tabs/pilyeon_tab.dart';
 import 'tabs/uyeon_tab.dart';
+import 'tabs/past_inyeon_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,12 +17,12 @@ class _HomeScreenState extends State<HomeScreen>
   late TabController _tabController;
   bool _isMatchingEnabled = false;
 
-  static const _tabLabels = ['인연', '필연', '우연'];
+  static const _tabLabels = ['인연', '필연', '우연', '지난인연'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {});
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen>
                   InyeonTab(),
                   PilyeonTab(),
                   UyeonTab(),
+                  PastInyeonTab(),
                 ],
               ),
             ),
