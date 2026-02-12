@@ -25,7 +25,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       builder: (ctx) => _TextEditDialog(
         title: '닉네임 수정',
         controller: controller,
-        maxLength: 10,
+        maxLength: 8,
       ),
     );
     if (result != null && result.trim().isNotEmpty) {
@@ -43,7 +43,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       builder: (ctx) => _TextEditDialog(
         title: '한줄소개 수정',
         controller: controller,
-        maxLength: 30,
+        maxLength: 15,
       ),
     );
     if (result != null && result.trim().isNotEmpty) {

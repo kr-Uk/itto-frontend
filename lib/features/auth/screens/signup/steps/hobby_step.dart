@@ -24,7 +24,7 @@ class _HobbyStepState extends State<HobbyStep> {
   ];
 
   static const int _minSelection = 1;
-  static const int _maxSelection = 5;
+  static const int _maxSelection = 3;
 
   bool get _isValid => _selectedHobbies.length >= _minSelection;
 
