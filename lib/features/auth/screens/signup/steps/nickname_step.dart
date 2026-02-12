@@ -19,7 +19,7 @@ class _NicknameStepState extends State<NicknameStep> {
   String _errorText = '';
   bool _isValid = false;
 
-  static const int _maxLength = 14;
+  static const int _maxLength = 8;
 
   // Characters not allowed: special characters except Korean, English, numbers
   static final _validPattern = RegExp(r'^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+$');
