@@ -33,11 +33,15 @@ class SignupProvider extends ChangeNotifier {
 
   Future<void> fetchHobbies() async {
     if (_hobbies.isNotEmpty) return;
+    _isLoading = true;
+    notifyListeners();
     try {
       _hobbies = await _signupService.getHobbies();
-      notifyListeners();
     } catch (_) {
       // 실패 시 빈 리스트 유지
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
