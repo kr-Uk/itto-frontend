@@ -34,7 +34,6 @@ Future<void> _sendLocationToServer(bg.Location location) async {
     request.headers.set('Content-Type', 'application/json');
     request.headers.set('Authorization', 'Bearer $accessToken');
     request.write(jsonEncode({
-      'h3Index': 'placeholder',
       'latitude': location.coords.latitude,
       'longitude': location.coords.longitude,
       'accuracy': location.coords.accuracy,

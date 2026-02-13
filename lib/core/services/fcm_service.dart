@@ -11,9 +11,15 @@ class FcmService {
 
   String? _fcmToken;
   String? _deviceId;
+  void Function(String newToken)? _onTokenRefreshCallback;
 
   String? get fcmToken => _fcmToken;
   String? get deviceId => _deviceId;
+
+  /// 토큰 갱신 시 호출될 콜백 등록 (로그인 후 설정)
+  void setOnTokenRefresh(void Function(String newToken) callback) {
+    _onTokenRefreshCallback = callback;
+  }
 
   /// FCM 초기화: 권한 요청, 토큰 획득, 토큰 갱신 리스너 등록
   Future<void> initialize() async {
@@ -52,7 +58,7 @@ class FcmService {
       messaging.onTokenRefresh.listen((newToken) {
         _fcmToken = newToken;
         debugPrint('FCM Token 갱신됨: $newToken');
-        // 토큰 갱신 시 백엔드에 자동 등록은 별도로 처리 필요
+        _onTokenRefreshCallback?.call(newToken);
       });
 
       // 메시지 핸들러 설정
