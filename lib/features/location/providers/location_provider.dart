@@ -170,7 +170,70 @@ class LocationProvider extends ChangeNotifier {
     );
   }
 
-  // ========== 제외 지역 관련 ==========
+  // ========== H3 그리드 / 제외 셀 관련 ==========
+
+  Set<String> _selectedCells = {};
+  List<H3CellInfo> _gridCells = [];
+  bool _isGridLoading = false;
+
+  Set<String> get selectedCells => _selectedCells;
+  List<H3CellInfo> get gridCells => _gridCells;
+  bool get isGridLoading => _isGridLoading;
+
+  Future<void> loadH3Grid(double lat, double lng) async {
+    _isGridLoading = true;
+    notifyListeners();
+    try {
+      final response = await _service.getH3Grid(latitude: lat, longitude: lng);
+      _gridCells = response.cells;
+      _selectedCells = response.selectedIndexes.toSet();
+    } on ApiException catch (e) {
+      _error = e.userMessage;
+    } finally {
+      _isGridLoading = false;
+      notifyListeners();
+    }
+  }
+
+  bool toggleCell(String h3Index) {
+    if (_selectedCells.contains(h3Index)) {
+      _selectedCells = {..._selectedCells}..remove(h3Index);
+      notifyListeners();
+      return true;
+    } else {
+      if (_selectedCells.length >= 20) {
+        _error = '제외 셀은 최대 20개까지 선택할 수 있습니다';
+        notifyListeners();
+        return false;
+      }
+      _selectedCells = {..._selectedCells, h3Index};
+      notifyListeners();
+      return true;
+    }
+  }
+
+  void clearSelectedCells() {
+    _selectedCells = {};
+    notifyListeners();
+  }
+
+  Future<bool> saveExcludedCells() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _service.saveExcludedCells(_selectedCells.toList());
+      return true;
+    } on ApiException catch (e) {
+      _error = e.userMessage;
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ========== 제외 지역 관련 (기존) ==========
 
   Future<void> loadExcludedAreas() async {
     _isLoading = true;
