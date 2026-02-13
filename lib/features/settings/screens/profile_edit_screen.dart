@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
+import '../../profile/providers/profile_provider.dart';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -11,9 +13,29 @@ class ProfileEditScreen extends StatefulWidget {
 }
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  String _nickname = '치맛이';
-  String _bio = '오마이 오마이 갓';
-  List<String> _keywords = ['영화', '사주/타로', '식물'];
+  String _nickname = '';
+  String _bio = '';
+  List<String> _keywords = [];
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().loadMyProfile();
+    });
+  }
+
+  void _initFromProfile() {
+    if (_initialized) return;
+    final profile = context.read<ProfileProvider>().myProfile;
+    if (profile != null) {
+      _nickname = profile.nickname;
+      _bio = profile.introduction ?? '';
+      _keywords = profile.hobbies.map((h) => h.name).toList();
+      _initialized = true;
+    }
+  }
 
   // -------------------------------------------------------------------
   // Nickname edit
@@ -28,8 +50,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         maxLength: 8,
       ),
     );
+    if (!mounted) return;
     if (result != null && result.trim().isNotEmpty) {
-      setState(() => _nickname = result.trim());
+      final trimmed = result.trim();
+      final success = await context
+          .read<ProfileProvider>()
+          .updateProfile(nickname: trimmed);
+      if (success && mounted) {
+        setState(() => _nickname = trimmed);
+      }
     }
   }
 
@@ -46,8 +75,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         maxLength: 15,
       ),
     );
+    if (!mounted) return;
     if (result != null && result.trim().isNotEmpty) {
-      setState(() => _bio = result.trim());
+      final trimmed = result.trim();
+      final success = await context
+          .read<ProfileProvider>()
+          .updateProfile(introduction: trimmed);
+      if (success && mounted) {
+        setState(() => _bio = trimmed);
+      }
     }
   }
 
@@ -67,6 +103,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
     if (result != null && result.trim().isNotEmpty) {
       setState(() => _keywords = [..._keywords, result.trim()]);
+      _syncKeywordsToServer();
     }
   }
 
@@ -77,173 +114,201 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     setState(() {
       _keywords = List.from(_keywords)..removeAt(index);
     });
+    _syncKeywordsToServer();
+  }
+
+  // -------------------------------------------------------------------
+  // Sync keywords to server by mapping names to hobby IDs
+  // -------------------------------------------------------------------
+  void _syncKeywordsToServer() {
+    final profile = context.read<ProfileProvider>().myProfile;
+    if (profile == null) return;
+
+    final hobbyIds = <int>[];
+    for (final keyword in _keywords) {
+      final match = profile.hobbies.where((h) => h.name == keyword);
+      if (match.isNotEmpty) {
+        hobbyIds.add(match.first.id);
+      }
+    }
+    context.read<ProfileProvider>().updateProfile(hobbyIds: hobbyIds);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const IttoAppBar(title: '프로필 설정'),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        _initFromProfile();
 
-            // -- Profile photo --
-            Center(
-              child: GestureDetector(
-                onTap: () => context.push('/profile/photo'),
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surfaceLight,
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          width: 2.5,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: AppColors.textTertiary,
-                        size: 56,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                          border: Border.all(
-                            color: AppColors.background,
-                            width: 2.5,
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: const IttoAppBar(title: '프로필 설정'),
+          body: SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+
+                // -- Profile photo --
+                Center(
+                  child: GestureDetector(
+                    onTap: () => context.push('/profile/photo'),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.surfaceLight,
+                            border: Border.all(
+                              color:
+                                  AppColors.primary.withValues(alpha: 0.4),
+                              width: 2.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            color: AppColors.textTertiary,
+                            size: 56,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // -- Nickname --
-            Center(
-              child: GestureDetector(
-                onTap: _editNickname,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      _nickname,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.edit,
-                      color: AppColors.textTertiary,
-                      size: 18,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 36),
-
-            // -- Bio section --
-            _SectionHeader(
-              title: '한줄소개',
-              onEdit: _editBio,
-            ),
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _bio,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 15,
-                  height: 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-
-            // -- Keywords section --
-            const _SectionHeader(title: '관심사 키워드'),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (int i = 0; i < _keywords.length; i++)
-                  _KeywordChip(
-                    label: _keywords[i],
-                    onDelete: () => _removeKeyword(i),
-                  ),
-                // Add button
-                GestureDetector(
-                  onTap: _addKeyword,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.6),
-                        width: 1.2,
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add,
-                          color: AppColors.primary,
-                          size: 18,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          '추가',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                              border: Border.all(
+                                color: AppColors.background,
+                                width: 2.5,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
+                const SizedBox(height: 32),
+
+                // -- Nickname --
+                Center(
+                  child: GestureDetector(
+                    onTap: _editNickname,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _nickname,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.edit,
+                          color: AppColors.textTertiary,
+                          size: 18,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 36),
+
+                // -- Bio section --
+                _SectionHeader(
+                  title: '한줄소개',
+                  onEdit: _editBio,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    _bio,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // -- Keywords section --
+                const _SectionHeader(title: '관심사 키워드'),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (int i = 0; i < _keywords.length; i++)
+                      _KeywordChip(
+                        label: _keywords[i],
+                        onDelete: () => _removeKeyword(i),
+                      ),
+                    // Add button
+                    GestureDetector(
+                      onTap: _addKeyword,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 9),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color:
+                                AppColors.primary.withValues(alpha: 0.6),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.add,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              '추가',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 40),
               ],
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

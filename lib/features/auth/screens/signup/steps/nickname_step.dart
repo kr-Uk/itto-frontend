@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../providers/signup_provider.dart';
 
 class NicknameStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -46,7 +48,7 @@ class _NicknameStepState extends State<NicknameStep> {
       error = '';
       valid = false;
     } else if (text.length > _maxLength) {
-      error = '닉네임은 최대 ${_maxLength}자까지 가능해요.';
+      error = '닉네임은 최대 $_maxLength자까지 가능해요.';
       valid = false;
     } else if (!_validPattern.hasMatch(text)) {
       error = '특수문자 및 공백은 사용할 수 없어요.';
@@ -140,7 +142,7 @@ class _NicknameStepState extends State<NicknameStep> {
           ],
           const SizedBox(height: 12),
           Text(
-            '* 한글, 영문, 숫자 조합 가능 (최대 ${_maxLength}자)',
+            '* 한글, 영문, 숫자 조합 가능 (최대 $_maxLength자)',
             style: GoogleFonts.notoSansKr(
               fontSize: 13,
               color: AppColors.textTertiary,
@@ -150,7 +152,10 @@ class _NicknameStepState extends State<NicknameStep> {
           PurpleButton(
             text: '다음',
             enabled: _isValid,
-            onPressed: widget.onNext,
+            onPressed: () {
+              context.read<SignupProvider>().nickname = _controller.text.trim();
+              widget.onNext();
+            },
           ),
           const SizedBox(height: 40),
         ],

@@ -1,99 +1,165 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/utils/snackbar_utils.dart';
 import '../../../../shared/widgets/itto_dialog.dart';
-import '../../models/mock_profiles.dart';
+import '../../../relationship/providers/relationship_provider.dart';
+import '../../../relationship/models/relationship_models.dart';
 
 class PilyeonTab extends StatelessWidget {
   const PilyeonTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final profiles = MockProfiles.pilyeonProfiles;
+    return Consumer<RelationshipProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading && provider.getByStatus('PILYEON').isEmpty) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        }
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-            child: Text(
-              '오늘 마주친 필연 ${profiles.length}',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
+        final items = provider.getByStatus('PILYEON');
+
+        if (items.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  size: 48,
+                  color: AppColors.textTertiary.withValues(alpha: 0.5),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '아직 필연이 없어요.',
+                  style: TextStyle(
+                    color: AppColors.textTertiary,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+                child: Text(
+                  '오늘 마주친 필연 ${items.length}',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
-            child: Text(
-              '한 번 더 만나면 인연이 될 수 있어요.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                child: Text(
+                  '한 번 더 만나면 인연이 될 수 있어요.',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final profile = profiles[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _PilyeonProfileCard(profile: profile),
-                );
-              },
-              childCount: profiles.length,
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = items[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _PilyeonProfileCard(item: item),
+                    );
+                  },
+                  childCount: items.length,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 20)),
-      ],
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          ],
+        );
+      },
     );
   }
 }
 
 class _PilyeonProfileCard extends StatelessWidget {
-  final ProfileData profile;
+  final RelationshipItem item;
 
-  const _PilyeonProfileCard({required this.profile});
+  const _PilyeonProfileCard({required this.item});
 
-  void _showLockedDialog(BuildContext context) {
+  void _showRequestInyeonDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (ctx) => IttoDialog(
-        title: "'${profile.name}'님은 아직 필연이 아닙니다.",
-        subtitle: '인연을 맺기 위해서는 매듭이 필요해요.',
+        title: "'${item.otherUser.nickname}'님에게\n인연을 요청하시겠습니까?",
         icon: Container(
           width: 48,
           height: 48,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.surfaceLight,
+            gradient: LinearGradient(
+              colors: [AppColors.gradientStart, AppColors.gradientEnd],
+            ),
           ),
           child: const Icon(
-            Icons.lock_rounded,
-            color: AppColors.textSecondary,
+            Icons.favorite,
+            color: Colors.white,
             size: 24,
           ),
         ),
         cancelText: '취소',
-        confirmText: '구매하기',
+        confirmText: '요청하기',
         onCancel: () => Navigator.of(ctx).pop(),
-        onConfirm: () => Navigator.of(ctx).pop(),
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          final provider = context.read<RelationshipProvider>();
+          final success =
+              await provider.requestInyeon(item.relationshipId);
+          if (context.mounted) {
+            if (success) {
+              SnackBarUtils.showSuccess(context, '인연 요청을 보냈습니다.');
+            } else {
+              SnackBarUtils.showError(context, '요청에 실패했습니다.');
+            }
+          }
+        },
       ),
     );
   }
 
+  String _formatRemainingTime(String expiresAt) {
+    try {
+      final expiry = DateTime.parse(expiresAt);
+      final now = DateTime.now();
+      final diff = expiry.difference(now);
+      if (diff.isNegative) return '만료됨';
+      if (diff.inHours > 0) return '${diff.inHours}시간 남음';
+      if (diff.inMinutes > 0) return '${diff.inMinutes}분 남음';
+      return '곧 만료';
+    } catch (_) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hashtags = item.hobbies.map((h) => '#${h.name}').toList();
+
     return GestureDetector(
-      onTap: () => _showLockedDialog(context),
+      onTap: () => _showRequestInyeonDialog(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
@@ -101,23 +167,8 @@ class _PilyeonProfileCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Photo placeholder with gradient
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: profile.photoGradientColors,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.person,
-                    size: 80,
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                ),
-              ),
+              // Photo or gradient placeholder
+              _buildPhoto(),
               // Lock overlay
               Positioned.fill(
                 child: Container(
@@ -139,6 +190,30 @@ class _PilyeonProfileCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Expiry countdown badge
+              if (item.expiresAt != null)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _formatRemainingTime(item.expiresAt!),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
               // Bottom dark overlay with profile info
               Positioned(
                 left: 0,
@@ -163,7 +238,7 @@ class _PilyeonProfileCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${profile.name} | ${profile.intro}',
+                        item.otherUser.nickname,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -172,37 +247,82 @@ class _PilyeonProfileCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: profile.hashtags.map((tag) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              tag,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w400,
+                      if (hashtags.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: hashtags.map((tag) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                tag,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoto() {
+    final photoUrl = item.otherUser.representativePhoto;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: photoUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.gradientStart, AppColors.gradientEnd],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        ),
+        errorWidget: (context, url, error) => _buildGradientPlaceholder(),
+      );
+    }
+    return _buildGradientPlaceholder();
+  }
+
+  Widget _buildGradientPlaceholder() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.gradientStart, AppColors.gradientEnd],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.person,
+          size: 80,
+          color: Colors.white.withValues(alpha: 0.3),
         ),
       ),
     );

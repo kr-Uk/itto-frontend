@@ -1,13 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../../shared/utils/snackbar_utils.dart';
+import '../providers/auth_provider.dart';
 
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
+  Future<void> _handleLogin(BuildContext context, String provider) async {
+    final authProvider = context.read<AuthProvider>();
+
+    bool success;
+    switch (provider) {
+      case 'GOOGLE':
+        success = await authProvider.loginWithGoogle();
+        break;
+      case 'APPLE':
+        success = await authProvider.loginWithApple();
+        break;
+      case 'KAKAO':
+        success = await authProvider.loginWithKakao();
+        break;
+      default:
+        return;
+    }
+
+    if (!context.mounted) return;
+
+    if (success) {
+      if (authProvider.isNewUser) {
+        context.go('/signup');
+      } else {
+        context.go('/home');
+      }
+    } else if (authProvider.error != null) {
+      SnackBarUtils.showError(context, authProvider.error!);
+      authProvider.clearError();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -70,52 +107,61 @@ class LoginScreen extends StatelessWidget {
                 // Social login buttons
                 Padding(
                   padding: const EdgeInsets.only(bottom: 80),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _SocialLoginButton(
-                        backgroundColor: const Color(0xFFFEE500),
-                        onTap: () => context.go('/signup'),
-                        child: Text(
-                          'TALK',
-                          style: GoogleFonts.notoSansKr(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.black,
-                            height: 1.0,
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
                           ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _SocialLoginButton(
+                              backgroundColor: const Color(0xFFFEE500),
+                              onTap: () => _handleLogin(context, 'KAKAO'),
+                              child: Text(
+                                'TALK',
+                                style: GoogleFonts.notoSansKr(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            _SocialLoginButton(
+                              backgroundColor: Colors.black,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                              onTap: () => _handleLogin(context, 'APPLE'),
+                              child: const Icon(
+                                Icons.apple,
+                                color: Colors.white,
+                                size: 26,
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            _SocialLoginButton(
+                              backgroundColor: Colors.white,
+                              onTap: () => _handleLogin(context, 'GOOGLE'),
+                              child: Text(
+                                'G',
+                                style: GoogleFonts.roboto(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black87,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 24),
-                      _SocialLoginButton(
-                        backgroundColor: Colors.black,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                        onTap: () => context.go('/signup'),
-                        child: const Icon(
-                          Icons.apple,
-                          color: Colors.white,
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      _SocialLoginButton(
-                        backgroundColor: Colors.white,
-                        onTap: () => context.go('/signup'),
-                        child: Text(
-                          'G',
-                          style: GoogleFonts.roboto(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                            height: 1.0,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

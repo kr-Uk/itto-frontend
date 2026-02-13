@@ -1,10 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
+import '../../profile/providers/profile_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().loadMyProfile();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +64,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 _SettingsItemData(
                   title: '알림',
-                  onTap: () {},
+                  onTap: () => context.push('/settings/notifications'),
                 ),
               ],
             ),
@@ -73,6 +90,15 @@ class SettingsScreen extends StatelessWidget {
                 _SettingsItemData(
                   title: '정보',
                   onTap: () {},
+                ),
+                _SettingsItemData(
+                  title: '로그아웃',
+                  onTap: () async {
+                    await context.read<AuthProvider>().logout();
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  },
                 ),
               ],
             ),
@@ -117,67 +143,105 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.surfaceLight,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  width: 2,
+    return Consumer<ProfileProvider>(
+      builder: (context, profileProvider, _) {
+        final profile = profileProvider.myProfile;
+        final nickname = profile?.nickname ?? '...';
+        final introduction = profile?.introduction ?? '';
+        final representativePhoto = profile?.photos
+            .where((p) => p.isRepresentative)
+            .toList();
+        final photoUrl = (representativePhoto != null &&
+                representativePhoto.isNotEmpty)
+            ? representativePhoto.first.url
+            : (profile?.photos.isNotEmpty == true
+                ? profile!.photos.first.url
+                : null);
+
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.surfaceLight,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: photoUrl != null
+                        ? CachedNetworkImage(
+                            imageUrl: photoUrl,
+                            width: 52,
+                            height: 52,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => const Icon(
+                              Icons.person,
+                              color: AppColors.textTertiary,
+                              size: 28,
+                            ),
+                            errorWidget: (context, url, error) => const Icon(
+                              Icons.person,
+                              color: AppColors.textTertiary,
+                              size: 28,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            color: AppColors.textTertiary,
+                            size: 28,
+                          ),
+                  ),
                 ),
-              ),
-              child: const Icon(
-                Icons.person,
-                color: AppColors.textTertiary,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 14),
-            // Name and subtitle
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '치맛이',
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                const SizedBox(width: 14),
+                // Name and subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nickname,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        introduction,
+                        style: TextStyle(
+                          color:
+                              AppColors.textSecondary.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '남남남',
-                    style: TextStyle(
-                      color: AppColors.textSecondary.withValues(alpha: 0.8),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textTertiary,
+                  size: 22,
+                ),
+              ],
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: AppColors.textTertiary,
-              size: 22,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
