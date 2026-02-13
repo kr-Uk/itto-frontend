@@ -31,7 +31,7 @@ class ApiClient {
     if (kDebugMode) {
       _dio.interceptors.add(LogInterceptor(
         requestBody: false,
-        responseBody: false,
+        responseBody: true,
         logPrint: (o) => debugPrint('[API] $o'),
       ));
     }
@@ -43,8 +43,9 @@ class ApiClient {
   }
 
   /// 로그인/로그아웃 시 인스턴스 리셋
+  /// Dio를 close하지 않음 — 서비스들이 이 인스턴스를 계속 참조하므로
+  /// close하면 재로그인 시 "connection closed" 에러 발생
   static void reset() {
-    _instance?._dio.close();
     _instance = null;
   }
 
