@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
@@ -19,6 +20,31 @@ class _LocationPermissionStepState extends State<LocationPermissionStep> {
   bool _agreed = false;
 
   Future<void> _handleNext() async {
+    // OS 위치 권한 요청
+    final locationStatus = await Permission.location.request();
+    if (!mounted) return;
+
+    if (locationStatus.isDenied || locationStatus.isPermanentlyDenied) {
+      SnackBarUtils.showError(
+        context,
+        '위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.',
+      );
+      if (locationStatus.isPermanentlyDenied) {
+        openAppSettings();
+      }
+      return;
+    }
+
+    // 백그라운드 위치 권한 요청 (Android)
+    final bgStatus = await Permission.locationAlways.request();
+    if (!mounted) return;
+
+    if (bgStatus.isDenied || bgStatus.isPermanentlyDenied) {
+      // 백그라운드 권한은 선택 사항으로 처리 (포그라운드만으로도 동작 가능)
+      debugPrint('[LocationPermission] 백그라운드 위치 권한 거부됨 - 포그라운드만 사용');
+    }
+
+    // 약관 저장
     final provider = context.read<SignupProvider>();
     final success = await provider.saveTerms();
 
