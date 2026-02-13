@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../providers/signup_provider.dart';
 
 class GenderStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -56,7 +58,11 @@ class _GenderStepState extends State<GenderStep> {
           PurpleButton(
             text: '다음',
             enabled: _selectedGender != null,
-            onPressed: widget.onNext,
+            onPressed: () {
+              context.read<SignupProvider>().gender =
+                  _selectedGender == 'female' ? 'FEMALE' : 'MALE';
+              widget.onNext();
+            },
           ),
           const SizedBox(height: 40),
         ],

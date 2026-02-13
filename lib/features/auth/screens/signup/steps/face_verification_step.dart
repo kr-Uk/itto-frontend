@@ -20,6 +20,7 @@ class FaceVerificationStep extends StatefulWidget {
 class _FaceVerificationStepState extends State<FaceVerificationStep> {
   bool _verified = false;
   String? _capturedImagePath;
+  bool _isUploading = false;
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _startVerification() async {
@@ -53,6 +54,38 @@ class _FaceVerificationStepState extends State<FaceVerificationStep> {
       _verified = false;
     });
     context.read<SignupProvider>().verificationFilePath = null;
+  }
+
+  Future<void> _submitVerification() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final provider = context.read<SignupProvider>();
+      final success = await provider.uploadVerification();
+
+      if (!mounted) return;
+
+      if (success) {
+        widget.onNext();
+      } else {
+        SnackBarUtils.showError(
+          context,
+          provider.error ?? '인증 업로드에 실패했습니다',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, '인증 업로드 중 오류가 발생했습니다: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -105,8 +138,11 @@ class _FaceVerificationStepState extends State<FaceVerificationStep> {
             const SizedBox(height: 12),
           ],
           PurpleButton(
-            text: _verified ? '다음' : '실시간 얼굴 인증하기',
-            onPressed: _verified ? widget.onNext : _startVerification,
+            text: _isUploading
+                ? '업로드 중...'
+                : (_verified ? '다음' : '실시간 얼굴 인증하기'),
+            enabled: !_isUploading,
+            onPressed: _verified ? _submitVerification : _startVerification,
           ),
           const SizedBox(height: 40),
         ],

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../../../shared/utils/snackbar_utils.dart';
+import '../../../providers/signup_provider.dart';
 
 class IntroStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -15,11 +18,36 @@ class IntroStep extends StatefulWidget {
 class _IntroStepState extends State<IntroStep> {
   final TextEditingController _controller = TextEditingController();
   static const int _maxLength = 15;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleNext() async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    final provider = context.read<SignupProvider>();
+    provider.introduction = _controller.text.trim();
+
+    final success = await provider.saveProfile();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      widget.onNext();
+    } else {
+      SnackBarUtils.showError(
+        context,
+        provider.error ?? '프로필 저장에 실패했습니다',
+      );
+    }
   }
 
   @override
@@ -96,11 +124,17 @@ class _IntroStepState extends State<IntroStep> {
             ],
           ),
           const Spacer(),
-          PurpleButton(
-            text: '다음',
-            enabled: true,
-            onPressed: widget.onNext,
-          ),
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                )
+              : PurpleButton(
+                  text: '다음',
+                  enabled: true,
+                  onPressed: _handleNext,
+                ),
           const SizedBox(height: 40),
         ],
       ),

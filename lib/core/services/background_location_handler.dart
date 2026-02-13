@@ -25,9 +25,11 @@ Future<void> _sendLocationToServer(bg.Location location) async {
 
     final timestamp = DateTime.now().toIso8601String();
 
+    final baseUrl = prefs.getString('api_base_url') ?? 'https://api.hguitto.site/api/v1';
+
     final client = HttpClient();
     final request = await client.postUrl(
-      Uri.parse('https://api.hguitto.site/api/v1/location'),
+      Uri.parse('$baseUrl/location'),
     );
     request.headers.set('Content-Type', 'application/json');
     request.headers.set('Authorization', 'Bearer $accessToken');

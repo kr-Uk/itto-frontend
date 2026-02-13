@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../providers/signup_provider.dart';
 
 class NicknameStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -150,7 +152,10 @@ class _NicknameStepState extends State<NicknameStep> {
           PurpleButton(
             text: '다음',
             enabled: _isValid,
-            onPressed: widget.onNext,
+            onPressed: () {
+              context.read<SignupProvider>().nickname = _controller.text.trim();
+              widget.onNext();
+            },
           ),
           const SizedBox(height: 40),
         ],
