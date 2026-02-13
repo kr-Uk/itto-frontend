@@ -28,7 +28,12 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
 
   Future<void> _addPhoto() async {
     if (_photos.length >= 3) return;
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1080,
+      maxHeight: 1080,
+      imageQuality: 80,
+    );
     if (image != null) {
       setState(() {
         _photos.add(image);

@@ -28,6 +28,9 @@ class _FaceVerificationStepState extends State<FaceVerificationStep> {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
         preferredCameraDevice: CameraDevice.front,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 80,
       );
 
       if (photo != null) {
