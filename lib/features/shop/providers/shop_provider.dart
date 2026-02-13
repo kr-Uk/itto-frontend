@@ -83,6 +83,23 @@ class ShopProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> subscribe() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _service.subscribe('test_receipt_token');
+      await loadSubscription();
+      return true;
+    } on ApiException catch (e) {
+      _error = e.userMessage;
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> cancelSubscription() async {
     _isLoading = true;
     _error = null;
