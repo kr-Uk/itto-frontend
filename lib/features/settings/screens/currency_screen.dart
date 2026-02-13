@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../../shared/widgets/itto_dialog.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../../shop/providers/shop_provider.dart';
 import '../../shop/models/shop_models.dart';
 
@@ -21,6 +22,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       final shopProvider = context.read<ShopProvider>();
       shopProvider.loadBalance();
       shopProvider.loadPackages();
+      shopProvider.loadSubscription();
     });
   }
 
@@ -60,6 +62,31 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
       buffer.write(str[i]);
     }
     return buffer.toString();
+  }
+
+  void _showCancelSubscriptionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => IttoDialog(
+        title: '구독을 해지하시겠습니까?',
+        subtitle: '해지하면 프리미엄 혜택이 중단됩니다.',
+        cancelText: '취소',
+        confirmText: '해지하기',
+        onCancel: () => Navigator.of(ctx).pop(),
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          final success =
+              await context.read<ShopProvider>().cancelSubscription();
+          if (context.mounted) {
+            if (success) {
+              SnackBarUtils.showSuccess(context, '구독이 해지되었습니다.');
+            } else {
+              SnackBarUtils.showError(context, '구독 해지에 실패했습니다.');
+            }
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -126,6 +153,96 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
               ),
             ),
             const SizedBox(height: 32),
+
+            // -- Subscription section --
+            Consumer<ShopProvider>(
+              builder: (context, shopProvider, _) {
+                final sub = shopProvider.subscription;
+                if (sub == null) return const SizedBox.shrink();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '구독 정보',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: sub.isPremium
+                            ? Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.5))
+                            : null,
+                      ),
+                      child: sub.isPremium
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.workspace_premium,
+                                        color: AppColors.primary, size: 20),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      '프리미엄 구독 중',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (sub.expiresAt != null)
+                                  Text(
+                                    '만료: ${sub.expiresAt}',
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                const SizedBox(height: 12),
+                                // Cancel button
+                                GestureDetector(
+                                  onTap: () =>
+                                      _showCancelSubscriptionDialog(context),
+                                  child: const Text(
+                                    '구독 해지',
+                                    style: TextStyle(
+                                      color: AppColors.error,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : const Column(
+                              children: [
+                                Text(
+                                  '프리미엄을 구독하고 더 많은 혜택을 받아보세요',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                );
+              },
+            ),
 
             // -- Purchase section --
             const Text(

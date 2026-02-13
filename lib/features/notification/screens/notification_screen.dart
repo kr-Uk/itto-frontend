@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../../shared/widgets/itto_dialog.dart';
+import '../../relationship/providers/relationship_provider.dart';
 import '../models/notification_models.dart';
 import '../providers/notification_provider.dart';
 
@@ -16,12 +17,31 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationProvider>().loadNotifications(refresh: true);
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      final provider = context.read<NotificationProvider>();
+      if (!provider.isLoading) {
+        provider.loadMore();
+      }
+    }
   }
 
   String _formatRelativeTime(String createdAt) {
@@ -46,8 +66,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
     context.read<NotificationProvider>().deleteAllNotifications();
   }
 
-  void _showRequestDialog(NotificationItem notification) {
-    showDialog<bool>(
+  Future<void> _showInyeonRequestDialog(NotificationItem notification) async {
+    if (notification.referenceId == null) {
+      SnackBarUtils.showError(context, '요청 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    final accepted = await showDialog<bool>(
       context: context,
       builder: (context) => IttoDialog(
         icon: const Icon(
@@ -60,12 +85,85 @@ class _NotificationScreenState extends State<NotificationScreen> {
         cancelText: '거절하기',
         confirmText: '수락하기',
       ),
-    ).then((accepted) {
+    );
+
+    if (!mounted) return;
+
+    final relationshipProvider = context.read<RelationshipProvider>();
+
+    if (accepted == true) {
+      final success = await relationshipProvider.acceptRequest(notification.referenceId!);
       if (!mounted) return;
-      if (accepted == true) {
+      if (success) {
         SnackBarUtils.showSuccess(context, '인연 요청을 수락했습니다!');
+      } else {
+        SnackBarUtils.showError(
+          context,
+          relationshipProvider.error ?? '인연 수락에 실패했습니다.',
+        );
       }
-    });
+    } else if (accepted == false) {
+      final success = await relationshipProvider.rejectRequest(notification.referenceId!);
+      if (!mounted) return;
+      if (success) {
+        SnackBarUtils.showSuccess(context, '인연 요청을 거절했습니다.');
+      } else {
+        SnackBarUtils.showError(
+          context,
+          relationshipProvider.error ?? '인연 거절에 실패했습니다.',
+        );
+      }
+    }
+  }
+
+  Future<void> _showRestoreRequestDialog(NotificationItem notification) async {
+    if (notification.referenceId == null) {
+      SnackBarUtils.showError(context, '요청 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (context) => IttoDialog(
+        icon: const Icon(
+          Icons.refresh,
+          color: AppColors.primary,
+          size: 36,
+        ),
+        title: "'${notification.title}'님이\n다시 만나기를 요청했습니다",
+        subtitle: '다시 만나시겠습니까?',
+        cancelText: '거절하기',
+        confirmText: '수락하기',
+      ),
+    );
+
+    if (!mounted) return;
+
+    final relationshipProvider = context.read<RelationshipProvider>();
+
+    if (accepted == true) {
+      final success = await relationshipProvider.restoreAccept(notification.referenceId!);
+      if (!mounted) return;
+      if (success) {
+        SnackBarUtils.showSuccess(context, '다시 만나기를 수락했습니다!');
+      } else {
+        SnackBarUtils.showError(
+          context,
+          relationshipProvider.error ?? '수락에 실패했습니다.',
+        );
+      }
+    } else if (accepted == false) {
+      final success = await relationshipProvider.restoreReject(notification.referenceId!);
+      if (!mounted) return;
+      if (success) {
+        SnackBarUtils.showSuccess(context, '다시 만나기를 거절했습니다.');
+      } else {
+        SnackBarUtils.showError(
+          context,
+          relationshipProvider.error ?? '거절에 실패했습니다.',
+        );
+      }
+    }
   }
 
   void _onNotificationTap(NotificationItem notification) {
@@ -76,7 +174,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     // Handle navigation based on type
     if (notification.type == 'INYEON_REQUEST') {
-      _showRequestDialog(notification);
+      _showInyeonRequestDialog(notification);
+      return;
+    }
+
+    if (notification.type == 'RESTORE_REQUEST') {
+      _showRestoreRequestDialog(notification);
       return;
     }
 
@@ -108,6 +211,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
 
           return ListView(
+            controller: _scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               // Section header

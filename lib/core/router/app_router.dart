@@ -12,6 +12,7 @@ import '../../features/settings/screens/profile_edit_screen.dart';
 import '../../features/settings/screens/profile_photo_screen.dart';
 import '../../features/settings/screens/connection_range_screen.dart';
 import '../../features/settings/screens/currency_screen.dart';
+import '../../features/settings/screens/notification_settings_screen.dart';
 import '../../features/map/screens/map_screen.dart';
 import '../../features/map/screens/excluded_area_screen.dart';
 import '../../features/profile/screens/profile_detail_screen.dart';
@@ -93,6 +94,11 @@ final appRouter = GoRouter(
       path: '/settings/currency',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CurrencyScreen(),
+    ),
+    GoRoute(
+      path: '/settings/notifications',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const NotificationSettingsScreen(),
     ),
     GoRoute(
       path: '/map',

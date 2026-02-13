@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
+import '../../../shared/widgets/itto_dialog.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../providers/profile_provider.dart';
+import '../../block/providers/block_provider.dart';
+import '../../block/models/block_models.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int userId;
@@ -33,7 +38,53 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const IttoAppBar(title: '프로필'),
+      appBar: IttoAppBar(
+        title: '프로필',
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) {
+              if (value == 'block') {
+                _handleBlock(context);
+              } else if (value == 'report') {
+                _handleReport(context);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 20, color: AppColors.textSecondary),
+                    SizedBox(width: 8),
+                    Text(
+                      '차단하기',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.report, size: 20, color: AppColors.error),
+                    SizedBox(width: 8),
+                    Text(
+                      '신고하기',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: Consumer<ProfileProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.otherProfile == null) {
@@ -225,6 +276,101 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _handleBlock(BuildContext context) async {
+    final profile = context.read<ProfileProvider>().otherProfile;
+    if (profile == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => IttoDialog(
+        title: "'${profile.nickname}'님을 차단하시겠습니까?",
+        subtitle: '차단하면 서로 매칭되지 않습니다.',
+        confirmText: '차단',
+        cancelText: '취소',
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    final blockProvider = context.read<BlockProvider>();
+    final success = await blockProvider.blockUser(widget.userId);
+
+    if (!context.mounted) return;
+
+    if (success) {
+      SnackBarUtils.showSuccess(context, '차단되었습니다');
+      context.pop();
+    } else {
+      SnackBarUtils.showError(
+        context,
+        blockProvider.error ?? '차단에 실패했습니다',
+      );
+    }
+  }
+
+  Future<void> _handleReport(BuildContext context) async {
+    final profile = context.read<ProfileProvider>().otherProfile;
+    if (profile == null) return;
+
+    final category = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text(
+          '신고 사유 선택',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        children: [
+          '부적절한 프로필',
+          '스팸/광고',
+          '불쾌한 행동',
+          '기타',
+        ]
+            .map((category) => SimpleDialogOption(
+                  onPressed: () => Navigator.of(context).pop(category),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      category,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ))
+            .toList(),
+      ),
+    );
+
+    if (category == null || !context.mounted) return;
+
+    final blockProvider = context.read<BlockProvider>();
+    final success = await blockProvider.report(
+      ReportRequest(
+        targetUserId: widget.userId,
+        category: category,
+        targetType: 'USER',
+      ),
+    );
+
+    if (!context.mounted) return;
+
+    if (success) {
+      SnackBarUtils.showSuccess(context, '신고가 접수되었습니다');
+    } else {
+      SnackBarUtils.showError(
+        context,
+        blockProvider.error ?? '신고에 실패했습니다',
+      );
+    }
   }
 
   Widget _buildMosaicPhoto() {

@@ -64,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _SettingsItemData(
                   title: '알림',
-                  onTap: () {},
+                  onTap: () => context.push('/settings/notifications'),
                 ),
               ],
             ),

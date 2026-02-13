@@ -5,6 +5,7 @@ class NotificationItem {
   final String message;
   final bool isRead;
   final String? deepLink;
+  final int? referenceId;
   final String createdAt;
 
   const NotificationItem({
@@ -14,6 +15,7 @@ class NotificationItem {
     required this.message,
     required this.isRead,
     this.deepLink,
+    this.referenceId,
     required this.createdAt,
   });
 
@@ -25,6 +27,7 @@ class NotificationItem {
         message: json['message'] as String? ?? '',
         isRead: json['isRead'] as bool? ?? false,
         deepLink: json['deepLink'] as String?,
+        referenceId: json['referenceId'] as int?,
         createdAt: json['createdAt'] as String? ?? '',
       );
 }
