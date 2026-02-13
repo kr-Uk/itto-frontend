@@ -84,7 +84,7 @@ class NotificationProvider extends ChangeNotifier {
     }
   }
 
-  /// FCM 토큰을 백엔드에 등록
+  /// FCM 토큰을 백엔드에 등록 + 토큰 갱신 콜백 설정
   Future<void> registerFcmToken() async {
     try {
       final fcmService = FcmService.instance;
@@ -101,9 +101,20 @@ class NotificationProvider extends ChangeNotifier {
         deviceId: deviceId,
       );
       debugPrint('FCM 토큰 등록 성공');
+
+      // 토큰 갱신 시 자동 재등록 콜백 설정
+      fcmService.setOnTokenRefresh((newToken) {
+        _service.updateFcmToken(
+          fcmToken: newToken,
+          deviceId: deviceId,
+        ).then((_) {
+          debugPrint('FCM 토큰 갱신 → 백엔드 재등록 성공');
+        }).catchError((e) {
+          debugPrint('FCM 토큰 갱신 → 백엔드 재등록 실패: $e');
+        });
+      });
     } on ApiException catch (e) {
       debugPrint('FCM 토큰 등록 실패: ${e.message}');
-      // 실패해도 앱 실행에는 지장 없으므로 에러를 표시하지 않음
     } catch (e) {
       debugPrint('FCM 토큰 등록 중 예외 발생: $e');
     }

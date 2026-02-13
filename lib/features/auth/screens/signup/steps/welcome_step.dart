@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
 import '../../../../../shared/utils/snackbar_utils.dart';
+import '../../../../notification/providers/notification_provider.dart';
 import '../../../providers/signup_provider.dart';
 
 class WelcomeStep extends StatefulWidget {
@@ -31,6 +32,8 @@ class _WelcomeStepState extends State<WelcomeStep> {
     setState(() => _isLoading = false);
 
     if (success) {
+      // 신규 사용자 가입 완료 → FCM 토큰 등록
+      context.read<NotificationProvider>().registerFcmToken();
       context.go('/home');
     } else {
       SnackBarUtils.showError(
