@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "623933708995",
+    "project_id": "itto-27029",
+    "storage_bucket": "itto-27029.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623933708995:android:41205192c2b3cf08cba076",
+        "android_client_info": {
+          "package_name": "com.itto.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "623933708995-dlna7ncu6c9l5l0b1us7t5lvn072sdnc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.itto.app",
+            "certificate_hash": "1f6d7b473dd47d03fe306b27cfda661a301aea0c"
+          }
+        },
+        {
+          "client_id": "623933708995-976i07e45chjlgc3fagckup4k85c9boh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAa1oQuQfWk0ADUIto4aKrYl3ikPkQd8_8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "623933708995-976i07e45chjlgc3fagckup4k85c9boh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "623933708995-vrk8agfqvqvabj627oum2tgc8hh2h5j8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.itto.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

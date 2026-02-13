@@ -14,6 +14,7 @@ import '../../features/settings/screens/connection_range_screen.dart';
 import '../../features/settings/screens/currency_screen.dart';
 import '../../features/map/screens/map_screen.dart';
 import '../../features/map/screens/excluded_area_screen.dart';
+import '../../features/profile/screens/profile_detail_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -74,6 +75,14 @@ final appRouter = GoRouter(
       path: '/profile/photo',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ProfilePhotoScreen(),
+    ),
+    GoRoute(
+      path: '/profile/:userId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final userId = int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
+        return ProfileDetailScreen(userId: userId);
+      },
     ),
     GoRoute(
       path: '/settings/range',

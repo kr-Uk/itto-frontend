@@ -1,0 +1,261 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/itto_app_bar.dart';
+import '../providers/profile_provider.dart';
+
+class ProfileDetailScreen extends StatefulWidget {
+  final int userId;
+
+  const ProfileDetailScreen({super.key, required this.userId});
+
+  @override
+  State<ProfileDetailScreen> createState() => _ProfileDetailScreenState();
+}
+
+class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().loadOtherProfile(widget.userId);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Don't clear in dispose since provider outlives this widget
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const IttoAppBar(title: '프로필'),
+      body: Consumer<ProfileProvider>(
+        builder: (context, provider, _) {
+          if (provider.isLoading && provider.otherProfile == null) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+
+          final profile = provider.otherProfile;
+          if (profile == null) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.person_off, color: AppColors.textTertiary, size: 48),
+                  const SizedBox(height: 12),
+                  Text(
+                    provider.error ?? '프로필을 불러올 수 없습니다',
+                    style: const TextStyle(color: AppColors.textTertiary, fontSize: 16),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Photos
+                if (profile.photos.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(
+                      height: 400,
+                      width: double.infinity,
+                      child: profile.photos.first.isMosaic
+                          ? _buildMosaicPhoto()
+                          : CachedNetworkImage(
+                              imageUrl: profile.photos.first.url,
+                              fit: BoxFit.cover,
+                              placeholder: (_, _) => Container(
+                                color: AppColors.surfaceLight,
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (_, _, _) => Container(
+                                color: AppColors.surfaceLight,
+                                child: const Icon(
+                                  Icons.person,
+                                  size: 80,
+                                  color: AppColors.textTertiary,
+                                ),
+                              ),
+                            ),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+
+                // Name and age
+                Row(
+                  children: [
+                    Text(
+                      profile.nickname,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (profile.age != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '${profile.age}',
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Introduction
+                if (profile.introduction != null && profile.introduction!.isNotEmpty)
+                  Text(
+                    profile.introduction!,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                      height: 1.5,
+                    ),
+                  ),
+                const SizedBox(height: 16),
+
+                // Hobbies
+                if (profile.hobbies.isNotEmpty)
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.hobbies.map((hobby) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '#${hobby.name}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 20),
+
+                // Additional photos
+                if (profile.photos.length > 1)
+                  SizedBox(
+                    height: 120,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: profile.photos.length - 1,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (_, index) {
+                        final photo = profile.photos[index + 1];
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            width: 120,
+                            child: photo.isMosaic
+                                ? _buildMosaicPhoto()
+                                : CachedNetworkImage(
+                                    imageUrl: photo.url,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, _, _) => Container(
+                                      color: AppColors.surfaceLight,
+                                      child: const Icon(Icons.image,
+                                          color: AppColors.textTertiary),
+                                    ),
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                // Encounter info
+                if (profile.encounterCount != null && profile.encounterCount! > 0) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.place, color: AppColors.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${profile.encounterCount}번 마주침',
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMosaicPhoto() {
+    return Container(
+      color: AppColors.surfaceLight,
+      child: Stack(
+        children: [
+          Center(
+            child: Icon(
+              Icons.person,
+              size: 80,
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+          ),
+          Center(
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.45),
+              ),
+              child: const Icon(
+                Icons.lock_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
