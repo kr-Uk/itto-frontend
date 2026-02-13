@@ -7,14 +7,12 @@ class LocationService {
   LocationService(this._client);
 
   Future<void> sendLocation({
-    required String h3Index,
     required double latitude,
     required double longitude,
     required double accuracy,
     required String timestamp,
   }) async {
     await _client.post('/location', data: {
-      'h3Index': h3Index,
       'latitude': latitude,
       'longitude': longitude,
       'accuracy': accuracy,

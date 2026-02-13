@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../../relationship/providers/relationship_provider.dart';
 import '../../location/providers/location_provider.dart';
 import '../../shop/providers/shop_provider.dart';
@@ -111,8 +112,15 @@ class _HomeScreenState extends State<HomeScreen>
                     height: 28,
                     child: Switch(
                       value: isEnabled,
-                      onChanged: (value) {
-                        locationProvider.toggleMatching(value);
+                      onChanged: (value) async {
+                        final success =
+                            await locationProvider.toggleMatching(value);
+                        if (!success && context.mounted) {
+                          SnackBarUtils.showError(
+                            context,
+                            locationProvider.error ?? '위치 설정에 실패했습니다',
+                          );
+                        }
                       },
                       activeThumbColor: AppColors.primary,
                       activeTrackColor:

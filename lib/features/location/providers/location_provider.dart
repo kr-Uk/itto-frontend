@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/location_models.dart';
 import '../services/location_service.dart';
@@ -89,11 +90,10 @@ class LocationProvider extends ChangeNotifier {
   /// 위치 이벤트 수신 → 서버 전송
   void _onLocation(bg.Location location) {
     final timestamp =
-        DateFormat('yyyy-MM-ddTHH:mm:ss').format(DateTime.now());
+        DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(DateTime.now());
 
     _service
         .sendLocation(
-      h3Index: 'placeholder', // H3는 서버에서 계산
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
       accuracy: location.coords.accuracy,
@@ -106,8 +106,30 @@ class LocationProvider extends ChangeNotifier {
     });
   }
 
+  /// 위치 권한 확인 및 요청
+  Future<bool> _ensureLocationPermission() async {
+    var status = await Permission.location.status;
+    if (!status.isGranted) {
+      status = await Permission.location.request();
+      if (!status.isGranted) {
+        _error = '위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.';
+        return false;
+      }
+    }
+    return true;
+  }
+
   /// 인연 만나기 토글
   Future<bool> toggleMatching(bool enabled) async {
+    // 활성화 시 위치 권한 확인
+    if (enabled) {
+      final hasPermission = await _ensureLocationPermission();
+      if (!hasPermission) {
+        notifyListeners();
+        return false;
+      }
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();
