@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/utils/snackbar_utils.dart';
+import '../../../../shared/widgets/itto_dialog.dart';
 import '../../../relationship/providers/relationship_provider.dart';
 import '../../../relationship/models/relationship_models.dart';
 
@@ -102,12 +103,50 @@ class _UyeonThumbnailCard extends StatelessWidget {
 
   const _UyeonThumbnailCard({required this.item});
 
+  void _showConvertDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => IttoDialog(
+        title: "'${item.otherUser.nickname}'님의\n프로필을 확인할까요?",
+        subtitle: '매듭 20개를 사용합니다.',
+        icon: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              colors: [AppColors.gradientStart, AppColors.gradientEnd],
+            ),
+          ),
+          child: const Icon(Icons.lock_open, color: Colors.white, size: 24),
+        ),
+        cancelText: '취소',
+        confirmText: '확인하기',
+        onCancel: () => Navigator.of(ctx).pop(),
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          final provider = context.read<RelationshipProvider>();
+          final success =
+              await provider.convertTopilyeon(item.relationshipId);
+          if (context.mounted) {
+            if (success) {
+              SnackBarUtils.showSuccess(context, '프로필이 공개되었습니다!');
+            } else {
+              SnackBarUtils.showError(
+                  context, provider.error ?? '요청에 실패했습니다.');
+            }
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final hashtags = item.hobbies.map((h) => '#${h.name}').toList();
 
     return GestureDetector(
-      onTap: () => context.push('/profile/${item.otherUser.userId}'),
+      onTap: () => _showConvertDialog(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Stack(

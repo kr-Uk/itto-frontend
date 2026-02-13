@@ -64,6 +64,40 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
     return buffer.toString();
   }
 
+  void _showSubscribeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => IttoDialog(
+        title: '프리미엄을 구독하시겠습니까?',
+        subtitle: '매달 광고 제거 + 추가 혜택을 받을 수 있습니다.',
+        cancelText: '취소',
+        confirmText: '구독하기',
+        icon: ShaderMask(
+          shaderCallback: (bounds) =>
+              AppColors.primaryGradient.createShader(bounds),
+          child: const Icon(
+            Icons.workspace_premium,
+            color: Colors.white,
+            size: 32,
+          ),
+        ),
+        onCancel: () => Navigator.of(ctx).pop(),
+        onConfirm: () async {
+          Navigator.of(ctx).pop();
+          final success =
+              await context.read<ShopProvider>().subscribe();
+          if (context.mounted) {
+            if (success) {
+              SnackBarUtils.showSuccess(context, '프리미엄 구독이 시작되었습니다!');
+            } else {
+              SnackBarUtils.showError(context, '구독에 실패했습니다.');
+            }
+          }
+        },
+      ),
+    );
+  }
+
   void _showCancelSubscriptionDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -226,13 +260,38 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                                 ),
                               ],
                             )
-                          : const Column(
+                          : Column(
                               children: [
-                                Text(
+                                const Text(
                                   '프리미엄을 구독하고 더 많은 혜택을 받아보세요',
                                   style: TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                GestureDetector(
+                                  onTap: () =>
+                                      _showSubscribeDialog(context),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.buttonGradient,
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        '구독하기',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
