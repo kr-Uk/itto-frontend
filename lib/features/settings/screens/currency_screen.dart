@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../../shared/widgets/itto_dialog.dart';
+import '../../shop/providers/shop_provider.dart';
+import '../../shop/models/shop_models.dart';
 
-class CurrencyScreen extends StatelessWidget {
+class CurrencyScreen extends StatefulWidget {
   const CurrencyScreen({super.key});
 
-  static const List<_CurrencyPackage> _packages = [
-    _CurrencyPackage(amount: 100, price: 10000),
-    _CurrencyPackage(amount: 200, price: 20000),
-    _CurrencyPackage(amount: 300, price: 30000),
-  ];
+  @override
+  State<CurrencyScreen> createState() => _CurrencyScreenState();
+}
 
-  void _showPurchaseDialog(BuildContext context, _CurrencyPackage pkg) {
+class _CurrencyScreenState extends State<CurrencyScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final shopProvider = context.read<ShopProvider>();
+      shopProvider.loadBalance();
+      shopProvider.loadPackages();
+    });
+  }
+
+  void _showPurchaseDialog(BuildContext context, KnotPackage pkg) {
     showDialog(
       context: context,
       builder: (ctx) => IttoDialog(
-        title: '${pkg.amount}매듭을 구매할까요?',
+        title: '${pkg.knots}매듭을 구매할까요?',
         subtitle: '${_formatPrice(pkg.price)}원이 결제됩니다.',
         cancelText: '취소',
         confirmText: '확인',
@@ -31,7 +43,7 @@ class CurrencyScreen extends StatelessWidget {
         ),
         onConfirm: () {
           Navigator.of(ctx).pop(true);
-          // TODO: process purchase
+          context.read<ShopProvider>().purchase(pkg.id);
         },
       ),
     );
@@ -93,17 +105,22 @@ class CurrencyScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ShaderMask(
-                    shaderCallback: (bounds) =>
-                        AppColors.primaryGradient.createShader(bounds),
-                    child: const Text(
-                      '217 매듭',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                  Consumer<ShopProvider>(
+                    builder: (context, shopProvider, _) {
+                      final knots = shopProvider.knots;
+                      return ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AppColors.primaryGradient.createShader(bounds),
+                        child: Text(
+                          '$knots 매듭',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -121,13 +138,31 @@ class CurrencyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            for (final pkg in _packages) ...[
-              _PurchaseCard(
-                package: pkg,
-                onTap: () => _showPurchaseDialog(context, pkg),
-              ),
-              const SizedBox(height: 10),
-            ],
+            Consumer<ShopProvider>(
+              builder: (context, shopProvider, _) {
+                if (shopProvider.isLoading && shopProvider.packages.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(
+                          color: AppColors.primary),
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    for (final pkg in shopProvider.packages) ...[
+                      _PurchaseCard(
+                        package: pkg,
+                        onTap: () => _showPurchaseDialog(context, pkg),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ],
+                );
+              },
+            ),
 
             const SizedBox(height: 28),
 
@@ -168,22 +203,11 @@ class CurrencyScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Currency package model
-// ---------------------------------------------------------------------------
-
-class _CurrencyPackage {
-  final int amount;
-  final int price;
-
-  const _CurrencyPackage({required this.amount, required this.price});
-}
-
-// ---------------------------------------------------------------------------
 // Purchase card
 // ---------------------------------------------------------------------------
 
 class _PurchaseCard extends StatelessWidget {
-  final _CurrencyPackage package;
+  final KnotPackage package;
   final VoidCallback onTap;
 
   const _PurchaseCard({
@@ -217,7 +241,7 @@ class _PurchaseCard extends StatelessWidget {
             // Amount and price
             Expanded(
               child: Text(
-                '${package.amount} 매듭',
+                '${package.knots} 매듭',
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
@@ -226,7 +250,7 @@ class _PurchaseCard extends StatelessWidget {
               ),
             ),
             Text(
-              '\u20A9${CurrencyScreen._formatPrice(package.price)}',
+              '\u20A9${_CurrencyScreenState._formatPrice(package.price)}',
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 15,

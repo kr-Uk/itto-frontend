@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../notification/providers/notification_provider.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -25,11 +28,26 @@ class _SplashScreenState extends State<SplashScreen>
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
+    _checkLoginAndNavigate();
+  }
+
+  Future<void> _checkLoginAndNavigate() async {
+    final authProvider = context.read<AuthProvider>();
+    await authProvider.checkLoginStatus();
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      if (authProvider.isLoggedIn) {
+        // 로그인 상태라면 FCM 토큰을 백엔드에 등록
+        final notificationProvider = context.read<NotificationProvider>();
+        notificationProvider.registerFcmToken();
+
+        context.go('/home');
+      } else {
         context.go('/login');
       }
-    });
+    }
   }
 
   @override

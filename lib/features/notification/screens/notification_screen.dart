@@ -1,27 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../../shared/widgets/itto_dialog.dart';
-
-enum _NotificationType { chatRequest, message, connection }
-
-class _NotificationItem {
-  final String id;
-  final _NotificationType type;
-  final String title;
-  final String? senderName;
-  final String time;
-  final Color? avatarColor;
-
-  const _NotificationItem({
-    required this.id,
-    required this.type,
-    required this.title,
-    this.senderName,
-    required this.time,
-    this.avatarColor,
-  });
-}
+import '../models/notification_models.dart';
+import '../providers/notification_provider.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -31,58 +16,37 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final List<_NotificationItem> _notifications = [
-    const _NotificationItem(
-      id: '1',
-      type: _NotificationType.chatRequest,
-      title: "'수수'님이 대화를 요청했어요! 수락하시겠습니까?",
-      senderName: '수수',
-      time: '방금 전',
-    ),
-    _NotificationItem(
-      id: '2',
-      type: _NotificationType.message,
-      title: '치맛이: ㅎㅎ 포켓몬 닮았당',
-      senderName: '치맛이',
-      time: '5분 전',
-      avatarColor: const Color(0xFF94F6D6),
-    ),
-    const _NotificationItem(
-      id: '3',
-      type: _NotificationType.connection,
-      title: '새로운 인연 신청이 있어요! 확인해 보세요',
-      time: '30분 전',
-    ),
-    _NotificationItem(
-      id: '4',
-      type: _NotificationType.message,
-      title: '이종원: 아 맞다 내일 약속 있었지?',
-      senderName: '이종원',
-      time: '1시간 전',
-      avatarColor: const Color(0xFF7BB3FF),
-    ),
-    const _NotificationItem(
-      id: '5',
-      type: _NotificationType.chatRequest,
-      title: "'민지'님이 대화를 요청했어요! 수락하시겠습니까?",
-      senderName: '민지',
-      time: '2시간 전',
-    ),
-    const _NotificationItem(
-      id: '6',
-      type: _NotificationType.connection,
-      title: '새로운 인연 신청이 있어요! 확인해 보세요',
-      time: '3시간 전',
-    ),
-  ];
-
-  void _dismissAll() {
-    setState(() {
-      _notifications.clear();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationProvider>().loadNotifications(refresh: true);
     });
   }
 
-  void _showRequestDialog(_NotificationItem notification) {
+  String _formatRelativeTime(String createdAt) {
+    try {
+      final dateTime = DateTime.parse(createdAt);
+      final now = DateTime.now();
+      final diff = now.difference(dateTime);
+
+      if (diff.inSeconds < 60) return '방금 전';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+      if (diff.inHours < 24) return '${diff.inHours}시간 전';
+      if (diff.inDays < 7) return '${diff.inDays}일 전';
+      if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}주 전';
+      if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}개월 전';
+      return '${(diff.inDays / 365).floor()}년 전';
+    } catch (_) {
+      return createdAt;
+    }
+  }
+
+  void _dismissAll() {
+    context.read<NotificationProvider>().deleteAllNotifications();
+  }
+
+  void _showRequestDialog(NotificationItem notification) {
     showDialog<bool>(
       context: context,
       builder: (context) => IttoDialog(
@@ -91,45 +55,34 @@ class _NotificationScreenState extends State<NotificationScreen> {
           color: AppColors.primary,
           size: 36,
         ),
-        title: "'${notification.senderName}'님이 인연을 요청하셨습니다.\n수락하시겠습니까?",
+        title: "'${notification.title}'\n수락하시겠습니까?",
         subtitle: '*인연이 되면 채팅이 가능합니다.',
         cancelText: '거절하기',
         confirmText: '수락하기',
       ),
     ).then((accepted) {
-      if (accepted == true && mounted) {
-        setState(() {
-          _notifications.removeWhere((n) => n.id == notification.id);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("'${notification.senderName}'님과 인연이 되었습니다!"),
-            backgroundColor: AppColors.primary,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        );
-      } else if (accepted == false && mounted) {
-        setState(() {
-          _notifications.removeWhere((n) => n.id == notification.id);
-        });
+      if (!mounted) return;
+      if (accepted == true) {
+        SnackBarUtils.showSuccess(context, '인연 요청을 수락했습니다!');
       }
     });
   }
 
-  void _onNotificationTap(_NotificationItem notification) {
-    switch (notification.type) {
-      case _NotificationType.chatRequest:
-        _showRequestDialog(notification);
-        break;
-      case _NotificationType.message:
-        // TODO: Navigate to chat room
-        break;
-      case _NotificationType.connection:
-        _showRequestDialog(notification);
-        break;
+  void _onNotificationTap(NotificationItem notification) {
+    // Mark as read
+    if (!notification.isRead) {
+      context.read<NotificationProvider>().markAsRead([notification.id]);
+    }
+
+    // Handle navigation based on type
+    if (notification.type == 'INYEON_REQUEST') {
+      _showRequestDialog(notification);
+      return;
+    }
+
+    // Navigate to deepLink if available
+    if (notification.deepLink != null && notification.deepLink!.isNotEmpty) {
+      context.push(notification.deepLink!);
     }
   }
 
@@ -141,53 +94,67 @@ class _NotificationScreenState extends State<NotificationScreen> {
         title: '알림',
         showBack: false,
       ),
-      body: _notifications.isEmpty
-          ? _buildEmptyState()
-          : ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              children: [
-                // Section header
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        '오늘',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: _dismissAll,
-                        child: const Icon(
-                          Icons.close,
-                          color: AppColors.textSecondary,
-                          size: 20,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 4),
+      body: Consumer<NotificationProvider>(
+        builder: (context, notificationProvider, child) {
+          if (notificationProvider.isLoading &&
+              notificationProvider.notifications.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                // Notification items
-                ..._notifications.map(
-                  (notification) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _NotificationCard(
-                      notification: notification,
-                      onTap: () => _onNotificationTap(notification),
+          final notifications = notificationProvider.notifications;
+
+          if (notifications.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            children: [
+              // Section header
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 8,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '오늘',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
+                    GestureDetector(
+                      onTap: _dismissAll,
+                      child: const Icon(
+                        Icons.close,
+                        color: AppColors.textSecondary,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              // Notification items
+              ...notifications.map(
+                (notification) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _NotificationCard(
+                    notification: notification,
+                    formattedTime: _formatRelativeTime(notification.createdAt),
+                    onTap: () => _onNotificationTap(notification),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -216,11 +183,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
 }
 
 class _NotificationCard extends StatelessWidget {
-  final _NotificationItem notification;
+  final NotificationItem notification;
+  final String formattedTime;
   final VoidCallback onTap;
 
   const _NotificationCard({
     required this.notification,
+    required this.formattedTime,
     required this.onTap,
   });
 
@@ -231,7 +200,9 @@ class _NotificationCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: notification.isRead
+              ? AppColors.cardBackground
+              : AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -247,16 +218,20 @@ class _NotificationCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    notification.title,
-                    style: const TextStyle(
+                    notification.message.isNotEmpty
+                        ? notification.message
+                        : notification.title,
+                    style: TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 14,
                       height: 1.4,
+                      fontWeight:
+                          notification.isRead ? FontWeight.normal : FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    notification.time,
+                    formattedTime,
                     style: const TextStyle(
                       color: AppColors.textTertiary,
                       fontSize: 12,
@@ -272,42 +247,66 @@ class _NotificationCard extends StatelessWidget {
   }
 
   Widget _buildLeading() {
-    switch (notification.type) {
-      case _NotificationType.chatRequest:
-      case _NotificationType.connection:
-        return Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.favorite,
-            color: AppColors.primary,
-            size: 20,
-          ),
-        );
-      case _NotificationType.message:
-        final color = notification.avatarColor ?? AppColors.primary;
-        return Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Text(
-              notification.senderName?[0] ?? '?',
-              style: TextStyle(
-                color: color,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
+    final type = notification.type;
+
+    // INYEON_REQUEST, INYEON_ACCEPTED, INYEON_REJECTED, RESTORE_REQUEST → heart icon
+    if (type == 'INYEON_REQUEST' ||
+        type == 'INYEON_ACCEPTED' ||
+        type == 'INYEON_REJECTED' ||
+        type == 'RESTORE_REQUEST') {
+      return Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.favorite,
+          color: AppColors.primary,
+          size: 20,
+        ),
+      );
+    }
+
+    // MESSAGE → avatar style with first letter
+    if (type == 'MESSAGE') {
+      final firstLetter = notification.title.isNotEmpty
+          ? notification.title[0]
+          : '?';
+      return Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Text(
+            firstLetter,
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        );
+        ),
+      );
     }
+
+    // Others → notification bell icon
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.15),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.notifications,
+        color: AppColors.primary,
+        size: 20,
+      ),
+    );
   }
 }

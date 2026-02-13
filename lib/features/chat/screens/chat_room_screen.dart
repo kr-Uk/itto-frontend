@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
-
-enum _MessageType { sent, received }
-
-class _ChatMessage {
-  final String text;
-  final _MessageType type;
-  final String time;
-
-  const _ChatMessage({
-    required this.text,
-    required this.type,
-    required this.time,
-  });
-}
+import '../../../shared/utils/snackbar_utils.dart';
+import '../../profile/providers/profile_provider.dart';
+import '../providers/chat_provider.dart';
+import '../models/chat_models.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String chatId;
@@ -33,76 +26,49 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _imagePicker = ImagePicker();
   bool _showAttachmentMenu = false;
 
-  final List<_ChatMessage> _messages = [
-    const _ChatMessage(
-      text: '안녕하세요! 반갑습니다 :)',
-      type: _MessageType.received,
-      time: '오후 2:30',
-    ),
-    const _ChatMessage(
-      text: '혹시 아까 카페에서 본 분 맞으시죠?',
-      type: _MessageType.received,
-      time: '오후 2:30',
-    ),
-    const _ChatMessage(
-      text: '네 맞아요! 안녕하세요~',
-      type: _MessageType.sent,
-      time: '오후 2:32',
-    ),
-    const _ChatMessage(
-      text: '저도 이토 쓰시는 줄 몰랐어요 ㅎㅎ',
-      type: _MessageType.sent,
-      time: '오후 2:32',
-    ),
-    const _ChatMessage(
-      text: 'ㅋㅋ 저도요! 혹시 이 근처 자주 오세요?',
-      type: _MessageType.received,
-      time: '오후 2:35',
-    ),
-    const _ChatMessage(
-      text: '네 거의 매일 와요. 커피가 맛있어서요',
-      type: _MessageType.sent,
-      time: '오후 2:36',
-    ),
-    const _ChatMessage(
-      text: '오 저도! 아메리카노 좋아하세요?',
-      type: _MessageType.received,
-      time: '오후 2:38',
-    ),
-    const _ChatMessage(
-      text: '라떼 파인데 아메리카노도 좋아해요',
-      type: _MessageType.sent,
-      time: '오후 2:39',
-    ),
-    const _ChatMessage(
-      text: '다음에 같이 커피 한잔 해요!',
-      type: _MessageType.received,
-      time: '오후 2:40',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final currentUserId =
+          context.read<ProfileProvider>().myProfile?.userId ?? 0;
+      context.read<ChatProvider>().subscribeToChatMessages(
+            widget.chatId,
+            currentUserId,
+          );
+    });
+  }
 
   @override
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
+    context.read<ChatProvider>().clearMessages();
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      _messages.add(_ChatMessage(
-        text: text,
-        type: _MessageType.sent,
-        time: '오후 3:00',
-      ));
-      _textController.clear();
-      _showAttachmentMenu = false;
-    });
+    final currentUserId = context.read<ProfileProvider>().myProfile?.userId;
+    if (currentUserId == null) return;
+
+    _textController.clear();
+    setState(() => _showAttachmentMenu = false);
+
+    final success = await context.read<ChatProvider>().sendMessage(
+          chatRoomId: widget.chatId,
+          senderId: currentUserId,
+          text: text,
+        );
+
+    if (!success && mounted) {
+      SnackBarUtils.showError(context, '메시지 전송에 실패했습니다');
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -121,8 +87,79 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     });
   }
 
+  Future<void> _pickAndSendImage() async {
+    // Show dialog to choose camera or gallery
+    final source = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text(
+          '사진 선택',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: AppColors.primary),
+              title: const Text(
+                '카메라',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppColors.primary),
+              title: const Text(
+                '갤러리',
+                style: TextStyle(color: AppColors.textPrimary),
+              ),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: source);
+      if (image == null || !mounted) return;
+
+      final chatProvider = context.read<ChatProvider>();
+      final currentUserId = context.read<ProfileProvider>().myProfile?.userId;
+      if (currentUserId == null) return;
+
+      setState(() => _showAttachmentMenu = false);
+
+      // For MVP: Send image message with placeholder text
+      // In production, you would upload to Firebase Storage and send the URL
+      final success = await chatProvider.sendMessage(
+            chatRoomId: widget.chatId,
+            senderId: currentUserId,
+            text: '📷 사진',
+            type: 'image',
+          );
+
+      if (!success && mounted) {
+        SnackBarUtils.showError(context, '사진 전송에 실패했습니다');
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, '사진을 선택하는데 실패했습니다: $e');
+      }
+    }
+  }
+
+  void _navigateToMap() {
+    context.push('/map');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUserId = context.read<ProfileProvider>().myProfile?.userId ?? 0;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -147,9 +184,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               Icons.location_on_outlined,
               color: AppColors.textPrimary,
             ),
-            onPressed: () {
-              // TODO: Navigate to location view
-            },
+            onPressed: _navigateToMap,
           ),
         ],
       ),
@@ -164,28 +199,69 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   setState(() => _showAttachmentMenu = false);
                 }
               },
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  final isFirst = index == 0;
-                  final isNewGroup = isFirst ||
-                      _messages[index - 1].type != message.type ||
-                      _messages[index - 1].time != message.time;
-                  final isLastInGroup = index == _messages.length - 1 ||
-                      _messages[index + 1].type != message.type ||
-                      _messages[index + 1].time != message.time;
+              child: Consumer<ChatProvider>(
+                builder: (context, chatProvider, child) {
+                  if (chatProvider.isLoading &&
+                      chatProvider.currentMessages.isEmpty) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  return _MessageBubble(
-                    message: message,
-                    userName: widget.userName,
-                    showAvatar: isNewGroup && message.type == _MessageType.received,
-                    showTimestamp: isLastInGroup,
+                  final messages = chatProvider.currentMessages;
+
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        '메시지가 없습니다\n첫 메시지를 보내보세요!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 15,
+                        ),
+                      ),
+                    );
+                  }
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.jumpTo(
+                        _scrollController.position.maxScrollExtent,
+                      );
+                    }
+                  });
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final isSent = message.senderId == currentUserId;
+
+                      final isFirst = index == 0;
+                      final isNewGroup = isFirst ||
+                          messages[index - 1].senderId != message.senderId ||
+                          _isDifferentTimeGroup(
+                            messages[index - 1].createdAt,
+                            message.createdAt,
+                          );
+                      final isLastInGroup = index == messages.length - 1 ||
+                          messages[index + 1].senderId != message.senderId ||
+                          _isDifferentTimeGroup(
+                            message.createdAt,
+                            messages[index + 1].createdAt,
+                          );
+
+                      return _MessageBubble(
+                        message: message,
+                        userName: widget.userName,
+                        isSent: isSent,
+                        showAvatar: isNewGroup && !isSent,
+                        showTimestamp: isLastInGroup,
+                      );
+                    },
                   );
                 },
               ),
@@ -200,6 +276,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ],
       ),
     );
+  }
+
+  bool _isDifferentTimeGroup(DateTime time1, DateTime time2) {
+    return time2.difference(time1).inMinutes > 1;
   }
 
   Widget _buildAttachmentMenu() {
@@ -217,17 +297,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           _AttachmentButton(
             icon: Icons.camera_alt_outlined,
             label: '사진',
-            onTap: () {
-              // TODO: Open camera/gallery
-            },
+            onTap: _pickAndSendImage,
           ),
           const SizedBox(width: 32),
           _AttachmentButton(
             icon: Icons.location_on_outlined,
             label: '인연 위치 확인',
-            onTap: () {
-              // TODO: Open location check
-            },
+            onTap: _navigateToMap,
           ),
         ],
       ),
@@ -347,22 +423,61 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 }
 
 class _MessageBubble extends StatelessWidget {
-  final _ChatMessage message;
+  final ChatMessage message;
   final String userName;
+  final bool isSent;
   final bool showAvatar;
   final bool showTimestamp;
 
   const _MessageBubble({
     required this.message,
     required this.userName,
+    required this.isSent,
     required this.showAvatar,
     required this.showTimestamp,
   });
 
+  String _formatMessageTime(DateTime dateTime) {
+    return DateFormat('a h:mm', 'ko_KR').format(dateTime);
+  }
+
+  Widget _buildMessageContent() {
+    if (message.type == 'image') {
+      // For MVP: Show image icon with text
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.image,
+            color: AppColors.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            message.text,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              height: 1.4,
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Regular text message
+      return Text(
+        message.text,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 15,
+          height: 1.4,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isSent = message.type == _MessageType.sent;
-
     return Padding(
       padding: EdgeInsets.only(
         top: showAvatar ? 12 : 2,
@@ -389,7 +504,7 @@ class _MessageBubble extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      userName[0],
+                      userName.isNotEmpty ? userName[0] : '?',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontSize: 14,
@@ -419,14 +534,7 @@ class _MessageBubble extends StatelessWidget {
                       bottomRight: Radius.circular(isSent ? 4 : 16),
                     ),
                   ),
-                  child: Text(
-                    message.text,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
-                  ),
+                  child: _buildMessageContent(),
                 ),
               ),
             ],
@@ -441,7 +549,7 @@ class _MessageBubble extends StatelessWidget {
                 right: isSent ? 0 : 0,
               ),
               child: Text(
-                message.time,
+                _formatMessageTime(message.createdAt),
                 style: const TextStyle(
                   color: AppColors.textTertiary,
                   fontSize: 11,
