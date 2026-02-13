@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
 import 'api_exception.dart';
 import 'auth_interceptor.dart';
@@ -16,6 +17,7 @@ class ApiClient {
         baseUrl: AppConfig.baseUrl,
         connectTimeout: AppConfig.connectTimeout,
         receiveTimeout: AppConfig.receiveTimeout,
+        sendTimeout: AppConfig.sendTimeout,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -26,6 +28,13 @@ class ApiClient {
       dio: _dio,
       tokenStorage: _tokenStorage,
     ));
+    if (kDebugMode) {
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: false,
+        responseBody: false,
+        logPrint: (o) => debugPrint('[API] $o'),
+      ));
+    }
   }
 
   static ApiClient getInstance({required TokenStorage tokenStorage}) {
@@ -122,7 +131,11 @@ class ApiClient {
       final response = await _dio.post(
         path,
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: AppConfig.uploadTimeout,
+          receiveTimeout: AppConfig.uploadTimeout,
+        ),
       );
       return _handleResponse(response);
     } on DioException catch (e) {
@@ -138,7 +151,11 @@ class ApiClient {
       final response = await _dio.put(
         path,
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: AppConfig.uploadTimeout,
+          receiveTimeout: AppConfig.uploadTimeout,
+        ),
       );
       return _handleResponse(response);
     } on DioException catch (e) {
@@ -157,6 +174,7 @@ class ApiClient {
   }
 
   ApiException _handleDioError(DioException e) {
+    debugPrint('[API ERROR] type=${e.type} url=${e.requestOptions.uri} message=${e.message}');
     if (e.response != null) {
       final data = e.response!.data;
       if (data is Map<String, dynamic>) {
@@ -183,7 +201,8 @@ class ApiClient {
     }
 
     if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
       return const ApiException(
         statusCode: 408,
         message: '서버 응답 시간이 초과되었습니다',
