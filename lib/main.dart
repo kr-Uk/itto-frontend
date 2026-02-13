@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/token_storage.dart';
 import 'core/services/fcm_service.dart';
@@ -35,6 +37,13 @@ import 'app.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 환경변수 로드 (.env 파일)
+  await dotenv.load(fileName: '.env');
+
+  // headless 모드에서 사용할 base URL을 SharedPreferences에 저장
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('api_base_url', dotenv.env['API_BASE_URL'] ?? 'https://api.hguitto.site/api/v1');
+
   await Firebase.initializeApp();
 
   // FCM 초기화 (토큰 획득 및 메시지 핸들러 설정)
@@ -45,7 +54,9 @@ void main() async {
   bg.BackgroundGeolocation.registerHeadlessTask(
       backgroundGeolocationHeadlessTask);
 
-  kakao.KakaoSdk.init(nativeAppKey: '3740d88d315908803690e901d0be9ea2');
+  kakao.KakaoSdk.init(
+    nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '',
+  );
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

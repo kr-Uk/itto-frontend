@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/network/api_exception.dart';
+import '../../profile/models/profile_models.dart';
 import '../models/signup_models.dart';
 import '../services/signup_service.dart';
 
@@ -8,6 +9,10 @@ class SignupProvider extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
+
+  // Hobby list from API
+  List<HobbyItem> _hobbies = [];
+  List<HobbyItem> get hobbies => _hobbies;
 
   // Form data collected across steps
   String nickname = '';
@@ -25,6 +30,16 @@ class SignupProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  Future<void> fetchHobbies() async {
+    if (_hobbies.isNotEmpty) return;
+    try {
+      _hobbies = await _signupService.getHobbies();
+      notifyListeners();
+    } catch (_) {
+      // 실패 시 빈 리스트 유지
+    }
+  }
 
   Future<bool> saveTerms() async {
     _isLoading = true;

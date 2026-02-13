@@ -1,11 +1,20 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
+import '../../profile/models/profile_models.dart';
 import '../models/signup_models.dart';
 
 class SignupService {
   final ApiClient _client;
 
   SignupService(this._client);
+
+  Future<List<HobbyItem>> getHobbies() async {
+    final json = await _client.get('/hobbies');
+    final list = json['data'] as List<dynamic>? ?? [];
+    return list
+        .map((e) => HobbyItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 
   Future<void> saveTerms(SignupTermsRequest request) async {
     await _client.post('/signup/terms', data: request.toJson());

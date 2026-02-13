@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../../../shared/utils/snackbar_utils.dart';
+import '../../../providers/signup_provider.dart';
 
 class LocationPermissionStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -14,6 +17,22 @@ class LocationPermissionStep extends StatefulWidget {
 
 class _LocationPermissionStepState extends State<LocationPermissionStep> {
   bool _agreed = false;
+
+  Future<void> _handleNext() async {
+    final provider = context.read<SignupProvider>();
+    final success = await provider.saveTerms();
+
+    if (!mounted) return;
+
+    if (success) {
+      widget.onNext();
+    } else {
+      SnackBarUtils.showError(
+        context,
+        provider.error ?? '약관 저장에 실패했습니다',
+      );
+    }
+  }
 
   void _showDetailSheet() {
     showModalBottomSheet(
@@ -140,10 +159,14 @@ class _LocationPermissionStepState extends State<LocationPermissionStep> {
             ),
           ),
           const Spacer(),
-          PurpleButton(
-            text: '다음',
-            enabled: _agreed,
-            onPressed: widget.onNext,
+          Consumer<SignupProvider>(
+            builder: (context, provider, child) {
+              return PurpleButton(
+                text: provider.isLoading ? '저장 중...' : '다음',
+                enabled: _agreed && !provider.isLoading,
+                onPressed: _agreed && !provider.isLoading ? _handleNext : null,
+              );
+            },
           ),
           const SizedBox(height: 40),
         ],

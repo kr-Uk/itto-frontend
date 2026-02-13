@@ -2,8 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../../../shared/utils/snackbar_utils.dart';
+import '../../../providers/signup_provider.dart';
 
 class SignupPhotoStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -18,6 +21,7 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
   final List<XFile> _photos = [];
   int _representativeIndex = -1;
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
 
   bool get _isValid => _photos.isNotEmpty && _representativeIndex >= 0;
   bool get _hasPhotos => _photos.isNotEmpty;
@@ -48,6 +52,31 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
 
   void _selectRepresentative(int index) {
     setState(() => _representativeIndex = index);
+  }
+
+  Future<void> _handleNext() async {
+    if (_isLoading || !_isValid) return;
+
+    setState(() => _isLoading = true);
+
+    final provider = context.read<SignupProvider>();
+    provider.photoFilePaths = _photos.map((p) => p.path).toList();
+    provider.representativePhotoIndex = _representativeIndex;
+
+    final success = await provider.uploadPhotos();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      widget.onNext();
+    } else {
+      SnackBarUtils.showError(
+        context,
+        provider.error ?? '사진 업로드에 실패했습니다',
+      );
+    }
   }
 
   @override
@@ -212,11 +241,17 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
             ],
           ),
           const Spacer(),
-          PurpleButton(
-            text: '다음',
-            enabled: _isValid,
-            onPressed: widget.onNext,
-          ),
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                )
+              : PurpleButton(
+                  text: '다음',
+                  enabled: _isValid,
+                  onPressed: _handleNext,
+                ),
           const SizedBox(height: 40),
         ],
       ),
