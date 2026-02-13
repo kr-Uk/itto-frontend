@@ -3,14 +3,14 @@ import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId:
-        '623933708995-976i07e45chjlgc3fagckup4k85c9boh.apps.googleusercontent.com',
+    serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'] ?? '',
   );
 
   User? get currentUser => _auth.currentUser;

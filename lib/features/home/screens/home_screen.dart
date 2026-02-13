@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../relationship/providers/relationship_provider.dart';
+import '../../location/providers/location_provider.dart';
+import '../../shop/providers/shop_provider.dart';
 import 'tabs/inyeon_tab.dart';
 import 'tabs/pilyeon_tab.dart';
 import 'tabs/uyeon_tab.dart';
@@ -15,7 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isMatchingEnabled = false;
 
   static const _tabLabels = ['인연', '필연', '우연', '지난인연'];
 
@@ -27,6 +30,15 @@ class _HomeScreenState extends State<HomeScreen>
       if (!_tabController.indexIsChanging) {
         setState(() {});
       }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RelationshipProvider>().loadAllTabs();
+      context.read<ShopProvider>().loadBalance();
+
+      // 백그라운드 위치 플러그인 초기화
+      // (이전에 매칭이 활성화된 상태였으면 자동으로 추적 재개됨)
+      context.read<LocationProvider>().initBackgroundGeolocation();
     });
   }
 
@@ -79,34 +91,40 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           // Toggle switch with label
-          Row(
-            children: [
-              Text(
-                '인연 만나기',
-                style: TextStyle(
-                  color: _isMatchingEnabled
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                height: 28,
-                child: Switch(
-                  value: _isMatchingEnabled,
-                  onChanged: (value) {
-                    setState(() => _isMatchingEnabled = value);
-                  },
-                  activeColor: AppColors.primary,
-                  activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
-                  inactiveThumbColor: AppColors.textTertiary,
-                  inactiveTrackColor: AppColors.surfaceLight,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ],
+          Consumer<LocationProvider>(
+            builder: (context, locationProvider, _) {
+              final isEnabled = locationProvider.isMatchingEnabled;
+              return Row(
+                children: [
+                  Text(
+                    '인연 만나기',
+                    style: TextStyle(
+                      color: isEnabled
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 28,
+                    child: Switch(
+                      value: isEnabled,
+                      onChanged: (value) {
+                        locationProvider.toggleMatching(value);
+                      },
+                      activeThumbColor: AppColors.primary,
+                      activeTrackColor:
+                          AppColors.primary.withValues(alpha: 0.3),
+                      inactiveThumbColor: AppColors.textTertiary,
+                      inactiveTrackColor: AppColors.surfaceLight,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -169,28 +187,32 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
           // Heart icon + knot count
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ShaderMask(
-                shaderCallback: (bounds) =>
-                    AppColors.primaryGradient.createShader(bounds),
-                child: const Icon(
-                  Icons.favorite,
-                  color: Colors.white,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Text(
-                '217',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          Consumer<ShopProvider>(
+            builder: (context, shopProvider, _) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ShaderMask(
+                    shaderCallback: (bounds) =>
+                        AppColors.primaryGradient.createShader(bounds),
+                    child: const Icon(
+                      Icons.favorite,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${shopProvider.knots}',
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),

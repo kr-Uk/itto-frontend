@@ -2,11 +2,43 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../../../shared/utils/snackbar_utils.dart';
+import '../../../providers/signup_provider.dart';
 
-class WelcomeStep extends StatelessWidget {
+class WelcomeStep extends StatefulWidget {
   const WelcomeStep({super.key});
+
+  @override
+  State<WelcomeStep> createState() => _WelcomeStepState();
+}
+
+class _WelcomeStepState extends State<WelcomeStep> {
+  bool _isLoading = false;
+
+  Future<void> _handleComplete() async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    final provider = context.read<SignupProvider>();
+    final success = await provider.completeSignup();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      context.go('/home');
+    } else {
+      SnackBarUtils.showError(
+        context,
+        provider.error ?? '가입 완료에 실패했습니다',
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +91,16 @@ class WelcomeStep extends StatelessWidget {
             ),
           ),
           const Spacer(flex: 3),
-          PurpleButton(
-            text: '시작하기',
-            onPressed: () => context.go('/home'),
-          ),
+          _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                )
+              : PurpleButton(
+                  text: '시작하기',
+                  onPressed: _handleComplete,
+                ),
           const SizedBox(height: 40),
         ],
       ),

@@ -1,4 +1,4 @@
-package com.itto.itto
+package com.itto.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../providers/signup_provider.dart';
 
 class BirthdayStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -121,7 +123,13 @@ class _BirthdayStepState extends State<BirthdayStep> {
           PurpleButton(
             text: '다음',
             enabled: _isValid,
-            onPressed: widget.onNext,
+            onPressed: () {
+              final d = _selectedDate!;
+              final formatted =
+                  '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+              context.read<SignupProvider>().birthDate = formatted;
+              widget.onNext();
+            },
           ),
           const SizedBox(height: 40),
         ],

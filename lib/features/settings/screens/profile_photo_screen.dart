@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
+import '../../profile/providers/profile_provider.dart';
+import '../../auth/models/signup_models.dart';
 
 class ProfilePhotoScreen extends StatefulWidget {
   const ProfilePhotoScreen({super.key});
@@ -10,102 +15,147 @@ class ProfilePhotoScreen extends StatefulWidget {
 }
 
 class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
-  // Mock photo data: null means empty slot, non-null is a placeholder label
-  final List<String?> _photos = ['사진 1', '사진 2', null];
+  final ImagePicker _imagePicker = ImagePicker();
 
-  void _deletePhoto(int index) {
-    setState(() {
-      _photos[index] = null;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProfileProvider>().loadMyProfile();
     });
   }
 
-  void _uploadPhoto() {
-    // Find the first empty slot and fill it with a mock photo
-    final emptyIndex = _photos.indexOf(null);
-    if (emptyIndex != -1) {
-      setState(() {
-        _photos[emptyIndex] = '사진 ${emptyIndex + 1}';
-      });
-    }
+  Future<void> _deletePhoto(int photoId) async {
+    await context.read<ProfileProvider>().deletePhoto(photoId);
+  }
+
+  Future<void> _uploadPhoto() async {
+    final profileProvider = context.read<ProfileProvider>();
+    final photos = profileProvider.myProfile?.photos ?? [];
+
+    if (photos.length >= 3) return;
+
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 85,
+    );
+
+    if (pickedFile == null) return;
+    if (!mounted) return;
+
+    // Determine representative index (keep existing representative, or 0 if first photo)
+    final existingPhotoIds = photos.map((p) => p.id).toList();
+    final representativeIndex = photos.isNotEmpty
+        ? photos.indexWhere((p) => p.isRepresentative).clamp(0, photos.length - 1)
+        : 0;
+
+    await profileProvider.updatePhotos(
+      newPhotoPaths: [pickedFile.path],
+      existingPhotoIds: existingPhotoIds,
+      representativeIndex: representativeIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasEmptySlot = _photos.contains(null);
-
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const IttoAppBar(title: '프로필 사진'),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // -- Subtitle --
-            const Text(
-              '프로필 사진을 수정해 보세요.\n최대 3개까지 올릴 수 있어요.',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                height: 1.6,
-              ),
-            ),
-            const SizedBox(height: 28),
+      body: Consumer<ProfileProvider>(
+        builder: (context, profileProvider, child) {
+          final photos = profileProvider.myProfile?.photos ?? [];
+          final hasEmptySlot = photos.length < 3;
 
-            // -- Photo thumbnails --
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (int i = 0; i < 3; i++) ...[
-                  if (i > 0) const SizedBox(width: 14),
-                  _PhotoThumbnail(
-                    label: _photos[i],
-                    isPrimary: i == 0 && _photos[i] != null,
-                    onDelete: _photos[i] != null
-                        ? () => _deletePhoto(i)
-                        : null,
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // -- Upload button --
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: hasEmptySlot ? _uploadPhoto : null,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.textPrimary,
-                  side: BorderSide(
-                    color: hasEmptySlot
-                        ? AppColors.textTertiary
-                        : AppColors.textTertiary.withValues(alpha: 0.3),
-                    width: 1.2,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  disabledForegroundColor:
-                      AppColors.textTertiary.withValues(alpha: 0.4),
-                  textStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          return Stack(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.upload, size: 20),
-                    SizedBox(width: 8),
-                    Text('사진 업로드'),
+                    // -- Subtitle --
+                    const Text(
+                      '프로필 사진을 수정해 보세요.\n최대 3개까지 올릴 수 있어요.',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    // -- Photo thumbnails --
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        for (int i = 0; i < 3; i++) ...[
+                          if (i > 0) const SizedBox(width: 14),
+                          _PhotoThumbnail(
+                            photo: i < photos.length ? photos[i] : null,
+                            isPrimary: i < photos.length &&
+                                photos[i].isRepresentative,
+                            onDelete: i < photos.length
+                                ? () => _deletePhoto(photos[i].id)
+                                : null,
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // -- Upload button --
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: hasEmptySlot ? _uploadPhoto : null,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textPrimary,
+                          side: BorderSide(
+                            color: hasEmptySlot
+                                ? AppColors.textTertiary
+                                : AppColors.textTertiary
+                                    .withValues(alpha: 0.3),
+                            width: 1.2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          disabledForegroundColor:
+                              AppColors.textTertiary.withValues(alpha: 0.4),
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.upload, size: 20),
+                            SizedBox(width: 8),
+                            Text('사진 업로드'),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
+
+              // Loading overlay
+              if (profileProvider.isLoading)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -116,19 +166,19 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
 // ---------------------------------------------------------------------------
 
 class _PhotoThumbnail extends StatelessWidget {
-  final String? label;
+  final PhotoItem? photo;
   final bool isPrimary;
   final VoidCallback? onDelete;
 
   const _PhotoThumbnail({
-    required this.label,
+    required this.photo,
     this.isPrimary = false,
     this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool hasPhoto = label != null;
+    final bool hasPhoto = photo != null;
 
     return SizedBox(
       width: 100,
@@ -151,11 +201,29 @@ class _PhotoThumbnail extends StatelessWidget {
               ),
             ),
             child: hasPhoto
-                ? Center(
-                    child: Icon(
-                      Icons.image,
-                      color: AppColors.textTertiary.withValues(alpha: 0.6),
-                      size: 36,
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(11),
+                    child: CachedNetworkImage(
+                      imageUrl: photo!.url,
+                      fit: BoxFit.cover,
+                      width: 100,
+                      height: 100,
+                      placeholder: (context, url) => Center(
+                        child: Icon(
+                          Icons.image,
+                          color:
+                              AppColors.textTertiary.withValues(alpha: 0.6),
+                          size: 36,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color:
+                              AppColors.textTertiary.withValues(alpha: 0.6),
+                          size: 36,
+                        ),
+                      ),
                     ),
                   )
                 : Center(

@@ -1,7 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../shared/utils/snackbar_utils.dart';
 import '../../../../../shared/widgets/purple_button.dart';
+import '../../../providers/signup_provider.dart';
 
 class FaceVerificationStep extends StatefulWidget {
   final VoidCallback onNext;
@@ -14,11 +19,73 @@ class FaceVerificationStep extends StatefulWidget {
 
 class _FaceVerificationStepState extends State<FaceVerificationStep> {
   bool _verified = false;
+  String? _capturedImagePath;
+  bool _isUploading = false;
+  final ImagePicker _picker = ImagePicker();
 
-  void _startVerification() {
-    // TODO: 실제 카메라 촬영 및 얼굴 인증 구현
-    // 현재는 바로 인증 완료 처리
-    setState(() => _verified = true);
+  Future<void> _startVerification() async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
+      );
+
+      if (photo != null) {
+        setState(() {
+          _capturedImagePath = photo.path;
+          _verified = true;
+        });
+
+        // Update SignupProvider with the captured image path
+        if (mounted) {
+          context.read<SignupProvider>().verificationFilePath = photo.path;
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, '카메라를 실행하는 중 오류가 발생했습니다: ${e.toString()}');
+      }
+    }
+  }
+
+  void _retakePhoto() {
+    setState(() {
+      _capturedImagePath = null;
+      _verified = false;
+    });
+    context.read<SignupProvider>().verificationFilePath = null;
+  }
+
+  Future<void> _submitVerification() async {
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      final provider = context.read<SignupProvider>();
+      final success = await provider.uploadVerification();
+
+      if (!mounted) return;
+
+      if (success) {
+        widget.onNext();
+      } else {
+        SnackBarUtils.showError(
+          context,
+          provider.error ?? '인증 업로드에 실패했습니다',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackBarUtils.showError(context, '인증 업로드 중 오류가 발생했습니다: ${e.toString()}');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -35,11 +102,21 @@ class _FaceVerificationStepState extends State<FaceVerificationStep> {
               color: AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(
-              _verified ? Icons.check_circle : Icons.person,
-              size: 64,
-              color: _verified ? AppColors.success : AppColors.textTertiary,
-            ),
+            child: _capturedImagePath != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.file(
+                      File(_capturedImagePath!),
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Icon(
+                    _verified ? Icons.check_circle : Icons.person,
+                    size: 64,
+                    color: _verified ? AppColors.success : AppColors.textTertiary,
+                  ),
           ),
           const SizedBox(height: 40),
           Text(
@@ -53,9 +130,19 @@ class _FaceVerificationStepState extends State<FaceVerificationStep> {
             ),
           ),
           const Spacer(flex: 3),
+          if (_verified && _capturedImagePath != null) ...[
+            PurpleButton(
+              text: '다시 찍기',
+              onPressed: _retakePhoto,
+            ),
+            const SizedBox(height: 12),
+          ],
           PurpleButton(
-            text: _verified ? '다음' : '실시간 얼굴 인증하기',
-            onPressed: _verified ? widget.onNext : _startVerification,
+            text: _isUploading
+                ? '업로드 중...'
+                : (_verified ? '다음' : '실시간 얼굴 인증하기'),
+            enabled: !_isUploading,
+            onPressed: _verified ? _submitVerification : _startVerification,
           ),
           const SizedBox(height: 40),
         ],
