@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../shared/utils/snackbar_utils.dart';
+import '../../notification/providers/notification_provider.dart';
 import '../providers/auth_provider.dart';
 
 
@@ -33,6 +34,8 @@ class LoginScreen extends StatelessWidget {
       if (authProvider.isNewUser) {
         context.go('/signup');
       } else {
+        // 기존 사용자 로그인 → FCM 토큰 등록
+        context.read<NotificationProvider>().registerFcmToken();
         context.go('/home');
       }
     } else if (authProvider.error != null) {
