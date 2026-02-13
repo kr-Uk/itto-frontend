@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
 import '../../profile/providers/profile_provider.dart';
+import '../../relationship/providers/relationship_provider.dart';
 import '../providers/chat_provider.dart';
 import '../models/chat_models.dart';
 
@@ -153,7 +154,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _navigateToMap() {
-    context.push('/map');
+    final relationships =
+        context.read<RelationshipProvider>().getByStatus('INYEON');
+    final rel = relationships
+        .where((r) => r.chatRoomId == widget.chatId)
+        .firstOrNull;
+    if (rel != null) {
+      context.push('/encounter/${rel.relationshipId}');
+    } else {
+      SnackBarUtils.showError(context, '만남 위치 정보를 찾을 수 없습니다');
+    }
   }
 
   @override

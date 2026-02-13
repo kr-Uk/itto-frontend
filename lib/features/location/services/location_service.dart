@@ -56,4 +56,26 @@ class LocationService {
   Future<void> deleteExcluded(int id) async {
     await _client.delete('/location/excluded/$id');
   }
+
+  Future<H3GridResponse> getH3Grid({
+    required double latitude,
+    required double longitude,
+    int k = 4,
+  }) async {
+    final json = await _client.post('/location/h3/grid', data: {
+      'latitude': latitude,
+      'longitude': longitude,
+      'k': k,
+    });
+    final data = json['data'] as Map<String, dynamic>? ?? json;
+    return H3GridResponse.fromJson(data);
+  }
+
+  Future<Map<String, dynamic>> saveExcludedCells(List<String> h3Indexes) async {
+    final json = await _client.put('/location/excluded/cells', data: {
+      'h3Indexes': h3Indexes,
+    });
+    final data = json['data'] as Map<String, dynamic>? ?? json;
+    return data;
+  }
 }
