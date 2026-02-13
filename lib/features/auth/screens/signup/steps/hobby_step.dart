@@ -52,7 +52,7 @@ class _HobbyStepState extends State<HobbyStep> {
     return Consumer<SignupProvider>(
       builder: (context, provider, child) {
         final hobbies = provider.hobbies;
-        final isLoading = hobbies.isEmpty;
+        final isLoading = provider.isLoading;
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -85,6 +85,17 @@ class _HobbyStepState extends State<HobbyStep> {
                           color: AppColors.primary,
                         ),
                       )
+                    : hobbies.isEmpty
+                        ? Center(
+                            child: Text(
+                              '취미 데이터를 불러올 수 없습니다.\n잠시 후 다시 시도해 주세요.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          )
                     : SingleChildScrollView(
                         child: Wrap(
                           spacing: 10,
