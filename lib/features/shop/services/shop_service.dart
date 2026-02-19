@@ -24,10 +24,12 @@ class ShopService {
   Future<PurchaseResponse> purchase({
     required int packageId,
     required String receiptToken,
+    required String store,
   }) async {
     final json = await _client.post('/shop/purchase', data: {
       'packageId': packageId,
       'receiptToken': receiptToken,
+      'store': store,
     });
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PurchaseResponse.fromJson(data);
@@ -39,9 +41,13 @@ class ShopService {
     return SubscriptionInfo.fromJson(data);
   }
 
-  Future<void> subscribe(String receiptToken) async {
+  Future<void> subscribe({
+    required String receiptToken,
+    required String store,
+  }) async {
     await _client.post('/shop/subscription', data: {
       'receiptToken': receiptToken,
+      'store': store,
     });
   }
 
