@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/chat_models.dart';
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   Stream<List<ChatRoom>> getChatRoomsStream(
     int userId,
@@ -143,6 +146,16 @@ class ChatService {
     }
 
     await batch.commit();
+  }
+
+  Future<String> uploadImage({
+    required String chatRoomId,
+    required String filePath,
+  }) async {
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}_${filePath.split('/').last}';
+    final ref = _storage.ref().child('chat_images/$chatRoomId/$fileName');
+    await ref.putFile(File(filePath));
+    return await ref.getDownloadURL();
   }
 
   Future<void> ensureChatRoomExists({

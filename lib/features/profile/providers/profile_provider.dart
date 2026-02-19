@@ -114,6 +114,23 @@ class ProfileProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> reverify(String filePath) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _profileService.reverify(filePath);
+      await loadMyProfile();
+      return true;
+    } on ApiException catch (e) {
+      _error = e.userMessage;
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

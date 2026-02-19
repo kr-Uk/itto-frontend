@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -134,14 +135,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
       setState(() => _showAttachmentMenu = false);
 
-      // For MVP: Send image message with placeholder text
-      // In production, you would upload to Firebase Storage and send the URL
-      final success = await chatProvider.sendMessage(
-            chatRoomId: widget.chatId,
-            senderId: currentUserId,
-            text: '📷 사진',
-            type: 'image',
-          );
+      // 로딩 표시
+      if (mounted) {
+        SnackBarUtils.showInfo(context, '사진 업로드 중...');
+      }
+
+      final success = await chatProvider.sendImageMessage(
+        chatRoomId: widget.chatId,
+        senderId: currentUserId,
+        filePath: image.path,
+      );
 
       if (!success && mounted) {
         SnackBarUtils.showError(context, '사진 전송에 실패했습니다');
@@ -452,26 +455,26 @@ class _MessageBubble extends StatelessWidget {
   }
 
   Widget _buildMessageContent() {
-    if (message.type == 'image') {
-      // For MVP: Show image icon with text
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.image,
-            color: AppColors.primary,
-            size: 20,
+    if (message.type == 'image' && message.text.startsWith('http')) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CachedNetworkImage(
+          imageUrl: message.text,
+          width: 200,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => const SizedBox(
+            width: 200,
+            height: 150,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
           ),
-          const SizedBox(width: 8),
-          Text(
-            message.text,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 15,
-              height: 1.4,
+          errorWidget: (context, url, error) => const SizedBox(
+            width: 200,
+            height: 150,
+            child: Center(
+              child: Icon(Icons.broken_image, color: AppColors.textTertiary),
             ),
           ),
-        ],
+        ),
       );
     } else {
       // Regular text message
