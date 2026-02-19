@@ -20,7 +20,7 @@
 ///
 /// [NavigatorKey란?]
 /// Flutter가 화면 전환을 관리하는 "네비게이터"를 식별하는 키입니다.
-/// - _rootNavigatorKey: 전체 화면을 덮는 이동 (예: 채팅방 열기 - 하단바 숨김)
+/// - rootNavigatorKey: 전체 화면을 덮는 이동 (예: 채팅방 열기 - 하단바 숨김)
 /// - _shellNavigatorKey: ShellRoute 내부 이동 (예: 홈↔채팅 탭 이동 - 하단바 유지)
 /// ==========================================================================
 
@@ -48,14 +48,15 @@ import '../../features/profile/screens/profile_detail_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 /// 전체 화면 이동용 키 (하단 탭바 없이 전체 화면으로 이동할 때 사용)
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
+/// 인앱 알림 배너 표시 등에서도 사용됩니다.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 /// ShellRoute 내부 이동용 키 (하단 탭바를 유지하면서 화면을 전환할 때 사용)
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 /// 앱의 전체 라우팅(화면 이동) 규칙을 정의합니다
 /// initialLocation: 앱 시작 시 처음 보여줄 화면 ('/splash' = 스플래시 화면)
 final appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
+  navigatorKey: rootNavigatorKey,
   initialLocation: '/splash',
   routes: [
     /// ── 독립 화면들 (하단 탭바 없음) ──
@@ -111,12 +112,12 @@ final appRouter = GoRouter(
     ),
 
     /// ── 전체 화면 이동 (하단 탭바 숨김) ──
-    /// parentNavigatorKey: _rootNavigatorKey → 하단 탭바 위에 전체 화면으로 표시
+    /// parentNavigatorKey: rootNavigatorKey → 하단 탭바 위에 전체 화면으로 표시
 
     /// 채팅방 상세 화면 (':id'는 채팅방 고유번호로 대체됨, 예: /chat/abc123)
     GoRoute(
       path: '/chat/:id',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => ChatRoomScreen(
         chatId: state.pathParameters['id'] ?? '',
         userName: state.uri.queryParameters['name'] ?? '',
@@ -125,19 +126,19 @@ final appRouter = GoRouter(
     /// 프로필 수정 화면
     GoRoute(
       path: '/profile/edit',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ProfileEditScreen(),
     ),
     /// 프로필 사진 관리 화면
     GoRoute(
       path: '/profile/photo',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ProfilePhotoScreen(),
     ),
     /// 다른 사용자의 프로필 상세 화면 (':userId'는 사용자 번호로 대체됨)
     GoRoute(
       path: '/profile/:userId',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) {
         final userId = int.tryParse(state.pathParameters['userId'] ?? '') ?? 0;
         return ProfileDetailScreen(userId: userId);
@@ -146,37 +147,37 @@ final appRouter = GoRouter(
     /// 연결 범위 설정 화면
     GoRoute(
       path: '/settings/range',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ConnectionRangeScreen(),
     ),
     /// 화폐(인앱 결제) 관리 화면
     GoRoute(
       path: '/settings/currency',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const CurrencyScreen(),
     ),
     /// 알림 설정 화면
     GoRoute(
       path: '/settings/notifications',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const NotificationSettingsScreen(),
     ),
     /// 지도 화면
     GoRoute(
       path: '/map',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const MapScreen(),
     ),
     /// 제외 구역 설정 화면 (이 지역에서는 매칭하지 않겠다는 설정)
     GoRoute(
       path: '/map/excluded',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ExcludedAreaScreen(),
     ),
     /// 만남 위치 확인 화면
     GoRoute(
       path: '/encounter/:relationshipId',
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) {
         final id = int.tryParse(state.pathParameters['relationshipId'] ?? '') ?? 0;
         return EncounterLocationScreen(relationshipId: id);

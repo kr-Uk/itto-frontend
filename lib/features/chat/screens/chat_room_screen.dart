@@ -396,10 +396,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             messages[index + 1].createdAt,
                           );
 
+                      // 1:1 채팅: readBy에 본인 외 다른 사람이 포함되면 읽음
+                      final isRead =
+                          isSent && message.readBy.length >= 2;
+
                       return _MessageBubble(
                         message: message,
                         userName: widget.userName,
                         isSent: isSent,
+                        isRead: isRead,
                         showAvatar: isNewGroup && !isSent,
                         showTimestamp: isLastInGroup,
                       );
@@ -568,6 +573,7 @@ class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final String userName;
   final bool isSent;
+  final bool isRead;
   final bool showAvatar;
   final bool showTimestamp;
 
@@ -575,6 +581,7 @@ class _MessageBubble extends StatelessWidget {
     required this.message,
     required this.userName,
     required this.isSent,
+    this.isRead = false,
     required this.showAvatar,
     required this.showTimestamp,
   });
@@ -682,7 +689,7 @@ class _MessageBubble extends StatelessWidget {
             ],
           ),
 
-          // Timestamp
+          // Timestamp + Read indicator
           if (showTimestamp)
             Padding(
               padding: EdgeInsets.only(
@@ -690,12 +697,30 @@ class _MessageBubble extends StatelessWidget {
                 left: isSent ? 0 : 44,
                 right: isSent ? 0 : 0,
               ),
-              child: Text(
-                _formatMessageTime(message.createdAt),
-                style: const TextStyle(
-                  color: AppColors.textTertiary,
-                  fontSize: 11,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment:
+                    isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
+                children: [
+                  if (isSent && isRead) ...[
+                    const Text(
+                      '읽음',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    _formatMessageTime(message.createdAt),
+                    style: const TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
