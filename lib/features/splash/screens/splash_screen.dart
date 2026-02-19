@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/token_storage.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notification/providers/notification_provider.dart';
+import '../../system/services/system_service.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -37,6 +42,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     await Future.delayed(const Duration(seconds: 2));
 
+    if (!mounted) return;
+
+    // 강제 업데이트 체크
+    final needsForceUpdate = await _checkForceUpdate();
+    if (needsForceUpdate) return; // 다이얼로그가 표시되므로 네비게이션 중단
+
     if (mounted) {
       if (authProvider.isLoggedIn) {
         // 로그인 상태라면 FCM 토큰을 백엔드에 등록
@@ -48,6 +59,62 @@ class _SplashScreenState extends State<SplashScreen>
         context.go('/login');
       }
     }
+  }
+
+  /// 서버에서 최소 버전을 확인하고, 현재 앱이 너무 오래됐으면 업데이트 강제
+  Future<bool> _checkForceUpdate() async {
+    try {
+      final tokenStorage = TokenStorage();
+      final apiClient = ApiClient.getInstance(tokenStorage: tokenStorage);
+      final systemService = SystemService(apiClient);
+      final versionInfo = await systemService.checkVersion();
+      final packageInfo = await PackageInfo.fromPlatform();
+
+      final currentVersion = packageInfo.version;
+      if (_isVersionLowerThan(currentVersion, versionInfo.minVersion)) {
+        if (mounted) {
+          _showForceUpdateDialog(versionInfo.updateUrl);
+        }
+        return true;
+      }
+    } catch (_) {
+      // 버전 체크 실패 시 무시하고 진행
+    }
+    return false;
+  }
+
+  /// 시맨틱 버전 비교: current < required 이면 true
+  bool _isVersionLowerThan(String current, String required) {
+    final c = current.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    final r = required.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+    for (int i = 0; i < 3; i++) {
+      final cv = i < c.length ? c[i] : 0;
+      final rv = i < r.length ? r[i] : 0;
+      if (cv < rv) return true;
+      if (cv > rv) return false;
+    }
+    return false;
+  }
+
+  void _showForceUpdateDialog(String? updateUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('업데이트 필요'),
+        content: const Text('새로운 버전이 출시되었습니다.\n앱을 업데이트해야 계속 사용할 수 있습니다.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (updateUrl != null && updateUrl.isNotEmpty) {
+                launchUrl(Uri.parse(updateUrl), mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text('업데이트'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
