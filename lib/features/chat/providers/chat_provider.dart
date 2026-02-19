@@ -91,6 +91,30 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> sendImageMessage({
+    required String chatRoomId,
+    required int senderId,
+    required String filePath,
+  }) async {
+    try {
+      final imageUrl = await _chatService.uploadImage(
+        chatRoomId: chatRoomId,
+        filePath: filePath,
+      );
+      await _chatService.sendMessage(
+        chatRoomId: chatRoomId,
+        senderId: senderId,
+        text: imageUrl,
+        type: 'image',
+      );
+      return true;
+    } catch (e) {
+      _error = '사진 전송에 실패했습니다';
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> ensureChatRoomExists({
     required String chatRoomId,
     required List<int> participantIds,
