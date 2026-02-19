@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
@@ -58,6 +57,16 @@ class _EncounterLocationScreenState extends State<EncounterLocationScreen> {
     }
   }
 
+  void _onMapReady(NaverMapController controller) {
+    if (_location?.latitude == null || _location?.longitude == null) return;
+
+    final position = NLatLng(_location!.latitude!, _location!.longitude!);
+    final marker = NMarker(id: 'encounter', position: position);
+    marker.setCaption(const NOverlayCaption(text: '만남 위치'));
+    marker.setIconTintColor(AppColors.primary);
+    controller.addOverlay(marker);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -112,38 +121,17 @@ class _EncounterLocationScreenState extends State<EncounterLocationScreen> {
                   : Column(
                       children: [
                         Expanded(
-                          child: FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                _location!.latitude!,
-                                _location!.longitude!,
+                          child: NaverMap(
+                            options: NaverMapViewOptions(
+                              initialCameraPosition: NCameraPosition(
+                                target: NLatLng(
+                                  _location!.latitude!,
+                                  _location!.longitude!,
+                                ),
+                                zoom: 16,
                               ),
-                              initialZoom: 16.0,
                             ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'com.itto.app',
-                              ),
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: LatLng(
-                                      _location!.latitude!,
-                                      _location!.longitude!,
-                                    ),
-                                    width: 40,
-                                    height: 40,
-                                    child: const Icon(
-                                      Icons.location_on,
-                                      color: AppColors.primary,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            onMapReady: _onMapReady,
                           ),
                         ),
                         // 하단 정보 패널

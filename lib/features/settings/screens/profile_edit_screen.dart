@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
@@ -217,10 +218,45 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                               width: 2.5,
                             ),
                           ),
-                          child: const Icon(
-                            Icons.person,
-                            color: AppColors.textTertiary,
-                            size: 56,
+                          child: ClipOval(
+                            child: Builder(
+                              builder: (context) {
+                                final profile = profileProvider.myProfile;
+                                final representativePhotos = profile?.photos
+                                    .where((p) => p.isRepresentative)
+                                    .toList();
+                                final photoUrl = (representativePhotos != null &&
+                                        representativePhotos.isNotEmpty)
+                                    ? representativePhotos.first.url
+                                    : (profile?.photos.isNotEmpty == true
+                                        ? profile!.photos.first.url
+                                        : null);
+
+                                if (photoUrl != null && photoUrl.isNotEmpty) {
+                                  return CachedNetworkImage(
+                                    imageUrl: photoUrl,
+                                    width: 120,
+                                    height: 120,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, _) => const Icon(
+                                      Icons.person,
+                                      color: AppColors.textTertiary,
+                                      size: 56,
+                                    ),
+                                    errorWidget: (_, _, _) => const Icon(
+                                      Icons.person,
+                                      color: AppColors.textTertiary,
+                                      size: 56,
+                                    ),
+                                  );
+                                }
+                                return const Icon(
+                                  Icons.person,
+                                  color: AppColors.textTertiary,
+                                  size: 56,
+                                );
+                              },
+                            ),
                           ),
                         ),
                         Positioned(

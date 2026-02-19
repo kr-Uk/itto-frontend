@@ -66,6 +66,44 @@ class _NotificationScreenState extends State<NotificationScreen> {
     context.read<NotificationProvider>().deleteAllNotifications();
   }
 
+  /// 날짜 문자열을 기반으로 그룹 라벨을 반환
+  String _getDateGroupLabel(String createdAt) {
+    try {
+      final dateTime = DateTime.parse(createdAt);
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
+      final diff = today.difference(date).inDays;
+
+      if (diff == 0) return '오늘';
+      if (diff == 1) return '어제';
+      if (diff < 7) return '이번 주';
+      if (diff < 30) return '이번 달';
+      return '이전';
+    } catch (_) {
+      return '이전';
+    }
+  }
+
+  /// 알림 목록을 날짜 그룹별로 분류
+  List<_NotificationGroup> _groupByDate(List<NotificationItem> notifications) {
+    final groups = <String, List<NotificationItem>>{};
+    final groupOrder = <String>[];
+
+    for (final notification in notifications) {
+      final label = _getDateGroupLabel(notification.createdAt);
+      if (!groups.containsKey(label)) {
+        groups[label] = [];
+        groupOrder.add(label);
+      }
+      groups[label]!.add(notification);
+    }
+
+    return groupOrder
+        .map((label) => _NotificationGroup(label: label, items: groups[label]!))
+        .toList();
+  }
+
   Future<void> _showInyeonRequestDialog(NotificationItem notification) async {
     if (notification.referenceId == null) {
       SnackBarUtils.showError(context, '요청 정보를 찾을 수 없습니다.');
@@ -210,51 +248,57 @@ class _NotificationScreenState extends State<NotificationScreen> {
             return _buildEmptyState();
           }
 
+          final groups = _groupByDate(notifications);
+
           return ListView(
             controller: _scrollController,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
-              // Section header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 4,
-                  vertical: 8,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '오늘',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
+              for (int gi = 0; gi < groups.length; gi++) ...[
+                // Section header
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        groups[gi].label,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: _dismissAll,
-                      child: const Icon(
-                        Icons.close,
-                        color: AppColors.textSecondary,
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Notification items
-              ...notifications.map(
-                (notification) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _NotificationCard(
-                    notification: notification,
-                    formattedTime: _formatRelativeTime(notification.createdAt),
-                    onTap: () => _onNotificationTap(notification),
+                      if (gi == 0)
+                        GestureDetector(
+                          onTap: _dismissAll,
+                          child: const Icon(
+                            Icons.close,
+                            color: AppColors.textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 4),
+
+                // Notification items in this group
+                ...groups[gi].items.map(
+                  (notification) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _NotificationCard(
+                      notification: notification,
+                      formattedTime:
+                          _formatRelativeTime(notification.createdAt),
+                      onTap: () => _onNotificationTap(notification),
+                    ),
+                  ),
+                ),
+              ],
             ],
           );
         },
@@ -413,4 +457,12 @@ class _NotificationCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 날짜별 알림 그룹
+class _NotificationGroup {
+  final String label;
+  final List<NotificationItem> items;
+
+  const _NotificationGroup({required this.label, required this.items});
 }
