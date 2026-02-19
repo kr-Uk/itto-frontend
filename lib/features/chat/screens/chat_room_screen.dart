@@ -6,6 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
+import '../../../shared/widgets/itto_dialog.dart';
+import '../../block/models/block_models.dart';
+import '../../block/providers/block_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../relationship/providers/relationship_provider.dart';
 import '../providers/chat_provider.dart';
@@ -156,6 +159,99 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
+  int? _getOtherUserId() {
+    final relationships =
+        context.read<RelationshipProvider>().getByStatus('INYEON');
+    final rel = relationships
+        .where((r) => r.chatRoomId == widget.chatId)
+        .firstOrNull;
+    return rel?.otherUser.userId;
+  }
+
+  Future<void> _handleBlock() async {
+    final otherUserId = _getOtherUserId();
+    if (otherUserId == null) {
+      SnackBarUtils.showError(context, '상대 정보를 찾을 수 없습니다');
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => IttoDialog(
+        title: "'${widget.userName}'님을 차단하시겠습니까?",
+        subtitle: '차단하면 서로 매칭되지 않습니다.',
+        confirmText: '차단',
+        cancelText: '취소',
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final success = await context.read<BlockProvider>().blockUser(otherUserId);
+    if (!mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, '차단되었습니다');
+      context.pop();
+    } else {
+      SnackBarUtils.showError(context, '차단에 실패했습니다');
+    }
+  }
+
+  Future<void> _handleReport() async {
+    final otherUserId = _getOtherUserId();
+    if (otherUserId == null) {
+      SnackBarUtils.showError(context, '상대 정보를 찾을 수 없습니다');
+      return;
+    }
+
+    final category = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text(
+          '신고 사유 선택',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        children: {
+          'HARASSMENT': '성희롱/스토킹',
+          'PROFANITY': '욕설/혐오 발언',
+          'THREAT': '위협',
+          'SPAM': '스팸/광고',
+          'OTHER': '기타',
+        }.entries.map((entry) => SimpleDialogOption(
+          onPressed: () => Navigator.of(ctx).pop(entry.key),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Text(
+              entry.value,
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+            ),
+          ),
+        )).toList(),
+      ),
+    );
+    if (category == null || !mounted) return;
+
+    final success = await context.read<BlockProvider>().report(
+      ReportRequest(
+        targetUserId: otherUserId,
+        category: category,
+        targetType: 'CHAT',
+        chatRoomId: widget.chatId,
+      ),
+    );
+    if (!mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, '신고가 접수되었습니다');
+    } else {
+      SnackBarUtils.showError(context, '신고에 실패했습니다');
+    }
+  }
+
   void _navigateToMap() {
     final relationships =
         context.read<RelationshipProvider>().getByStatus('INYEON');
@@ -198,6 +294,39 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               color: AppColors.textPrimary,
             ),
             onPressed: _navigateToMap,
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) {
+              if (value == 'block') _handleBlock();
+              if (value == 'report') _handleReport();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'block',
+                child: Row(
+                  children: [
+                    Icon(Icons.block, size: 20, color: AppColors.textSecondary),
+                    SizedBox(width: 8),
+                    Text('차단하기', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.report, size: 20, color: AppColors.error),
+                    SizedBox(width: 8),
+                    Text('신고하기', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

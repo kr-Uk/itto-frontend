@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/shop_models.dart';
@@ -13,6 +14,8 @@ class ShopProvider extends ChangeNotifier {
   String? _error;
 
   ShopProvider({required ShopService service}) : _service = service;
+
+  String get _store => Platform.isIOS ? 'APPLE' : 'GOOGLE';
 
   KnotBalance? get balance => _balance;
   int get knots => _balance?.knots ?? 0;
@@ -57,6 +60,7 @@ class ShopProvider extends ChangeNotifier {
       await _service.purchase(
         packageId: packageId,
         receiptToken: 'test_receipt_token',
+        store: _store,
       );
       await loadBalance();
       return true;
@@ -88,7 +92,10 @@ class ShopProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _service.subscribe('test_receipt_token');
+      await _service.subscribe(
+        receiptToken: 'test_receipt_token',
+        store: _store,
+      );
       await loadSubscription();
       return true;
     } on ApiException catch (e) {
