@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../profile/providers/profile_provider.dart';
 
@@ -120,6 +122,52 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // -------------------------------------------------------------------
   // Sync keywords to server by mapping names to hobby IDs
   // -------------------------------------------------------------------
+  // -------------------------------------------------------------------
+  // Reverify selfie
+  // -------------------------------------------------------------------
+  void _reverify() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.camera);
+    if (image == null || !mounted) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '재인증 요청',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: const Text('촬영한 셀카로 재인증을 요청하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('취소', style: TextStyle(color: Colors.grey[600])),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('요청', style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final success =
+        await context.read<ProfileProvider>().reverify(image.path);
+    if (!mounted) return;
+    if (success) {
+      SnackBarUtils.showSuccess(context, '재인증 요청이 접수되었습니다');
+    } else {
+      SnackBarUtils.showError(
+        context,
+        context.read<ProfileProvider>().error ?? '재인증 요청에 실패했습니다',
+      );
+    }
+  }
+
   void _syncKeywordsToServer() {
     final profile = context.read<ProfileProvider>().myProfile;
     if (profile == null) return;
@@ -302,6 +350,52 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 36),
+
+                // -- Reverify section --
+                const _SectionHeader(title: '본인 인증'),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: _reverify,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '셀카로 재인증 요청',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: AppColors.textTertiary,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 40),
               ],
