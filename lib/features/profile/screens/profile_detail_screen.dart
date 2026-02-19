@@ -9,6 +9,7 @@ import '../../../shared/utils/snackbar_utils.dart';
 import '../providers/profile_provider.dart';
 import '../../block/providers/block_provider.dart';
 import '../../block/models/block_models.dart';
+import '../../relationship/providers/relationship_provider.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int userId;
@@ -245,31 +246,84 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     ),
                   ),
 
-                // Encounter info
-                if (profile.encounterCount != null && profile.encounterCount! > 0) ...[
-                  const SizedBox(height: 24),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
+                // Encounter info + relationship actions
+                Builder(
+                  builder: (context) {
+                    final relItem = context
+                        .read<RelationshipProvider>()
+                        .findByOtherUserId(widget.userId);
+
+                    return Column(
                       children: [
-                        const Icon(Icons.place, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${profile.encounterCount}번 마주침',
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
+                        if (profile.encounterCount != null &&
+                            profile.encounterCount! > 0) ...[
+                          const SizedBox(height: 24),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.place,
+                                    color: AppColors.primary, size: 20),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${profile.encounterCount}번 마주침',
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
+
+                        // Chat button for INYEON
+                        if (relItem != null &&
+                            relItem.chatRoomId != null &&
+                            relItem.status == 'INYEON') ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: GestureDetector(
+                              onTap: () => context.push(
+                                '/chat/${relItem.chatRoomId}?name=${relItem.otherUser.nickname}',
+                              ),
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.buttonGradient,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.chat_bubble_outline,
+                                        color: Colors.white, size: 20),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      '채팅하기',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ],
             ),
           );
@@ -327,18 +381,20 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         ),
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        children: [
-          '부적절한 프로필',
-          '스팸/광고',
-          '불쾌한 행동',
-          '기타',
-        ]
-            .map((category) => SimpleDialogOption(
-                  onPressed: () => Navigator.of(context).pop(category),
+        children: {
+          'INAPPROPRIATE_PHOTO': '부적절한 사진/프로필',
+          'HARASSMENT': '성희롱/스토킹',
+          'SPAM': '스팸/광고',
+          'PROFANITY': '욕설/혐오 발언',
+          'OTHER': '기타',
+        }
+            .entries
+            .map((entry) => SimpleDialogOption(
+                  onPressed: () => Navigator.of(context).pop(entry.key),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
-                      category,
+                      entry.value,
                       style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 14,
@@ -357,7 +413,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       ReportRequest(
         targetUserId: widget.userId,
         category: category,
-        targetType: 'USER',
+        targetType: 'PROFILE',
       ),
     );
 
