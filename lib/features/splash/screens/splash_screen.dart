@@ -8,6 +8,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/storage/token_storage.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notification/providers/notification_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../../system/services/system_service.dart';
 
 
@@ -48,16 +49,43 @@ class _SplashScreenState extends State<SplashScreen>
     final needsForceUpdate = await _checkForceUpdate();
     if (needsForceUpdate) return; // 다이얼로그가 표시되므로 네비게이션 중단
 
-    if (mounted) {
-      if (authProvider.isLoggedIn) {
-        // 로그인 상태라면 FCM 토큰을 백엔드에 등록
-        final notificationProvider = context.read<NotificationProvider>();
-        notificationProvider.registerFcmToken();
+    if (!mounted) return;
 
+    if (!authProvider.isLoggedIn) {
+      context.go('/login');
+      return;
+    }
+
+    // 토큰 있음 → 프로필 API로 현재 상태 확인
+    final profileProvider = context.read<ProfileProvider>();
+    await profileProvider.loadMyProfile();
+
+    if (!mounted) return;
+
+    final profile = profileProvider.myProfile;
+    if (profile == null) {
+      // 프로필 로드 실패 (토큰 만료 등) → 로그인으로
+      context.go('/login');
+      return;
+    }
+
+    // 프로필 완성 여부 확인
+    if (profile.nickname.isEmpty ||
+        profile.gender.isEmpty ||
+        profile.birthDate.isEmpty) {
+      context.go('/signup');
+      return;
+    }
+
+    // 프로필 완성 → 인증 상태에 따라 분기
+    switch (profile.verificationStatus) {
+      case 'APPROVED':
+        context.read<NotificationProvider>().registerFcmToken();
         context.go('/home');
-      } else {
-        context.go('/login');
-      }
+      case 'PENDING':
+        context.go('/verification-pending');
+      default: // NONE, REJECTED
+        context.go('/verification-rejected');
     }
   }
 

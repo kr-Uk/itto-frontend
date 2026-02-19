@@ -32,11 +32,19 @@ class LoginScreen extends StatelessWidget {
 
     if (success) {
       if (authProvider.isNewUser) {
+        // 프로필 미완성 → 회원가입으로
         context.go('/signup');
       } else {
-        // 기존 사용자 로그인 → FCM 토큰 등록
-        context.read<NotificationProvider>().registerFcmToken();
-        context.go('/home');
+        // 프로필 완성 → 인증 상태에 따라 분기
+        switch (authProvider.verificationStatus) {
+          case 'APPROVED':
+            context.read<NotificationProvider>().registerFcmToken();
+            context.go('/home');
+          case 'PENDING':
+            context.go('/verification-pending');
+          default: // NONE, REJECTED
+            context.go('/verification-rejected');
+        }
       }
     } else if (authProvider.error != null) {
       SnackBarUtils.showError(context, authProvider.error!);
