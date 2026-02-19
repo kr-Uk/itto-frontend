@@ -15,15 +15,17 @@ class PilyeonTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<RelationshipProvider>(
       builder: (context, provider, _) {
-        if (provider.isLoading && provider.getByStatus('PILYEON').isEmpty) {
+        final pilyeonItems = provider.getByStatus('PILYEON');
+        final pendingItems = provider.getByStatus('PENDING');
+        final allItems = [...pendingItems, ...pilyeonItems];
+
+        if (provider.isLoading && allItems.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           );
         }
 
-        final items = provider.getByStatus('PILYEON');
-
-        if (items.isEmpty) {
+        if (allItems.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -52,7 +54,7 @@ class PilyeonTab extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
                 child: Text(
-                  '오늘 마주친 필연 ${items.length}',
+                  '필연 ${allItems.length}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 22,
@@ -78,13 +80,13 @@ class PilyeonTab extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final item = items[index];
+                    final item = allItems[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: _PilyeonProfileCard(item: item),
                     );
                   },
-                  childCount: items.length,
+                  childCount: allItems.length,
                 ),
               ),
             ),
@@ -302,30 +304,52 @@ class _PilyeonProfileCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () =>
-                                  _showRequestInyeonDialog(context),
+                          if (item.status == 'PENDING')
+                            Expanded(
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.buttonGradient,
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Center(
                                   child: Text(
-                                    '인연 요청',
+                                    '요청 대기중',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: Colors.white70,
                                       fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    _showRequestInyeonDialog(context),
+                                child: Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: AppColors.buttonGradient,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      '인연 요청',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ],

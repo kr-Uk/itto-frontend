@@ -23,6 +23,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
     as bg;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -71,6 +72,11 @@ void main() async {
 
   /// Firebase 초기화 - 구글에서 제공하는 로그인, 푸시알림, 분석 등의 서비스를 사용하기 위한 준비
   await Firebase.initializeApp();
+
+  /// 네이버 지도 SDK 초기화 - 지도 화면을 표시하기 위한 준비
+  await FlutterNaverMap().init(
+    clientId: dotenv.env['NAVER_MAP_CLIENT_ID'] ?? '',
+  );
 
   /// FCM(Firebase Cloud Messaging) 초기화 - 서버에서 보내는 푸시 알림을 받기 위한 설정
   await FcmService.instance.initialize();
