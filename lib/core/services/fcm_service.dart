@@ -13,6 +13,9 @@ class FcmService {
   String? _deviceId;
   void Function(String newToken)? _onTokenRefreshCallback;
 
+  /// Foreground 메시지 수신 시 호출되는 콜백 (앱 내 배너 표시용)
+  void Function(RemoteMessage message)? onForegroundMessageCallback;
+
   String? get fcmToken => _fcmToken;
   String? get deviceId => _deviceId;
 
@@ -86,11 +89,8 @@ class FcmService {
     // Foreground 메시지 수신
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Foreground 메시지 수신: ${message.notification?.title}');
-      // TODO: 앱 내 알림 표시 (스낵바, 다이얼로그 등)
-      if (message.notification != null) {
-        debugPrint('제목: ${message.notification!.title}');
-        debugPrint('내용: ${message.notification!.body}');
-      }
+      // 앱 내 알림 배너 표시
+      onForegroundMessageCallback?.call(message);
     });
 
     // Background에서 알림 탭하여 앱 열기
