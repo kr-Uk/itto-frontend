@@ -174,6 +174,15 @@ class RelationshipProvider extends ChangeNotifier {
     }
   }
 
+  RelationshipItem? findByOtherUserId(int userId) {
+    for (final items in _relationships.values) {
+      for (final item in items) {
+        if (item.otherUser.userId == userId) return item;
+      }
+    }
+    return null;
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();
