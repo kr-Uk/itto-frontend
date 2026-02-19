@@ -29,6 +29,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/splash/screens/splash_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/signup/signup_flow_screen.dart';
+import '../../features/auth/screens/verification_pending_screen.dart';
+import '../../features/auth/screens/verification_rejected_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/chat/screens/chat_list_screen.dart';
 import '../../features/chat/screens/chat_room_screen.dart';
@@ -71,6 +73,16 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/signup',
       builder: (context, state) => const SignupFlowScreen(),
+    ),
+    /// 본인인증 승인 대기 화면
+    GoRoute(
+      path: '/verification-pending',
+      builder: (context, state) => const VerificationPendingScreen(),
+    ),
+    /// 본인인증 거부/재인증 화면
+    GoRoute(
+      path: '/verification-rejected',
+      builder: (context, state) => const VerificationRejectedScreen(),
     ),
 
     /// ── ShellRoute: 하단 탭바(홈/채팅/알림/설정)가 있는 메인 영역 ──
