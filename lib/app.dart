@@ -20,13 +20,24 @@ class _IttoAppState extends State<IttoApp> {
   void initState() {
     super.initState();
     FcmService.instance.onForegroundMessageCallback = _showNotificationBanner;
+    FcmService.instance.onDeepLinkCallback = _handleDeepLink;
+
+    // Terminated 상태에서 알림 탭으로 앱 열린 경우 처리
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FcmService.instance.handleInitialMessage();
+    });
   }
 
   @override
   void dispose() {
     FcmService.instance.onForegroundMessageCallback = null;
+    FcmService.instance.onDeepLinkCallback = null;
     _notificationOverlay?.remove();
     super.dispose();
+  }
+
+  void _handleDeepLink(String deepLink) {
+    appRouter.push(deepLink);
   }
 
   void _showNotificationBanner(RemoteMessage message) {

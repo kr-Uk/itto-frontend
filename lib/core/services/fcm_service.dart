@@ -16,6 +16,9 @@ class FcmService {
   /// Foreground 메시지 수신 시 호출되는 콜백 (앱 내 배너 표시용)
   void Function(RemoteMessage message)? onForegroundMessageCallback;
 
+  /// Background/Terminated 알림 탭 시 딥링크 네비게이션 콜백
+  void Function(String deepLink)? onDeepLinkCallback;
+
   String? get fcmToken => _fcmToken;
   String? get deviceId => _deviceId;
 
@@ -96,13 +99,33 @@ class FcmService {
     // Background에서 알림 탭하여 앱 열기
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('Background 알림 탭: ${message.notification?.title}');
-      // TODO: 딥링크 처리 (message.data['deepLink'] 등)
-      if (message.data.isNotEmpty) {
-        debugPrint('데이터: ${message.data}');
-      }
+      _handleDeepLink(message);
     });
+  }
 
-    // Terminated 상태에서 알림 탭 처리는 main.dart에서 별도 처리 필요
-    // FirebaseMessaging.instance.getInitialMessage()
+  /// Terminated 상태에서 알림 탭으로 앱이 열린 경우 딥링크 처리
+  /// 앱 라우터 초기화 완료 후 호출해야 합니다.
+  Future<void> handleInitialMessage() async {
+    try {
+      final message =
+          await FirebaseMessaging.instance.getInitialMessage();
+      if (message != null) {
+        debugPrint('Terminated 알림 탭: ${message.notification?.title}');
+        _handleDeepLink(message);
+      }
+    } catch (e) {
+      debugPrint('Initial message 처리 실패: $e');
+    }
+  }
+
+  /// 메시지 데이터에서 딥링크를 추출하여 콜백 호출
+  void _handleDeepLink(RemoteMessage message) {
+    final deepLink = message.data['deepLink'] as String?;
+    if (deepLink != null && deepLink.isNotEmpty) {
+      debugPrint('딥링크 네비게이션: $deepLink');
+      onDeepLinkCallback?.call(deepLink);
+    } else {
+      debugPrint('딥링크 데이터 없음: ${message.data}');
+    }
   }
 }

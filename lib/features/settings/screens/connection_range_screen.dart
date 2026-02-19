@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/utils/snackbar_utils.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
+import '../../../shared/widgets/itto_dialog.dart';
 import '../../../shared/widgets/purple_button.dart';
 import '../providers/settings_provider.dart';
 import '../models/settings_models.dart';
@@ -96,6 +98,32 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
       _ageLabels[_ageRange.start.round().clamp(0, _ageLabels.length - 1)];
   String get _ageLabelEnd =>
       _ageLabels[_ageRange.end.round().clamp(0, _ageLabels.length - 1)];
+
+  Future<void> _showUnblockDialog(int blockId, String nickname) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => IttoDialog(
+        title: "'$nickname'님의\n차단을 해제하시겠습니까?",
+        subtitle: '해제하면 다시 서로 노출됩니다.',
+        cancelText: '취소',
+        confirmText: '해제하기',
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final success = await context.read<BlockProvider>().unblock(blockId);
+    if (!mounted) return;
+
+    if (success) {
+      SnackBarUtils.showSuccess(context, '차단이 해제되었습니다.');
+    } else {
+      SnackBarUtils.showError(
+        context,
+        context.read<BlockProvider>().error ?? '차단 해제에 실패했습니다.',
+      );
+    }
+  }
 
   void _save() {
     final genderFilter = _selectedGender == 0 ? 'FEMALE' : 'MALE';
@@ -333,7 +361,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 for (final block in blocks)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 12),
+                                        horizontal: 16, vertical: 10),
                                     child: Row(
                                       children: [
                                         Expanded(
@@ -357,27 +385,36 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                             ),
                                           ),
                                         ),
+                                        GestureDetector(
+                                          onTap: () => _showUnblockDialog(
+                                            block.id,
+                                            block.blockedUser.nickname,
+                                          ),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(
+                                                color: AppColors.textTertiary,
+                                                width: 0.5,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: const Text(
+                                              '해제',
+                                              style: TextStyle(
+                                                color: AppColors.textSecondary,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
-                                // More button
-                                const Divider(
-                                  height: 0.5,
-                                  thickness: 0.5,
-                                  color: AppColors.divider,
-                                  indent: 16,
-                                  endIndent: 16,
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    '더보기',
-                                    style: TextStyle(
-                                      color: AppColors.textTertiary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                           );

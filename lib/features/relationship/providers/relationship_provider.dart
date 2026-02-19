@@ -49,6 +49,7 @@ class RelationshipProvider extends ChangeNotifier {
     await Future.wait([
       loadRelationships('INYEON'),
       loadRelationships('PILYEON'),
+      loadRelationships('PENDING'),
       loadRelationships('UYEON'),
       loadRelationships('PAST'),
     ]);

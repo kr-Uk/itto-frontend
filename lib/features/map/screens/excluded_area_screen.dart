@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
@@ -16,23 +15,20 @@ class ExcludedAreaScreen extends StatefulWidget {
 }
 
 class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
-  final MapController _mapController = MapController();
+  NaverMapController? _mapController;
   Timer? _debounceTimer;
   bool _initialLoaded = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadInitialGrid();
-    });
-  }
-
-  @override
   void dispose() {
     _debounceTimer?.cancel();
-    _mapController.dispose();
+    _mapController = null;
     super.dispose();
+  }
+
+  void _onMapReady(NaverMapController controller) {
+    _mapController = controller;
+    _loadInitialGrid();
   }
 
   Future<void> _loadInitialGrid() async {
@@ -42,53 +38,61 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
       if (!mounted) return;
       await locationProvider.loadH3Grid(position.latitude, position.longitude);
       if (!mounted) return;
-      _mapController.move(
-        LatLng(position.latitude, position.longitude),
-        15.0,
+      _mapController?.updateCamera(
+        NCameraUpdate.scrollAndZoomTo(
+          target: NLatLng(position.latitude, position.longitude),
+          zoom: 15,
+        ),
       );
+      _updatePolygonOverlays();
       setState(() => _initialLoaded = true);
     } catch (e) {
       if (!mounted) return;
-      // 기본 좌표 (서울)로 폴백
       await locationProvider.loadH3Grid(37.5665, 126.9780);
       if (!mounted) return;
-      _mapController.move(const LatLng(37.5665, 126.9780), 15.0);
+      _mapController?.updateCamera(
+        NCameraUpdate.scrollAndZoomTo(
+          target: const NLatLng(37.5665, 126.9780),
+          zoom: 15,
+        ),
+      );
+      _updatePolygonOverlays();
       setState(() => _initialLoaded = true);
     }
   }
 
-  void _onMapEvent(MapEvent event) {
-    if (event is MapEventMoveEnd || event is MapEventFlingAnimationEnd) {
-      _debounceTimer?.cancel();
-      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
-        if (!mounted) return;
-        final center = _mapController.camera.center;
-        context.read<LocationProvider>().loadH3Grid(
-              center.latitude,
-              center.longitude,
-            );
-      });
-    }
+  void _onCameraIdle() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      if (!mounted || _mapController == null) return;
+      final cameraPosition = await _mapController!.getCameraPosition();
+      final center = cameraPosition.target;
+      if (!mounted) return;
+      final locationProvider = context.read<LocationProvider>();
+      await locationProvider.loadH3Grid(center.latitude, center.longitude);
+      if (!mounted) return;
+      _updatePolygonOverlays();
+    });
   }
 
-  void _onTapMap(TapPosition tapPosition, LatLng point) {
+  void _onMapTapped(NPoint point, NLatLng latLng) {
     final locationProvider = context.read<LocationProvider>();
     final cells = locationProvider.gridCells;
 
-    // 탭 좌표가 어느 셀에 속하는지 판별 (point-in-polygon)
     for (final cell in cells) {
-      if (_isPointInPolygon(point, cell.boundary)) {
+      if (_isPointInPolygon(latLng, cell.boundary)) {
         locationProvider.toggleCell(cell.h3Index);
         if (locationProvider.error != null) {
           SnackBarUtils.showError(context, locationProvider.error!);
           locationProvider.clearError();
         }
+        _updatePolygonOverlays();
         return;
       }
     }
   }
 
-  bool _isPointInPolygon(LatLng point, List<List<double>> polygon) {
+  bool _isPointInPolygon(NLatLng point, List<List<double>> polygon) {
     bool inside = false;
     int j = polygon.length - 1;
     for (int i = 0; i < polygon.length; i++) {
@@ -98,12 +102,49 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
       final xj = polygon[j][1];
 
       if (((yi > point.latitude) != (yj > point.latitude)) &&
-          (point.longitude < (xj - xi) * (point.latitude - yi) / (yj - yi) + xi)) {
+          (point.longitude <
+              (xj - xi) * (point.latitude - yi) / (yj - yi) + xi)) {
         inside = !inside;
       }
       j = i;
     }
     return inside;
+  }
+
+  void _updatePolygonOverlays() {
+    final controller = _mapController;
+    if (controller == null) return;
+
+    final locationProvider = context.read<LocationProvider>();
+    final cells = locationProvider.gridCells;
+    final selected = locationProvider.selectedCells;
+
+    controller.clearOverlays(type: NOverlayType.polygonOverlay);
+
+    for (int i = 0; i < cells.length; i++) {
+      final cell = cells[i];
+      final isSelected = selected.contains(cell.h3Index);
+      final coords =
+          cell.boundary.map((p) => NLatLng(p[0], p[1])).toList();
+
+      // 폴리곤은 닫혀야 하므로 첫 점 == 마지막 점 확인
+      if (coords.isNotEmpty && coords.first != coords.last) {
+        coords.add(coords.first);
+      }
+
+      final polygon = NPolygonOverlay(
+        id: 'h3_$i',
+        coords: coords,
+        color: isSelected
+            ? AppColors.primary.withValues(alpha: 0.4)
+            : Colors.grey.withValues(alpha: 0.1),
+        outlineColor: isSelected
+            ? AppColors.primary
+            : Colors.grey.withValues(alpha: 0.4),
+        outlineWidth: isSelected ? 2 : 1,
+      );
+      controller.addOverlay(polygon);
+    }
   }
 
   Future<void> _save() async {
@@ -121,6 +162,7 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
 
   void _clearAll() {
     context.read<LocationProvider>().clearSelectedCells();
+    _updatePolygonOverlays();
   }
 
   @override
@@ -131,52 +173,26 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Consumer<LocationProvider>(
-              builder: (context, locationProvider, _) {
-                final cells = locationProvider.gridCells;
-                final selected = locationProvider.selectedCells;
-
-                return Stack(
-                  children: [
-                    FlutterMap(
-                      mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter: const LatLng(37.5665, 126.9780),
-                        initialZoom: 15.0,
-                        minZoom: 13.0,
-                        maxZoom: 18.0,
-                        onTap: _onTapMap,
-                        onMapEvent: _onMapEvent,
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.itto.app',
-                        ),
-                        PolygonLayer(
-                          polygons: cells.map((cell) {
-                            final isSelected = selected.contains(cell.h3Index);
-                            final points = cell.boundary
-                                .map((p) => LatLng(p[0], p[1]))
-                                .toList();
-                            return Polygon(
-                              points: points,
-                              color: isSelected
-                                  ? AppColors.primary.withValues(alpha: 0.4)
-                                  : Colors.grey.withValues(alpha: 0.1),
-                              borderColor: isSelected
-                                  ? AppColors.primary
-                                  : Colors.grey.withValues(alpha: 0.4),
-                              borderStrokeWidth: isSelected ? 2.0 : 1.0,
-                            );
-                          }).toList(),
-                        ),
-                      ],
+            child: Stack(
+              children: [
+                NaverMap(
+                  options: const NaverMapViewOptions(
+                    initialCameraPosition: NCameraPosition(
+                      target: NLatLng(37.5665, 126.9780),
+                      zoom: 15,
                     ),
-                    // 로딩 인디케이터
-                    if (locationProvider.isGridLoading || !_initialLoaded)
-                      const Positioned(
+                    minZoom: 13,
+                    maxZoom: 18,
+                  ),
+                  onMapReady: _onMapReady,
+                  onCameraIdle: _onCameraIdle,
+                  onMapTapped: _onMapTapped,
+                ),
+                // 로딩 인디케이터
+                Consumer<LocationProvider>(
+                  builder: (context, locationProvider, _) {
+                    if (locationProvider.isGridLoading || !_initialLoaded) {
+                      return const Positioned(
                         top: 16,
                         left: 0,
                         right: 0,
@@ -190,34 +206,36 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
                             ),
                           ),
                         ),
-                      ),
-                    // 안내 텍스트
-                    Positioned(
-                      top: 12,
-                      left: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '지도에서 제외할 영역을 탭하세요',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                // 안내 텍스트
+                Positioned(
+                  top: 12,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      '지도에서 제외할 영역을 탭하세요',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
                       ),
                     ),
-                  ],
-                );
-              },
+                  ),
+                ),
+              ],
             ),
           ),
           // 하단 바
