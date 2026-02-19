@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/itto_app_bar.dart';
 import '../../profile/providers/profile_provider.dart';
@@ -21,6 +24,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProfileProvider>().loadMyProfile();
     });
+  }
+
+  void _showWithdrawDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('회원탈퇴', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text(
+          '정말 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await context.read<AuthProvider>().withdraw();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+            child: const Text('탈퇴', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -60,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               items: [
                 _SettingsItemData(
                   title: '회원정보',
-                  onTap: () {},
+                  onTap: () => context.push('/profile/edit'),
                 ),
                 _SettingsItemData(
                   title: '알림',
@@ -77,7 +110,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               items: [
                 _SettingsItemData(
                   title: 'Itto 공유하기',
-                  onTap: () {},
+                  onTap: () {
+                    SharePlus.instance.share(
+                      ShareParams(text: '스친 인연을 이토로 잇다! Itto 앱을 만나보세요.\nhttps://play.google.com/store/apps/details?id=com.itto.app'),
+                    );
+                  },
                 ),
                 _SettingsItemData(
                   title: '구독하기',
@@ -85,11 +122,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _SettingsItemData(
                   title: '도움받기',
-                  onTap: () {},
+                  onTap: () {
+                    launchUrl(
+                      Uri.parse('mailto:support@hguitto.site?subject=[Itto] 문의사항'),
+                      mode: LaunchMode.externalApplication,
+                    );
+                  },
                 ),
                 _SettingsItemData(
                   title: '정보',
-                  onTap: () {},
+                  onTap: () async {
+                    final info = await PackageInfo.fromPlatform();
+                    if (!context.mounted) return;
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppColors.surface,
+                        title: const Text('Itto', style: TextStyle(color: AppColors.textPrimary)),
+                        content: Text(
+                          '버전 ${info.version} (${info.buildNumber})',
+                          style: const TextStyle(color: AppColors.textSecondary),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('확인'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 _SettingsItemData(
                   title: '로그아웃',
@@ -99,6 +161,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context.go('/login');
                     }
                   },
+                ),
+                _SettingsItemData(
+                  title: '회원탈퇴',
+                  onTap: () => _showWithdrawDialog(context),
+                  isDestructive: true,
                 ),
               ],
             ),
@@ -304,8 +371,9 @@ class _HighlightedSettingsItem extends StatelessWidget {
 class _SettingsItemData {
   final String title;
   final VoidCallback onTap;
+  final bool isDestructive;
 
-  const _SettingsItemData({required this.title, required this.onTap});
+  const _SettingsItemData({required this.title, required this.onTap, this.isDestructive = false});
 }
 
 class _SettingsCard extends StatelessWidget {
@@ -328,6 +396,7 @@ class _SettingsCard extends StatelessWidget {
               onTap: items[i].onTap,
               isFirst: i == 0,
               isLast: i == items.length - 1,
+              isDestructive: items[i].isDestructive,
             ),
             if (i < items.length - 1)
               const Padding(
@@ -350,12 +419,14 @@ class _SettingsRow extends StatelessWidget {
   final VoidCallback onTap;
   final bool isFirst;
   final bool isLast;
+  final bool isDestructive;
 
   const _SettingsRow({
     required this.title,
     required this.onTap,
     required this.isFirst,
     required this.isLast,
+    this.isDestructive = false,
   });
 
   @override
@@ -373,8 +444,8 @@ class _SettingsRow extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: isDestructive ? Colors.red : AppColors.textPrimary,
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
                 ),
