@@ -2,8 +2,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // flutter_background_geolocation requires tslocationmanager from its local libs
-        maven { url = uri("${project(":flutter_background_geolocation").projectDir}/libs") }
     }
 }
 
