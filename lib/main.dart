@@ -33,6 +33,7 @@ import 'core/services/fcm_service.dart';
 import 'core/services/background_location_handler.dart';
 import 'features/auth/services/auth_service.dart';
 import 'features/auth/services/firebase_auth_service.dart';
+import 'features/auth/services/identity_service.dart';
 import 'features/auth/services/signup_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/signup_provider.dart';
@@ -122,6 +123,10 @@ void main() async {
             firebaseAuthService: firebaseAuthService,
             tokenStorage: tokenStorage,
           ),
+        ),
+        /// 본인인증 서비스 Provider
+        Provider<IdentityService>(
+          create: (_) => IdentityService(apiClient),
         ),
         /// 회원가입 과정 데이터를 관리하는 Provider
         ChangeNotifierProvider(

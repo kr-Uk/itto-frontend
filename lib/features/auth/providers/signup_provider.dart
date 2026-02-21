@@ -25,6 +25,13 @@ class SignupProvider extends ChangeNotifier {
   String? verificationFilePath;
   bool marketingConsent = false;
 
+  // 본인인증 결과
+  bool identityVerified = false;
+  String? verifiedName;
+  String? verifiedPhone;
+  String? verifiedGender;
+  String? verifiedBirthDate;
+
   SignupProvider({required SignupService signupService})
       : _signupService = signupService;
 
@@ -146,6 +153,23 @@ class SignupProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setIdentityResult({
+    required String name,
+    required String phone,
+    required String gender,
+    required String birthDate,
+  }) {
+    identityVerified = true;
+    verifiedName = name;
+    verifiedPhone = phone;
+    verifiedGender = gender;
+    verifiedBirthDate = birthDate;
+    // 자동 입력
+    this.gender = gender;
+    this.birthDate = birthDate;
+    notifyListeners();
+  }
+
   void resetForm() {
     nickname = '';
     gender = '';
@@ -156,6 +180,11 @@ class SignupProvider extends ChangeNotifier {
     representativePhotoIndex = 0;
     verificationFilePath = null;
     marketingConsent = false;
+    identityVerified = false;
+    verifiedName = null;
+    verifiedPhone = null;
+    verifiedGender = null;
+    verifiedBirthDate = null;
     notifyListeners();
   }
 }
