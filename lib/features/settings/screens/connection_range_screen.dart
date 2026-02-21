@@ -9,6 +9,7 @@ import '../../../shared/widgets/purple_button.dart';
 import '../providers/settings_provider.dart';
 import '../models/settings_models.dart';
 import '../../block/providers/block_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 
 class ConnectionRangeScreen extends StatefulWidget {
   const ConnectionRangeScreen({super.key});
@@ -18,10 +19,6 @@ class ConnectionRangeScreen extends StatefulWidget {
 }
 
 class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
-  // -- Gender selection --
-  // 0 = female, 1 = male
-  int _selectedGender = 0;
-
   // -- Age range --
   // Mapped to decades: 20=0, 30=1, 40=2, 50=3, 60+=4
   // Subdivisions: 초반/중반/후반 (early/mid/late)
@@ -64,13 +61,6 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
     if (_initialized) return;
     final settings = context.read<SettingsProvider>().matchingSettings;
     if (settings != null) {
-      // Map gender string to index
-      if (settings.genderFilter == 'FEMALE') {
-        _selectedGender = 0;
-      } else if (settings.genderFilter == 'MALE') {
-        _selectedGender = 1;
-      }
-
       // Map age values to slider indices
       _ageRange = RangeValues(
         _ageToSliderIndex(settings.ageRangeMin).toDouble(),
@@ -126,7 +116,8 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
   }
 
   void _save() {
-    final genderFilter = _selectedGender == 0 ? 'FEMALE' : 'MALE';
+    final myGender = context.read<ProfileProvider>().myProfile?.gender;
+    final genderFilter = myGender == 'MALE' ? 'FEMALE' : 'MALE';
     final ageMin = _ageValues[_ageRange.start.round().clamp(0, _ageValues.length - 1)];
     final ageMax = _ageValues[_ageRange.end.round().clamp(0, _ageValues.length - 1)];
 
@@ -166,32 +157,6 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                           fontSize: 14,
                           height: 1.5,
                         ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // -- Gender section --
-                      _sectionTitle('성별'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _GenderButton(
-                              label: '여자',
-                              selected: _selectedGender == 0,
-                              onTap: () =>
-                                  setState(() => _selectedGender = 0),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _GenderButton(
-                              label: '남자',
-                              selected: _selectedGender == 1,
-                              onTap: () =>
-                                  setState(() => _selectedGender = 1),
-                            ),
-                          ),
-                        ],
                       ),
                       const SizedBox(height: 28),
 
@@ -453,45 +418,3 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Gender toggle button
-// ---------------------------------------------------------------------------
-
-class _GenderButton extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _GenderButton({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 48,
-        decoration: BoxDecoration(
-          color: selected ? Colors.white : AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: selected
-              ? null
-              : Border.all(color: AppColors.divider, width: 1),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? Colors.black : AppColors.textSecondary,
-            fontSize: 15,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-      ),
-    );
-  }
-}

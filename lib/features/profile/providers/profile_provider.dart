@@ -8,6 +8,7 @@ class ProfileProvider extends ChangeNotifier {
 
   MyProfile? _myProfile;
   OtherProfile? _otherProfile;
+  List<HobbyItem> _allHobbies = [];
   bool _isLoading = false;
   String? _error;
 
@@ -16,6 +17,7 @@ class ProfileProvider extends ChangeNotifier {
 
   MyProfile? get myProfile => _myProfile;
   OtherProfile? get otherProfile => _otherProfile;
+  List<HobbyItem> get allHobbies => _allHobbies;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -29,6 +31,16 @@ class ProfileProvider extends ChangeNotifier {
       _error = e.userMessage;
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAllHobbies() async {
+    try {
+      _allHobbies = await _profileService.getHobbies();
+      notifyListeners();
+    } on ApiException catch (e) {
+      _error = e.userMessage;
       notifyListeners();
     }
   }
