@@ -45,33 +45,30 @@ class LocationProvider extends ChangeNotifier {
       }
     });
 
-    // 플러그인 설정
+    // 플러그인 설정 (v5 compound config)
     bg.State state = await bg.BackgroundGeolocation.ready(bg.Config(
-      desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-      distanceFilter: 30.0, // 30m 이동마다 위치 업데이트
-
-      // 백그라운드 + 앱 종료 후에도 추적 유지
-      stopOnTerminate: false,
-      startOnBoot: true,
-      enableHeadless: true,
-
-      // Android 포어그라운드 서비스
-      foregroundService: true,
+      geolocation: bg.GeoConfig(
+        desiredAccuracy: bg.DesiredAccuracy.high,
+        distanceFilter: 30.0, // 30m 이동마다 위치 업데이트
+        locationUpdateInterval: 30000, // 30초
+        fastestLocationUpdateInterval: 15000, // 최소 15초
+      ),
+      app: bg.AppConfig(
+        stopOnTerminate: false,
+        startOnBoot: true,
+        enableHeadless: true,
+      ),
       notification: bg.Notification(
         title: 'Itto',
         text: '인연을 찾고 있습니다',
         channelName: 'Itto 위치 서비스',
       ),
-
-      // 위치 업데이트 주기 (Android)
-      locationUpdateInterval: 30000, // 30초
-      fastestLocationUpdateInterval: 15000, // 최소 15초
-
-      // 디버그
-      debug: kDebugMode,
-      logLevel: kDebugMode
-          ? bg.Config.LOG_LEVEL_VERBOSE
-          : bg.Config.LOG_LEVEL_OFF,
+      logger: bg.LoggerConfig(
+        debug: kDebugMode,
+        logLevel: kDebugMode
+            ? bg.LogLevel.verbose
+            : bg.LogLevel.off,
+      ),
     ));
 
     _isPluginReady = true;
