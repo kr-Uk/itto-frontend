@@ -16,6 +16,17 @@ class BirthdayStep extends StatefulWidget {
 
 class _BirthdayStepState extends State<BirthdayStep> {
   DateTime? _selectedDate;
+  bool _isReadOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = context.read<SignupProvider>();
+    if (provider.identityVerified && provider.verifiedBirthDate != null) {
+      _selectedDate = DateTime.parse(provider.verifiedBirthDate!);
+      _isReadOnly = true;
+    }
+  }
 
   bool get _isValid => _selectedDate != null;
 
@@ -74,7 +85,9 @@ class _BirthdayStepState extends State<BirthdayStep> {
           ),
           const SizedBox(height: 16),
           Text(
-            '생년월일은 추후 변경이 불가능해요.',
+            _isReadOnly
+                ? '본인인증으로 확인된 생년월일입니다.'
+                : '생년월일은 추후 변경이 불가능해요.',
             style: GoogleFonts.notoSansKr(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -82,7 +95,7 @@ class _BirthdayStepState extends State<BirthdayStep> {
           ),
           const SizedBox(height: 40),
           GestureDetector(
-            onTap: _showDatePickerDialog,
+            onTap: _isReadOnly ? null : _showDatePickerDialog,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),

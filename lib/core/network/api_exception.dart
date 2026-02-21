@@ -84,6 +84,13 @@ class ApiException implements Exception {
     // 결제
     'INVALID_RECEIPT': '영수증 검증에 실패했습니다. 다시 시도해주세요.',
 
+    // 본인인증
+    'IDENTITY_ALREADY_VERIFIED': '이미 본인인증이 완료되었습니다.',
+    'IDENTITY_NOT_FOUND': '본인인증 요청을 찾을 수 없습니다.',
+    'IDENTITY_DUPLICATE_CI': '이미 가입된 본인인증 정보입니다. 다른 계정으로 로그인해주세요.',
+    'IDENTITY_VERIFICATION_FAILED': '본인인증에 실패했습니다. 다시 시도해주세요.',
+    'IDENTITY_CRYPTO_ERROR': '본인인증 처리 중 오류가 발생했습니다.',
+
     // 네트워크 (ApiClient에서 생성)
     'TIMEOUT': '서버 응답이 느립니다. 잠시 후 다시 시도해주세요.',
     'NETWORK_ERROR': '네트워크 연결을 확인해주세요.',
