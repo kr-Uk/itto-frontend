@@ -1,16 +1,16 @@
 class LoginRequest {
-  final String firebaseIdToken;
+  final String oauthToken;
   final String provider; // KAKAO, APPLE, GOOGLE
   final String? fcmToken;
 
   const LoginRequest({
-    required this.firebaseIdToken,
+    required this.oauthToken,
     required this.provider,
     this.fcmToken,
   });
 
   Map<String, dynamic> toJson() => {
-        'firebaseIdToken': firebaseIdToken,
+        'oauthToken': oauthToken,
         'provider': provider,
         if (fcmToken != null) 'fcmToken': fcmToken,
       };
