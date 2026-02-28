@@ -32,7 +32,7 @@ import 'core/storage/token_storage.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/background_location_handler.dart';
 import 'features/auth/services/auth_service.dart';
-import 'features/auth/services/firebase_auth_service.dart';
+import 'features/auth/services/oauth_service.dart';
 import 'features/auth/services/identity_service.dart';
 import 'features/auth/services/signup_service.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -103,7 +103,7 @@ void main() async {
   /// 핵심 서비스 객체들을 생성합니다
   final tokenStorage = TokenStorage(); // 로그인 토큰(출입증)을 저장/관리하는 객체
   final apiClient = ApiClient.getInstance(tokenStorage: tokenStorage); // 서버와 통신하는 HTTP 클라이언트
-  final firebaseAuthService = FirebaseAuthService(); // Firebase를 통한 소셜 로그인 처리 객체
+  final oAuthService = OAuthService(); // OAuth 직접 소셜 로그인 처리 객체
 
   /// runApp: Flutter 앱을 실제로 화면에 띄우는 함수
   ///
@@ -120,7 +120,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(
             authService: AuthService(apiClient),
-            firebaseAuthService: firebaseAuthService,
+            oAuthService: oAuthService,
             tokenStorage: tokenStorage,
           ),
         ),

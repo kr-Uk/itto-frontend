@@ -35,7 +35,8 @@ class ApiException implements Exception {
     'INVALID_TOKEN': '인증 정보가 유효하지 않습니다. 다시 로그인해주세요.',
     'EXPIRED_TOKEN': '인증이 만료되었습니다. 다시 로그인해주세요.',
     'INVALID_REFRESH_TOKEN': '세션이 만료되었습니다. 다시 로그인해주세요.',
-    'FIREBASE_AUTH_FAILED': '소셜 로그인에 실패했습니다. 다시 시도해주세요.',
+    'OAUTH_VERIFICATION_FAILED': '소셜 로그인에 실패했습니다. 다시 시도해주세요.',
+    'UNSUPPORTED_PROVIDER': '지원하지 않는 로그인 방식입니다.',
 
     // 유저
     'USER_NOT_FOUND': '사용자를 찾을 수 없습니다.',

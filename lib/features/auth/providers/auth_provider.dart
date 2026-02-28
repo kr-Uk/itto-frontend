@@ -5,21 +5,11 @@
 /// 앱 전체에서 "지금 로그인되어 있는가?", "로그인 중인가?", "에러가 있는가?" 등의
 /// 정보를 여러 화면에서 공유할 수 있도록 해줍니다.
 ///
-/// [Provider 패턴이란?]
-/// Flutter에서 화면(Widget)과 데이터(State)를 분리하는 설계 방식입니다.
-/// 이 파일이 "데이터 관리자" 역할을 하고, 화면은 이 관리자에게 데이터를 요청합니다.
-/// 데이터가 바뀌면 notifyListeners()를 호출하여 "데이터가 바뀌었어!" 하고 알려주면,
-/// 이 데이터를 보고 있는 모든 화면이 자동으로 다시 그려집니다.
-///
-/// [ChangeNotifier란?]
-/// Flutter에서 제공하는 클래스로, 데이터 변경 시 알림을 보내는 기능을 가집니다.
-/// AuthProvider가 이것을 상속(extends)받아서 알림 기능을 사용합니다.
-///
 /// [로그인 흐름 요약]
 /// 1. 사용자가 카카오/구글/애플 로그인 버튼 클릭
-/// 2. Firebase를 통해 소셜 로그인 진행 → Firebase ID Token(신분증) 획득
-/// 3. 이 ID Token을 우리 백엔드 서버에 전송
-/// 4. 서버가 확인 후 자체 JWT 토큰(출입증) 발급
+/// 2. OAuth SDK에서 직접 토큰 획득 (Firebase 없이)
+/// 3. 이 토큰을 우리 백엔드 서버에 전송
+/// 4. 서버가 직접 검증 후 자체 JWT 토큰(출입증) 발급
 /// 5. 토큰을 기기에 저장 → 로그인 완료
 /// ==========================================================================
 
@@ -29,30 +19,27 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/storage/token_storage.dart';
 import '../models/auth_models.dart';
 import '../services/auth_service.dart';
-import '../services/firebase_auth_service.dart';
+import '../services/oauth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService; // 백엔드 서버와 인증 관련 통신을 하는 서비스
-  final FirebaseAuthService _firebaseAuthService; // Firebase를 통한 소셜 로그인 처리 서비스
-  final TokenStorage _tokenStorage; // 로그인 토큰(출입증)을 기기에 저장/관리하는 저장소
+  final AuthService _authService;
+  final OAuthService _oAuthService;
+  final TokenStorage _tokenStorage;
 
-  // ── 상태 변수들: 화면에서 이 값들을 읽어서 UI를 그립니다 ──
-  bool _isLoggedIn = false; // 현재 로그인 되어있는지 여부
-  bool _isLoading = false; // 로그인 처리 중인지 (로딩 스피너 표시용)
-  String? _error; // 에러 메시지 (로그인 실패 시 화면에 표시)
-  String _verificationStatus = 'NONE'; // 본인인증 상태
-  bool _isNewUser = false; // 신규 사용자인지 (회원가입 화면으로 보내야 하는지)
+  bool _isLoggedIn = false;
+  bool _isLoading = false;
+  String? _error;
+  String _verificationStatus = 'NONE';
+  bool _isNewUser = false;
 
   AuthProvider({
     required AuthService authService,
-    required FirebaseAuthService firebaseAuthService,
+    required OAuthService oAuthService,
     required TokenStorage tokenStorage,
   })  : _authService = authService,
-        _firebaseAuthService = firebaseAuthService,
+        _oAuthService = oAuthService,
         _tokenStorage = tokenStorage;
 
-  // ── Getter: 외부(화면)에서 상태 값을 읽을 수 있도록 공개하는 부분 ──
-  // (private 변수 _isLoggedIn을 직접 접근 못하게 하고, 읽기만 허용)
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -60,43 +47,38 @@ class AuthProvider extends ChangeNotifier {
   bool get isNewUser => _isNewUser;
 
   /// 앱 시작 시 기기에 저장된 토큰이 있는지 확인하여 로그인 상태를 판단합니다
-  /// (토큰이 있으면 = 이전에 로그인했었다 = 자동 로그인)
   Future<void> checkLoginStatus() async {
     _isLoggedIn = await _tokenStorage.hasTokens();
-    notifyListeners(); // "상태가 바뀌었으니 화면을 다시 그려!" 라고 알림
+    notifyListeners();
   }
 
   /// Google 소셜 로그인
   Future<bool> loginWithGoogle() async {
-    return _loginWithProvider('GOOGLE', _firebaseAuthService.signInWithGoogle);
+    return _loginWithProvider(_oAuthService.signInWithGoogle);
   }
 
   /// Apple 소셜 로그인
   Future<bool> loginWithApple() async {
-    return _loginWithProvider('APPLE', _firebaseAuthService.signInWithApple);
+    return _loginWithProvider(_oAuthService.signInWithApple);
   }
 
-  /// Kakao 소셜 로그인 (Firebase OIDC provider 설정 필요)
+  /// Kakao 소셜 로그인
   Future<bool> loginWithKakao() async {
-    return _loginWithProvider('KAKAO', _firebaseAuthService.signInWithKakao);
+    return _loginWithProvider(_oAuthService.signInWithKakao);
   }
 
-  /// 소셜 로그인 공통 로직 - Google/Apple/Kakao 모두 이 메서드를 통해 로그인합니다
-  /// [async/await란?] 서버 통신처럼 시간이 걸리는 작업을 기다렸다 결과를 받는 방식입니다.
-  /// await를 만나면 그 작업이 끝날 때까지 기다렸다가 다음 줄로 넘어갑니다.
+  /// 소셜 로그인 공통 로직
   Future<bool> _loginWithProvider(
-    String provider,
-    Future<String?> Function() firebaseSignIn,
+    Future<OAuthResult?> Function() oAuthSignIn,
   ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // 1. Firebase 소셜 로그인 → ID Token 획득
-      final idToken = await firebaseSignIn();
-      if (idToken == null) {
-        // 사용자가 로그인 취소
+      // 1. OAuth SDK에서 직접 토큰 획득
+      final result = await oAuthSignIn();
+      if (result == null) {
         _isLoading = false;
         notifyListeners();
         return false;
@@ -104,8 +86,8 @@ class AuthProvider extends ChangeNotifier {
 
       // 2. 백엔드 로그인 API 호출
       final request = LoginRequest(
-        firebaseIdToken: idToken,
-        provider: provider,
+        oauthToken: result.token,
+        provider: result.provider,
       );
 
       final response = await _authService.login(request);
@@ -158,16 +140,12 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// 로그아웃 처리
-  /// 1. 백엔드 서버에 로그아웃 알림 (실패해도 진행)
-  /// 2. Firebase 로그아웃 (실패해도 진행)
-  /// 3. 기기에 저장된 토큰 삭제
-  /// 4. API 클라이언트 초기화 (다음 로그인 시 새로 생성)
   Future<void> logout() async {
     try {
       await _authService.logout();
     } catch (_) {}
     try {
-      await _firebaseAuthService.signOut();
+      await _oAuthService.signOut();
     } catch (_) {}
     await _tokenStorage.clearTokens();
     _isLoggedIn = false;
@@ -175,14 +153,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 회원 탈퇴 처리 - 서버에서 계정을 삭제하고, 로컬 데이터도 정리합니다
+  /// 회원 탈퇴 처리
   Future<void> withdraw({String? reason}) async {
     _isLoading = true;
     notifyListeners();
     try {
       await _authService.withdraw(reason: reason);
       try {
-        await _firebaseAuthService.signOut();
+        await _oAuthService.signOut();
       } catch (_) {}
       await _tokenStorage.clearTokens();
       _isLoggedIn = false;
@@ -195,7 +173,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// 에러 메시지를 초기화합니다 (화면에서 에러 팝업을 닫을 때 사용)
+  /// 에러 메시지를 초기화합니다
   void clearError() {
     _error = null;
     notifyListeners();
