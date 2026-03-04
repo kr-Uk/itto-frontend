@@ -45,6 +45,8 @@ import '../../features/map/screens/map_screen.dart';
 import '../../features/map/screens/excluded_area_screen.dart';
 import '../../features/map/screens/encounter_location_screen.dart';
 import '../../features/profile/screens/profile_detail_screen.dart';
+import '../../features/settings/screens/subscription_screen.dart';
+import '../../features/auth/screens/signup/tutorial_screen.dart';
 import '../../shared/widgets/main_shell.dart';
 
 /// 전체 화면 이동용 키 (하단 탭바 없이 전체 화면으로 이동할 때 사용)
@@ -161,11 +163,28 @@ final appRouter = GoRouter(
       builder: (context, state) => const CurrencyScreen(),
     ),
 
+    /// 구독 관리 화면
+    GoRoute(
+      path: '/settings/subscription',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) => const SubscriptionScreen(),
+    ),
+
     /// 알림 설정 화면
     GoRoute(
       path: '/settings/notifications',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const NotificationSettingsScreen(),
+    ),
+
+    /// 튜토리얼 화면
+    GoRoute(
+      path: '/tutorial',
+      parentNavigatorKey: rootNavigatorKey,
+      builder: (context, state) {
+        final fromSignup = state.extra as bool? ?? false;
+        return TutorialScreen(fromSignup: fromSignup);
+      },
     ),
 
     /// 지도 화면
