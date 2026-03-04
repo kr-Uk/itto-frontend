@@ -37,11 +37,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         icon: ShaderMask(
           shaderCallback: (bounds) =>
               AppColors.primaryGradient.createShader(bounds),
-          child: const Icon(
-            Icons.favorite,
-            color: Colors.white,
-            size: 32,
-          ),
+          child: const Icon(Icons.favorite, color: Colors.white, size: 32),
         ),
         onConfirm: () {
           Navigator.of(ctx).pop(true);
@@ -84,8 +80,7 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         onCancel: () => Navigator.of(ctx).pop(),
         onConfirm: () async {
           Navigator.of(ctx).pop();
-          final success =
-              await context.read<ShopProvider>().subscribe();
+          final success = await context.read<ShopProvider>().subscribe();
           if (context.mounted) {
             if (success) {
               SnackBarUtils.showSuccess(context, '프리미엄 구독이 시작되었습니다!');
@@ -109,8 +104,9 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
         onCancel: () => Navigator.of(ctx).pop(),
         onConfirm: () async {
           Navigator.of(ctx).pop();
-          final success =
-              await context.read<ShopProvider>().cancelSubscription();
+          final success = await context
+              .read<ShopProvider>()
+              .cancelSubscription();
           if (context.mounted) {
             if (success) {
               SnackBarUtils.showSuccess(context, '구독이 해지되었습니다.');
@@ -214,7 +210,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                         borderRadius: BorderRadius.circular(12),
                         border: sub.isPremium
                             ? Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.5))
+                                color: AppColors.primary.withValues(alpha: 0.5),
+                              )
                             : null,
                       ),
                       child: sub.isPremium
@@ -223,8 +220,11 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.workspace_premium,
-                                        color: AppColors.primary, size: 20),
+                                    Icon(
+                                      Icons.workspace_premium,
+                                      color: AppColors.primary,
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 8),
                                     const Text(
                                       '프리미엄 구독 중',
@@ -271,16 +271,15 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                                 ),
                                 const SizedBox(height: 12),
                                 GestureDetector(
-                                  onTap: () =>
-                                      _showSubscribeDialog(context),
+                                  onTap: () => _showSubscribeDialog(context),
                                   child: Container(
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
+                                      vertical: 12,
+                                    ),
                                     decoration: BoxDecoration(
                                       gradient: AppColors.buttonGradient,
-                                      borderRadius:
-                                          BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Center(
                                       child: Text(
@@ -321,7 +320,8 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                     child: Padding(
                       padding: EdgeInsets.all(20),
                       child: CircularProgressIndicator(
-                          color: AppColors.primary),
+                        color: AppColors.primary,
+                      ),
                     ),
                   );
                 }
@@ -386,10 +386,7 @@ class _PurchaseCard extends StatelessWidget {
   final KnotPackage package;
   final VoidCallback onTap;
 
-  const _PurchaseCard({
-    required this.package,
-    required this.onTap,
-  });
+  const _PurchaseCard({required this.package, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -407,11 +404,7 @@ class _PurchaseCard extends StatelessWidget {
             ShaderMask(
               shaderCallback: (bounds) =>
                   AppColors.primaryGradient.createShader(bounds),
-              child: const Icon(
-                Icons.favorite,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.favorite, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
             // Amount and price
@@ -448,10 +441,7 @@ class _UsageRow extends StatelessWidget {
   final String amount;
   final String description;
 
-  const _UsageRow({
-    required this.amount,
-    required this.description,
-  });
+  const _UsageRow({required this.amount, required this.description});
 
   @override
   Widget build(BuildContext context) {

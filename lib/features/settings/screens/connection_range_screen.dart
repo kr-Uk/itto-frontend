@@ -44,7 +44,19 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
 
   // Map slider index to actual age value
   static const List<int> _ageValues = [
-    20, 22, 27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60,
+    20,
+    22,
+    27,
+    30,
+    33,
+    37,
+    40,
+    43,
+    47,
+    50,
+    53,
+    57,
+    60,
   ];
 
   RangeValues _ageRange = const RangeValues(3, 9); // 30대 초반 - 50대 초반
@@ -127,8 +139,10 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
 
   void _save() {
     final genderFilter = _selectedGender == 0 ? 'FEMALE' : 'MALE';
-    final ageMin = _ageValues[_ageRange.start.round().clamp(0, _ageValues.length - 1)];
-    final ageMax = _ageValues[_ageRange.end.round().clamp(0, _ageValues.length - 1)];
+    final ageMin =
+        _ageValues[_ageRange.start.round().clamp(0, _ageValues.length - 1)];
+    final ageMax =
+        _ageValues[_ageRange.end.round().clamp(0, _ageValues.length - 1)];
 
     context.read<SettingsProvider>().updateMatchingSettings(
       MatchingSettings(
@@ -153,8 +167,10 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -178,8 +194,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                             child: _GenderButton(
                               label: '여자',
                               selected: _selectedGender == 0,
-                              onTap: () =>
-                                  setState(() => _selectedGender = 0),
+                              onTap: () => setState(() => _selectedGender = 0),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -187,8 +202,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                             child: _GenderButton(
                               label: '남자',
                               selected: _selectedGender == 1,
-                              onTap: () =>
-                                  setState(() => _selectedGender = 1),
+                              onTap: () => setState(() => _selectedGender = 1),
                             ),
                           ),
                         ],
@@ -214,14 +228,16 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                           activeTrackColor: AppColors.primary,
                           inactiveTrackColor: AppColors.surfaceLight,
                           thumbColor: Colors.white,
-                          overlayColor:
-                              AppColors.primary.withValues(alpha: 0.15),
+                          overlayColor: AppColors.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           trackHeight: 4,
                           thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 10),
-                          rangeThumbShape:
-                              const RoundRangeSliderThumbShape(
-                                  enabledThumbRadius: 10),
+                            enabledThumbRadius: 10,
+                          ),
+                          rangeThumbShape: const RoundRangeSliderThumbShape(
+                            enabledThumbRadius: 10,
+                          ),
                         ),
                         child: RangeSlider(
                           values: _ageRange,
@@ -243,7 +259,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                               '30대',
                               '40대',
                               '50대',
-                              '60대 이상'
+                              '60대 이상',
                             ])
                               Text(
                                 label,
@@ -263,7 +279,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
@@ -312,7 +330,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 // Table header
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                   child: Row(
                                     children: const [
                                       Expanded(
@@ -349,7 +369,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 if (blocks.isEmpty)
                                   const Padding(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 12),
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
                                     child: Text(
                                       '차단된 사용자가 없습니다',
                                       style: TextStyle(
@@ -361,7 +383,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 for (final block in blocks)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
@@ -376,8 +400,10 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                         Expanded(
                                           child: Text(
                                             block.createdAt.length >= 10
-                                                ? block.createdAt
-                                                    .substring(0, 10)
+                                                ? block.createdAt.substring(
+                                                    0,
+                                                    10,
+                                                  )
                                                 : block.createdAt,
                                             style: const TextStyle(
                                               color: AppColors.textSecondary,
@@ -429,10 +455,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
               // -- Save button --
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                child: PurpleButton(
-                  text: '저장하기',
-                  onPressed: _save,
-                ),
+                child: PurpleButton(text: '저장하기', onPressed: _save),
               ),
             ],
           ),

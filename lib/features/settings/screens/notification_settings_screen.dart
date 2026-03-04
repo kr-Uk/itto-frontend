@@ -66,10 +66,7 @@ class _NotificationSettingsScreenState
             return const Center(
               child: Text(
                 '알림 설정을 불러올 수 없습니다.',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
             );
           }
@@ -100,9 +97,8 @@ class _NotificationSettingsScreenState
                       _NotificationToggleRow(
                         title: '채팅 알림',
                         value: settings.chatNotification,
-                        onChanged: (value) => _updateSetting(
-                          chatNotification: value,
-                        ),
+                        onChanged: (value) =>
+                            _updateSetting(chatNotification: value),
                         isFirst: true,
                       ),
                       const Padding(
@@ -116,9 +112,8 @@ class _NotificationSettingsScreenState
                       _NotificationToggleRow(
                         title: '인연 알림',
                         value: settings.relationshipNotification,
-                        onChanged: (value) => _updateSetting(
-                          relationshipNotification: value,
-                        ),
+                        onChanged: (value) =>
+                            _updateSetting(relationshipNotification: value),
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -131,9 +126,8 @@ class _NotificationSettingsScreenState
                       _NotificationToggleRow(
                         title: '통계 알림',
                         value: settings.statsNotification,
-                        onChanged: (value) => _updateSetting(
-                          statsNotification: value,
-                        ),
+                        onChanged: (value) =>
+                            _updateSetting(statsNotification: value),
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16),
@@ -146,9 +140,8 @@ class _NotificationSettingsScreenState
                       _NotificationToggleRow(
                         title: '마케팅 알림',
                         value: settings.marketingNotification,
-                        onChanged: (value) => _updateSetting(
-                          marketingNotification: value,
-                        ),
+                        onChanged: (value) =>
+                            _updateSetting(marketingNotification: value),
                         isLast: true,
                       ),
                     ],

@@ -35,10 +35,7 @@ class UyeonTab extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text(
                   '아직 우연이 없어요.',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: AppColors.textTertiary, fontSize: 16),
                 ),
               ],
             ),
@@ -81,13 +78,10 @@ class UyeonTab extends StatelessWidget {
                   mainAxisSpacing: 12,
                   childAspectRatio: 1.0,
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = items[index];
-                    return _UyeonThumbnailCard(item: item);
-                  },
-                  childCount: items.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = items[index];
+                  return _UyeonThumbnailCard(item: item);
+                }, childCount: items.length),
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -126,14 +120,12 @@ class _UyeonThumbnailCard extends StatelessWidget {
         onConfirm: () async {
           Navigator.of(ctx).pop();
           final provider = context.read<RelationshipProvider>();
-          final success =
-              await provider.convertTopilyeon(item.relationshipId);
+          final success = await provider.convertTopilyeon(item.relationshipId);
           if (context.mounted) {
             if (success) {
               SnackBarUtils.showSuccess(context, '프로필이 공개되었습니다!');
             } else {
-              SnackBarUtils.showError(
-                  context, provider.error ?? '요청에 실패했습니다.');
+              SnackBarUtils.showError(context, provider.error ?? '요청에 실패했습니다.');
             }
           }
         },
@@ -161,9 +153,7 @@ class _UyeonThumbnailCard extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.3),
                 ),
                 child: CustomPaint(
-                  painter: _MosaicPainter(
-                    baseColor: AppColors.gradientStart,
-                  ),
+                  painter: _MosaicPainter(baseColor: AppColors.gradientStart),
                 ),
               ),
             ),
@@ -293,10 +283,7 @@ class _MosaicPainter extends CustomPainter {
           ..color = Color.fromARGB(80, r, g, b)
           ..style = PaintingStyle.fill;
 
-        canvas.drawRect(
-          Rect.fromLTWH(x, y, blockSize, blockSize),
-          paint,
-        );
+        canvas.drawRect(Rect.fromLTWH(x, y, blockSize, blockSize), paint);
       }
     }
   }

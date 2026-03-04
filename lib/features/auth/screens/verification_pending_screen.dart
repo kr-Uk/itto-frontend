@@ -128,10 +128,7 @@ class VerificationPendingScreen extends StatelessWidget {
                 },
                 child: const Text(
                   '로그아웃',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
                 ),
               ),
 

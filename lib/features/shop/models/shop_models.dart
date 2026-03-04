@@ -12,11 +12,11 @@ class KnotBalance {
   });
 
   factory KnotBalance.fromJson(Map<String, dynamic> json) => KnotBalance(
-        knots: json['knots'] as int? ?? 0,
-        freeConvertRemaining: json['freeConvertRemaining'] as int? ?? 0,
-        freeRequestRemaining: json['freeRequestRemaining'] as int? ?? 0,
-        freeRestoreRemaining: json['freeRestoreRemaining'] as int? ?? 0,
-      );
+    knots: json['knots'] as int? ?? 0,
+    freeConvertRemaining: json['freeConvertRemaining'] as int? ?? 0,
+    freeRequestRemaining: json['freeRequestRemaining'] as int? ?? 0,
+    freeRestoreRemaining: json['freeRestoreRemaining'] as int? ?? 0,
+  );
 }
 
 class KnotPackage {
@@ -37,13 +37,13 @@ class KnotPackage {
   });
 
   factory KnotPackage.fromJson(Map<String, dynamic> json) => KnotPackage(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        price: json['price'] as int,
-        knots: json['knots'] as int,
-        firstPurchaseKnots: json['firstPurchaseKnots'] as int? ?? 0,
-        isFirstPurchaseUsed: json['isFirstPurchaseUsed'] as bool? ?? false,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    price: json['price'] as int,
+    knots: json['knots'] as int,
+    firstPurchaseKnots: json['firstPurchaseKnots'] as int? ?? 0,
+    isFirstPurchaseUsed: json['isFirstPurchaseUsed'] as bool? ?? false,
+  );
 }
 
 class PurchaseResponse {
@@ -97,7 +97,8 @@ class SubscriptionInfo {
         isPromotion: json['isPromotion'] as bool? ?? false,
         benefits: json['benefits'] != null
             ? SubscriptionBenefits.fromJson(
-                json['benefits'] as Map<String, dynamic>)
+                json['benefits'] as Map<String, dynamic>,
+              )
             : null,
       );
 }

@@ -14,18 +14,14 @@ class ChatProvider extends ChangeNotifier {
   StreamSubscription<List<ChatRoom>>? _chatRoomsSubscription;
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
 
-  ChatProvider({required ChatService chatService})
-      : _chatService = chatService;
+  ChatProvider({required ChatService chatService}) : _chatService = chatService;
 
   List<ChatRoom> get chatRooms => _chatRooms;
   List<ChatMessage> get currentMessages => _currentMessages;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  void subscribeToChatRooms(
-    int userId,
-    Map<String, String> chatRoomIdToName,
-  ) {
+  void subscribeToChatRooms(int userId, Map<String, String> chatRoomIdToName) {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -34,17 +30,17 @@ class ChatProvider extends ChangeNotifier {
     _chatRoomsSubscription = _chatService
         .getChatRoomsStream(userId, chatRoomIdToName)
         .listen(
-      (chatRooms) {
-        _chatRooms = chatRooms;
-        _isLoading = false;
-        notifyListeners();
-      },
-      onError: (error) {
-        _error = '채팅 목록을 불러오는데 실패했습니다';
-        _isLoading = false;
-        notifyListeners();
-      },
-    );
+          (chatRooms) {
+            _chatRooms = chatRooms;
+            _isLoading = false;
+            notifyListeners();
+          },
+          onError: (error) {
+            _error = '채팅 목록을 불러오는데 실패했습니다';
+            _isLoading = false;
+            notifyListeners();
+          },
+        );
   }
 
   void subscribeToChatMessages(String chatRoomId, int currentUserId) {
@@ -54,20 +50,22 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
 
     _messagesSubscription?.cancel();
-    _messagesSubscription = _chatService.getMessagesStream(chatRoomId).listen(
-      (messages) {
-        _currentMessages = messages;
-        _isLoading = false;
-        notifyListeners();
+    _messagesSubscription = _chatService
+        .getMessagesStream(chatRoomId)
+        .listen(
+          (messages) {
+            _currentMessages = messages;
+            _isLoading = false;
+            notifyListeners();
 
-        _chatService.markAsRead(chatRoomId, currentUserId);
-      },
-      onError: (error) {
-        _error = '메시지를 불러오는데 실패했습니다';
-        _isLoading = false;
-        notifyListeners();
-      },
-    );
+            _chatService.markAsRead(chatRoomId, currentUserId);
+          },
+          onError: (error) {
+            _error = '메시지를 불러오는데 실패했습니다';
+            _isLoading = false;
+            notifyListeners();
+          },
+        );
   }
 
   Future<bool> sendMessage({

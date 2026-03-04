@@ -5,7 +5,6 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
 import '../../../providers/signup_provider.dart';
 
-
 class HobbyStep extends StatefulWidget {
   final VoidCallback onNext;
 
@@ -86,22 +85,24 @@ class _HobbyStepState extends State<HobbyStep> {
                         ),
                       )
                     : hobbies.isEmpty
-                        ? Center(
-                            child: Text(
-                              '취미 데이터를 불러올 수 없습니다.\n잠시 후 다시 시도해 주세요.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.notoSansKr(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          )
+                    ? Center(
+                        child: Text(
+                          '취미 데이터를 불러올 수 없습니다.\n잠시 후 다시 시도해 주세요.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      )
                     : SingleChildScrollView(
                         child: Wrap(
                           spacing: 10,
                           runSpacing: 10,
                           children: hobbies.map((hobby) {
-                            final isSelected = _selectedHobbies.contains(hobby.id);
+                            final isSelected = _selectedHobbies.contains(
+                              hobby.id,
+                            );
                             return GestureDetector(
                               onTap: () => _toggleHobby(hobby.id),
                               child: AnimatedContainer(
@@ -112,7 +113,9 @@ class _HobbyStepState extends State<HobbyStep> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary.withValues(alpha: 0.15)
+                                      ? AppColors.primary.withValues(
+                                          alpha: 0.15,
+                                        )
                                       : AppColors.surface,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
@@ -126,8 +129,9 @@ class _HobbyStepState extends State<HobbyStep> {
                                   hobby.name,
                                   style: GoogleFonts.notoSansKr(
                                     fontSize: 14,
-                                    fontWeight:
-                                        isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
                                     color: isSelected
                                         ? AppColors.primary
                                         : AppColors.textPrimary,

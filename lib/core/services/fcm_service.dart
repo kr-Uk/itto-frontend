@@ -107,8 +107,7 @@ class FcmService {
   /// 앱 라우터 초기화 완료 후 호출해야 합니다.
   Future<void> handleInitialMessage() async {
     try {
-      final message =
-          await FirebaseMessaging.instance.getInitialMessage();
+      final message = await FirebaseMessaging.instance.getInitialMessage();
       if (message != null) {
         debugPrint('Terminated 알림 탭: ${message.notification?.title}');
         _handleDeepLink(message);

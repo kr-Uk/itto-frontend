@@ -43,10 +43,7 @@ class _IntroStepState extends State<IntroStep> {
     if (success) {
       widget.onNext();
     } else {
-      SnackBarUtils.showError(
-        context,
-        provider.error ?? '프로필 저장에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, provider.error ?? '프로필 저장에 실패했습니다');
     }
   }
 
@@ -127,14 +124,12 @@ class _IntroStepState extends State<IntroStep> {
           _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                   ),
                 )
-              : PurpleButton(
-                  text: '다음',
-                  enabled: true,
-                  onPressed: _handleNext,
-                ),
+              : PurpleButton(text: '다음', enabled: true, onPressed: _handleNext),
           const SizedBox(height: 40),
         ],
       ),
