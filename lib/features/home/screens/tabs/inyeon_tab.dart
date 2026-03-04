@@ -36,10 +36,7 @@ class InyeonTab extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text(
                   '아직 인연이 없어요.',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: AppColors.textTertiary, fontSize: 16),
                 ),
               ],
             ),
@@ -76,16 +73,13 @@ class InyeonTab extends StatelessWidget {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = items[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _InyeonProfileCard(item: item),
-                    );
-                  },
-                  childCount: items.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = items[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _InyeonProfileCard(item: item),
+                  );
+                }, childCount: items.length),
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -139,15 +133,48 @@ class _InyeonProfileCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        item.otherUser.nickname,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              item.otherUser.nickname,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (item.destinyBadge) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              key: const Key('destiny_badge'),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFF6B6B),
+                                    Color(0xFFEE5A9E),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                '운명',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       if (hashtags.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -273,10 +300,7 @@ class _ActionButtons extends StatelessWidget {
     if (success) {
       SnackBarUtils.showSuccess(context, '관계가 종료되었습니다.');
     } else {
-      SnackBarUtils.showError(
-        context,
-        provider.error ?? '관계 종료에 실패했습니다.',
-      );
+      SnackBarUtils.showError(context, provider.error ?? '관계 종료에 실패했습니다.');
     }
   }
 
@@ -297,7 +321,11 @@ class _ActionButtons extends StatelessWidget {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.chat_bubble_outline, color: Colors.white, size: 18),
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    color: Colors.white,
+                    size: 18,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     '채팅하기',

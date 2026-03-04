@@ -11,7 +11,6 @@ import '../../notification/providers/notification_provider.dart';
 import '../../profile/providers/profile_provider.dart';
 import '../../system/services/system_service.dart';
 
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -80,11 +79,12 @@ class _SplashScreenState extends State<SplashScreen>
     // 프로필 완성 → 인증 상태에 따라 분기
     switch (profile.verificationStatus) {
       case 'APPROVED':
+      case 'NONE': // TODO: 본인인증 임시 스킵
         context.read<NotificationProvider>().registerFcmToken();
         context.go('/home');
       case 'PENDING':
         context.go('/verification-pending');
-      default: // NONE, REJECTED
+      default: // REJECTED
         context.go('/verification-rejected');
     }
   }
@@ -135,7 +135,10 @@ class _SplashScreenState extends State<SplashScreen>
           TextButton(
             onPressed: () {
               if (updateUrl != null && updateUrl.isNotEmpty) {
-                launchUrl(Uri.parse(updateUrl), mode: LaunchMode.externalApplication);
+                launchUrl(
+                  Uri.parse(updateUrl),
+                  mode: LaunchMode.externalApplication,
+                );
               }
             },
             child: const Text('업데이트'),
@@ -184,11 +187,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             // Decorative curved line art
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _CurvedLinePainter(),
-              ),
-            ),
+            Positioned.fill(child: CustomPaint(painter: _CurvedLinePainter())),
             // Center content
             Center(
               child: Column(
