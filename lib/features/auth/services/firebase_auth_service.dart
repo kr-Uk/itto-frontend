@@ -34,7 +34,8 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase 인증 객체
-  final GoogleSignIn _googleSignIn = GoogleSignIn( // Google 로그인 SDK 객체
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    // Google 로그인 SDK 객체
     serverClientId: dotenv.env['GOOGLE_SERVER_CLIENT_ID'] ?? '',
   );
 
@@ -49,13 +50,17 @@ class FirebaseAuthService {
     if (googleUser == null) return null; // 사용자가 취소한 경우
 
     final googleAuth = await googleUser.authentication; // 구글에서 인증 정보 받기
-    final credential = GoogleAuthProvider.credential( // Firebase용 인증서 만들기
+    final credential = GoogleAuthProvider.credential(
+      // Firebase용 인증서 만들기
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    final userCredential = await _auth.signInWithCredential(credential); // Firebase에 인증서 제출
-    return await userCredential.user?.getIdToken(); // Firebase ID Token(신분증) 발급받아 반환
+    final userCredential = await _auth.signInWithCredential(
+      credential,
+    ); // Firebase에 인증서 제출
+    return await userCredential.user
+        ?.getIdToken(); // Firebase ID Token(신분증) 발급받아 반환
   }
 
   /// 애플 로그인 처리
@@ -79,7 +84,9 @@ class FirebaseAuthService {
   Future<String?> signInWithKakao() async {
     /// 보안용 일회용 코드(nonce) 생성 - 요청과 응답이 같은 건인지 확인하는 용도
     final rawNonce = _generateNonce();
-    final hashedNonce = _sha256ofString(rawNonce); // nonce를 암호화(SHA-256)하여 카카오에 전송
+    final hashedNonce = _sha256ofString(
+      rawNonce,
+    ); // nonce를 암호화(SHA-256)하여 카카오에 전송
 
     kakao.OAuthToken kakaoToken;
 
@@ -97,7 +104,9 @@ class FirebaseAuthService {
 
     final idToken = kakaoToken.idToken;
     if (idToken == null) {
-      throw Exception('카카오 OIDC ID Token을 받지 못했습니다. OpenID Connect 활성화를 확인해주세요.');
+      throw Exception(
+        '카카오 OIDC ID Token을 받지 못했습니다. OpenID Connect 활성화를 확인해주세요.',
+      );
     }
 
     /// 카카오에서 받은 ID Token을 Firebase용 인증서로 변환

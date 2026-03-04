@@ -12,11 +12,11 @@ class VersionInfo {
   });
 
   factory VersionInfo.fromJson(Map<String, dynamic> json) => VersionInfo(
-        minVersion: json['minVersion'] as String? ?? '1.0.0',
-        latestVersion: json['latestVersion'] as String? ?? '1.0.0',
-        forceUpdate: json['forceUpdate'] as bool? ?? false,
-        updateUrl: json['updateUrl'] as String?,
-      );
+    minVersion: json['minVersion'] as String? ?? '1.0.0',
+    latestVersion: json['latestVersion'] as String? ?? '1.0.0',
+    forceUpdate: json['forceUpdate'] as bool? ?? false,
+    updateUrl: json['updateUrl'] as String?,
+  );
 }
 
 class NicknameValidation {

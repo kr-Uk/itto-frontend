@@ -10,11 +10,12 @@ class BlockItem {
   });
 
   factory BlockItem.fromJson(Map<String, dynamic> json) => BlockItem(
-        id: json['id'] as int,
-        blockedUser: BlockedUser.fromJson(
-            json['blockedUser'] as Map<String, dynamic>),
-        createdAt: json['createdAt'] as String? ?? '',
-      );
+    id: json['id'] as int,
+    blockedUser: BlockedUser.fromJson(
+      json['blockedUser'] as Map<String, dynamic>,
+    ),
+    createdAt: json['createdAt'] as String? ?? '',
+  );
 }
 
 class BlockedUser {
@@ -24,9 +25,9 @@ class BlockedUser {
   const BlockedUser({required this.userId, required this.nickname});
 
   factory BlockedUser.fromJson(Map<String, dynamic> json) => BlockedUser(
-        userId: json['userId'] as int,
-        nickname: json['nickname'] as String,
-      );
+    userId: json['userId'] as int,
+    nickname: json['nickname'] as String,
+  );
 }
 
 class ReportRequest {
@@ -45,10 +46,10 @@ class ReportRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'targetUserId': targetUserId,
-        'category': category,
-        'targetType': targetType,
-        if (chatRoomId != null) 'chatRoomId': chatRoomId,
-        if (description != null) 'description': description,
-      };
+    'targetUserId': targetUserId,
+    'category': category,
+    'targetType': targetType,
+    if (chatRoomId != null) 'chatRoomId': chatRoomId,
+    if (description != null) 'description': description,
+  };
 }

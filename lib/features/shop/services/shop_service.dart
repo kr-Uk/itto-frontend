@@ -26,11 +26,14 @@ class ShopService {
     required String receiptToken,
     required String store,
   }) async {
-    final json = await _client.post('/shop/purchase', data: {
-      'packageId': packageId,
-      'receiptToken': receiptToken,
-      'store': store,
-    });
+    final json = await _client.post(
+      '/shop/purchase',
+      data: {
+        'packageId': packageId,
+        'receiptToken': receiptToken,
+        'store': store,
+      },
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PurchaseResponse.fromJson(data);
   }
@@ -45,10 +48,10 @@ class ShopService {
     required String receiptToken,
     required String store,
   }) async {
-    await _client.post('/shop/subscription', data: {
-      'receiptToken': receiptToken,
-      'store': store,
-    });
+    await _client.post(
+      '/shop/subscription',
+      data: {'receiptToken': receiptToken, 'store': store},
+    );
   }
 
   Future<void> cancelSubscription() async {

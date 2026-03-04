@@ -36,10 +36,7 @@ class _WelcomeStepState extends State<WelcomeStep> {
       context.read<NotificationProvider>().registerFcmToken();
       context.go('/home');
     } else {
-      SnackBarUtils.showError(
-        context,
-        provider.error ?? '가입 완료에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, provider.error ?? '가입 완료에 실패했습니다');
     }
   }
 
@@ -97,13 +94,12 @@ class _WelcomeStepState extends State<WelcomeStep> {
           _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                   ),
                 )
-              : PurpleButton(
-                  text: '시작하기',
-                  onPressed: _handleComplete,
-                ),
+              : PurpleButton(text: '시작하기', onPressed: _handleComplete),
           const SizedBox(height: 40),
         ],
       ),

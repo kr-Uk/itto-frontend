@@ -14,7 +14,22 @@ class SignupProvider extends ChangeNotifier {
   List<HobbyItem> _hobbies = [];
   List<HobbyItem> get hobbies => _hobbies;
 
+  // Identity verification result (from NICE)
+  bool _identityVerified = false;
+  String? _verifiedName;
+  String? _verifiedPhone;
+  String? _verifiedGender;
+  String? _verifiedBirthDate;
+
+  bool get identityVerified => _identityVerified;
+  String? get verifiedName => _verifiedName;
+  String? get verifiedPhone => _verifiedPhone;
+  String? get verifiedGender => _verifiedGender;
+  String? get verifiedBirthDate => _verifiedBirthDate;
+
   // Form data collected across steps
+  static const int maxPhotos = 1;
+
   String nickname = '';
   String gender = '';
   String birthDate = '';
@@ -22,14 +37,22 @@ class SignupProvider extends ChangeNotifier {
   String introduction = '';
   List<String> photoFilePaths = [];
   int representativePhotoIndex = 0;
-  String? verificationFilePath;
   bool marketingConsent = false;
 
   SignupProvider({required SignupService signupService})
-      : _signupService = signupService;
+    : _signupService = signupService;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
+
+  void addPhoto(String filePath) {
+    if (photoFilePaths.length >= maxPhotos) return;
+    photoFilePaths.add(filePath);
+    if (photoFilePaths.length == 1) {
+      representativePhotoIndex = 0;
+    }
+    notifyListeners();
+  }
 
   Future<void> fetchHobbies() async {
     if (_hobbies.isNotEmpty) return;
@@ -50,12 +73,14 @@ class SignupProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _signupService.saveTerms(SignupTermsRequest(
-        serviceTerms: true,
-        privacyPolicy: true,
-        locationTerms: true,
-        marketingConsent: marketingConsent,
-      ));
+      await _signupService.saveTerms(
+        SignupTermsRequest(
+          serviceTerms: true,
+          privacyPolicy: true,
+          locationTerms: true,
+          marketingConsent: marketingConsent,
+        ),
+      );
       return true;
     } on ApiException catch (e) {
       _error = e.userMessage;
@@ -71,13 +96,15 @@ class SignupProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      await _signupService.saveProfile(SignupProfileRequest(
-        nickname: nickname,
-        gender: gender,
-        birthDate: birthDate,
-        hobbyIds: hobbyIds,
-        introduction: introduction.isEmpty ? null : introduction,
-      ));
+      await _signupService.saveProfile(
+        SignupProfileRequest(
+          nickname: nickname,
+          gender: gender,
+          birthDate: birthDate,
+          hobbyIds: hobbyIds,
+          introduction: introduction.isEmpty ? null : introduction,
+        ),
+      );
       return true;
     } on ApiException catch (e) {
       _error = e.userMessage;
@@ -108,21 +135,20 @@ class SignupProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> uploadVerification() async {
-    if (verificationFilePath == null) return false;
-    _isLoading = true;
-    _error = null;
+  void setIdentityResult({
+    required String name,
+    required String phone,
+    required String gender,
+    required String birthDate,
+  }) {
+    _identityVerified = true;
+    _verifiedName = name;
+    _verifiedPhone = phone;
+    _verifiedGender = gender;
+    _verifiedBirthDate = birthDate;
+    this.gender = gender;
+    this.birthDate = birthDate;
     notifyListeners();
-    try {
-      await _signupService.uploadVerification(verificationFilePath!);
-      return true;
-    } on ApiException catch (e) {
-      _error = e.userMessage;
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   Future<bool> completeSignup() async {
@@ -154,8 +180,12 @@ class SignupProvider extends ChangeNotifier {
     introduction = '';
     photoFilePaths = [];
     representativePhotoIndex = 0;
-    verificationFilePath = null;
     marketingConsent = false;
+    _identityVerified = false;
+    _verifiedName = null;
+    _verifiedPhone = null;
+    _verifiedGender = null;
+    _verifiedBirthDate = null;
     notifyListeners();
   }
 }

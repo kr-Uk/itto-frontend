@@ -47,10 +47,7 @@ class VerificationRejectedScreen extends StatelessWidget {
       SnackBarUtils.showSuccess(context, '인증 사진이 제출되었습니다');
       context.go('/verification-pending');
     } else {
-      SnackBarUtils.showError(
-        context,
-        profileProvider.error ?? '제출에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, profileProvider.error ?? '제출에 실패했습니다');
     }
   }
 
@@ -166,8 +163,11 @@ class VerificationRejectedScreen extends StatelessWidget {
                           : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.camera_alt,
-                                    color: Colors.white, size: 20),
+                                const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   isRejected ? '셀카 다시 촬영' : '셀카 촬영하기',
@@ -193,10 +193,7 @@ class VerificationRejectedScreen extends StatelessWidget {
                 },
                 child: const Text(
                   '로그아웃',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: AppColors.textTertiary, fontSize: 14),
                 ),
               ),
 

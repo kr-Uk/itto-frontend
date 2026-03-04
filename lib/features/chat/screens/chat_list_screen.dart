@@ -49,10 +49,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const IttoAppBar(
-        title: '인연 채팅',
-        showBack: false,
-      ),
+      appBar: const IttoAppBar(title: '인연 채팅', showBack: false),
       body: Consumer<ChatProvider>(
         builder: (context, chatProvider, child) {
           if (chatProvider.isLoading && chatProvider.chatRooms.isEmpty) {
@@ -63,10 +60,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             return const Center(
               child: Text(
                 '아직 채팅이 없습니다',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 15,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
               ),
             );
           }
@@ -100,10 +94,7 @@ class _ChatListTile extends StatelessWidget {
   final ChatRoom chatRoom;
   final int currentUserId;
 
-  const _ChatListTile({
-    required this.chatRoom,
-    required this.currentUserId,
-  });
+  const _ChatListTile({required this.chatRoom, required this.currentUserId});
 
   String _formatTime(DateTime? dateTime) {
     if (dateTime == null) return '';
@@ -143,7 +134,9 @@ class _ChatListTile extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        context.push('/chat/${chatRoom.id}?name=${Uri.encodeComponent(userName)}');
+        context.push(
+          '/chat/${chatRoom.id}?name=${Uri.encodeComponent(userName)}',
+        );
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
