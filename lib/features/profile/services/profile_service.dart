@@ -19,11 +19,14 @@ class ProfileService {
     List<int>? hobbyIds,
     String? introduction,
   }) async {
-    await _client.patch('/profile/me', data: {
-      if (nickname != null) 'nickname': nickname,
-      if (hobbyIds != null) 'hobbyIds': hobbyIds,
-      if (introduction != null) 'introduction': introduction,
-    });
+    await _client.patch(
+      '/profile/me',
+      data: {
+        if (nickname != null) 'nickname': nickname,
+        if (hobbyIds != null) 'hobbyIds': hobbyIds,
+        if (introduction != null) 'introduction': introduction,
+      },
+    );
   }
 
   Future<PhotoUploadResponse> updatePhotos({
@@ -34,7 +37,9 @@ class ProfileService {
     final formData = FormData();
     if (newPhotoPaths != null) {
       for (final path in newPhotoPaths) {
-        formData.files.add(MapEntry('photos', await MultipartFile.fromFile(path)));
+        formData.files.add(
+          MapEntry('photos', await MultipartFile.fromFile(path)),
+        );
       }
     }
     if (existingPhotoIds != null) {
@@ -42,9 +47,14 @@ class ProfileService {
         formData.fields.add(MapEntry('existingPhotoIds', id.toString()));
       }
     }
-    formData.fields.add(MapEntry('representativeIndex', representativeIndex.toString()));
+    formData.fields.add(
+      MapEntry('representativeIndex', representativeIndex.toString()),
+    );
 
-    final json = await _client.putMultipart('/profile/photos', formData: formData);
+    final json = await _client.putMultipart(
+      '/profile/photos',
+      formData: formData,
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PhotoUploadResponse.fromJson(data);
   }

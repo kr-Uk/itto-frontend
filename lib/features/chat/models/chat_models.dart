@@ -23,7 +23,8 @@ class ChatRoom {
     Map<int, String>? names,
   }) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    final participantIds = (data['participants'] as List<dynamic>?)
+    final participantIds =
+        (data['participants'] as List<dynamic>?)
             ?.map((e) => e as int)
             .toList() ??
         [];
@@ -79,9 +80,8 @@ class ChatMessage {
       text: data['text'] as String,
       type: data['type'] as String? ?? 'text',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
-      readBy: (data['readBy'] as List<dynamic>?)
-              ?.map((e) => e as int)
-              .toList() ??
+      readBy:
+          (data['readBy'] as List<dynamic>?)?.map((e) => e as int).toList() ??
           [],
     );
   }

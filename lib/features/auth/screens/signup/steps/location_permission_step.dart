@@ -25,10 +25,7 @@ class _LocationPermissionStepState extends State<LocationPermissionStep> {
     if (!mounted) return;
 
     if (locationStatus.isDenied || locationStatus.isPermanentlyDenied) {
-      SnackBarUtils.showError(
-        context,
-        '위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.',
-      );
+      SnackBarUtils.showError(context, '위치 권한이 필요합니다. 설정에서 권한을 허용해주세요.');
       if (locationStatus.isPermanentlyDenied) {
         openAppSettings();
       }
@@ -53,10 +50,7 @@ class _LocationPermissionStepState extends State<LocationPermissionStep> {
     if (success) {
       widget.onNext();
     } else {
-      SnackBarUtils.showError(
-        context,
-        provider.error ?? '약관 저장에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, provider.error ?? '약관 저장에 실패했습니다');
     }
   }
 
@@ -165,7 +159,9 @@ class _LocationPermissionStepState extends State<LocationPermissionStep> {
                     shape: BoxShape.circle,
                     color: _agreed ? AppColors.primary : Colors.transparent,
                     border: Border.all(
-                      color: _agreed ? AppColors.primary : AppColors.textTertiary,
+                      color: _agreed
+                          ? AppColors.primary
+                          : AppColors.textTertiary,
                       width: 2,
                     ),
                   ),

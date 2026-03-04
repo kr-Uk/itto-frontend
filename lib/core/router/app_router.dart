@@ -50,6 +50,7 @@ import '../../shared/widgets/main_shell.dart';
 /// 전체 화면 이동용 키 (하단 탭바 없이 전체 화면으로 이동할 때 사용)
 /// 인앱 알림 배너 표시 등에서도 사용됩니다.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 /// ShellRoute 내부 이동용 키 (하단 탭바를 유지하면서 화면을 전환할 때 사용)
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -61,25 +62,23 @@ final appRouter = GoRouter(
   routes: [
     /// ── 독립 화면들 (하단 탭바 없음) ──
     /// 스플래시 화면: 앱 시작 시 로고가 나오는 화면
-    GoRoute(
-      path: '/splash',
-      builder: (context, state) => const SplashScreen(),
-    ),
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+
     /// 로그인 화면
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+
     /// 회원가입 화면
     GoRoute(
       path: '/signup',
       builder: (context, state) => const SignupFlowScreen(),
     ),
+
     /// 본인인증 승인 대기 화면
     GoRoute(
       path: '/verification-pending',
       builder: (context, state) => const VerificationPendingScreen(),
     ),
+
     /// 본인인증 거부/재인증 화면
     GoRoute(
       path: '/verification-rejected',
@@ -123,18 +122,21 @@ final appRouter = GoRouter(
         userName: state.uri.queryParameters['name'] ?? '',
       ),
     ),
+
     /// 프로필 수정 화면
     GoRoute(
       path: '/profile/edit',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ProfileEditScreen(),
     ),
+
     /// 프로필 사진 관리 화면
     GoRoute(
       path: '/profile/photo',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ProfilePhotoScreen(),
     ),
+
     /// 다른 사용자의 프로필 상세 화면 (':userId'는 사용자 번호로 대체됨)
     GoRoute(
       path: '/profile/:userId',
@@ -144,42 +146,49 @@ final appRouter = GoRouter(
         return ProfileDetailScreen(userId: userId);
       },
     ),
+
     /// 연결 범위 설정 화면
     GoRoute(
       path: '/settings/range',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ConnectionRangeScreen(),
     ),
+
     /// 화폐(인앱 결제) 관리 화면
     GoRoute(
       path: '/settings/currency',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const CurrencyScreen(),
     ),
+
     /// 알림 설정 화면
     GoRoute(
       path: '/settings/notifications',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const NotificationSettingsScreen(),
     ),
+
     /// 지도 화면
     GoRoute(
       path: '/map',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const MapScreen(),
     ),
+
     /// 제외 구역 설정 화면 (이 지역에서는 매칭하지 않겠다는 설정)
     GoRoute(
       path: '/map/excluded',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) => const ExcludedAreaScreen(),
     ),
+
     /// 만남 위치 확인 화면
     GoRoute(
       path: '/encounter/:relationshipId',
       parentNavigatorKey: rootNavigatorKey,
       builder: (context, state) {
-        final id = int.tryParse(state.pathParameters['relationshipId'] ?? '') ?? 0;
+        final id =
+            int.tryParse(state.pathParameters['relationshipId'] ?? '') ?? 0;
         return EncounterLocationScreen(relationshipId: id);
       },
     ),

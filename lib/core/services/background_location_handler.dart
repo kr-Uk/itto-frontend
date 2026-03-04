@@ -25,20 +25,21 @@ Future<void> _sendLocationToServer(bg.Location location) async {
 
     final timestamp = DateTime.now().toIso8601String();
 
-    final baseUrl = prefs.getString('api_base_url') ?? 'https://api.hguitto.site/api/v1';
+    final baseUrl =
+        prefs.getString('api_base_url') ?? 'https://api.hguitto.site/api/v1';
 
     final client = HttpClient();
-    final request = await client.postUrl(
-      Uri.parse('$baseUrl/location'),
-    );
+    final request = await client.postUrl(Uri.parse('$baseUrl/location'));
     request.headers.set('Content-Type', 'application/json');
     request.headers.set('Authorization', 'Bearer $accessToken');
-    request.write(jsonEncode({
-      'latitude': location.coords.latitude,
-      'longitude': location.coords.longitude,
-      'accuracy': location.coords.accuracy,
-      'timestamp': timestamp,
-    }));
+    request.write(
+      jsonEncode({
+        'latitude': location.coords.latitude,
+        'longitude': location.coords.longitude,
+        'accuracy': location.coords.accuracy,
+        'timestamp': timestamp,
+      }),
+    );
 
     final response = await request.close();
     // 응답 바디를 소비하여 커넥션 해제

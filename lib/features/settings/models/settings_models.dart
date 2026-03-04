@@ -17,10 +17,10 @@ class MatchingSettings {
       );
 
   Map<String, dynamic> toJson() => {
-        'genderFilter': genderFilter,
-        'ageRangeMin': ageRangeMin,
-        'ageRangeMax': ageRangeMax,
-      };
+    'genderFilter': genderFilter,
+    'ageRangeMin': ageRangeMin,
+    'ageRangeMax': ageRangeMax,
+  };
 }
 
 class NotificationSettings {
@@ -46,9 +46,9 @@ class NotificationSettings {
       );
 
   Map<String, dynamic> toJson() => {
-        'chatNotification': chatNotification,
-        'relationshipNotification': relationshipNotification,
-        'statsNotification': statsNotification,
-        'marketingNotification': marketingNotification,
-      };
+    'chatNotification': chatNotification,
+    'relationshipNotification': relationshipNotification,
+    'statsNotification': statsNotification,
+    'marketingNotification': marketingNotification,
+  };
 }

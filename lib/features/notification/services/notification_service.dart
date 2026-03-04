@@ -11,18 +11,19 @@ class NotificationService {
     int page = 0,
     int size = 20,
   }) async {
-    final json = await _client.get('/notifications', queryParameters: {
-      'page': page,
-      'size': size,
-    });
+    final json = await _client.get(
+      '/notifications',
+      queryParameters: {'page': page, 'size': size},
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PageResponse.fromJson(data, NotificationItem.fromJson);
   }
 
   Future<void> markRead(List<int> notificationIds) async {
-    await _client.put('/notifications/read', data: {
-      'notificationIds': notificationIds,
-    });
+    await _client.put(
+      '/notifications/read',
+      data: {'notificationIds': notificationIds},
+    );
   }
 
   Future<void> deleteAll() async {
@@ -33,9 +34,9 @@ class NotificationService {
     required String fcmToken,
     required String deviceId,
   }) async {
-    await _client.put('/fcm/token', data: {
-      'fcmToken': fcmToken,
-      'deviceId': deviceId,
-    });
+    await _client.put(
+      '/fcm/token',
+      data: {'fcmToken': fcmToken, 'deviceId': deviceId},
+    );
   }
 }

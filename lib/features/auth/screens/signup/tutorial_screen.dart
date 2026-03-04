@@ -20,22 +20,10 @@ class _TutorialScreenState extends State<TutorialScreen> {
   ];
 
   static const _featurePages = [
-    {
-      'icon': 'toggle',
-      'text': '인연 만나기 버튼을 누르면\n위치 정보가 활성화 되고,\n인연을 찾을 수 있어요.',
-    },
-    {
-      'icon': 'tabs',
-      'text': '버튼을 눌러서\n당신의 인연, 필연, 우연을\n확인해보세요.',
-    },
-    {
-      'icon': 'chat',
-      'text': '마음에 드는 인연을 찾아\nItto 버튼을 누르면\n메시지를 전송 할 수 있어요.',
-    },
-    {
-      'icon': 'timer',
-      'text': '24시간이 지나면\n프로필이 사라지니\n유의하세요!',
-    },
+    {'icon': 'toggle', 'text': '인연 만나기 버튼을 누르면\n위치 정보가 활성화 되고,\n인연을 찾을 수 있어요.'},
+    {'icon': 'tabs', 'text': '버튼을 눌러서\n당신의 인연, 필연, 우연을\n확인해보세요.'},
+    {'icon': 'chat', 'text': '마음에 드는 인연을 찾아\nItto 버튼을 누르면\n메시지를 전송 할 수 있어요.'},
+    {'icon': 'timer', 'text': '24시간이 지나면\n프로필이 사라지니\n유의하세요!'},
   ];
 
   int get _totalPages => _introPages.length + _featurePages.length;
@@ -257,8 +245,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             ),
             child: Text(
               _currentPage < _totalPages - 1 ? '다음' : '완료',

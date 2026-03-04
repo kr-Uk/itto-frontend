@@ -12,11 +12,11 @@ class SignupTermsRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'serviceTerms': serviceTerms,
-        'privacyPolicy': privacyPolicy,
-        'locationTerms': locationTerms,
-        'marketingConsent': marketingConsent,
-      };
+    'serviceTerms': serviceTerms,
+    'privacyPolicy': privacyPolicy,
+    'locationTerms': locationTerms,
+    'marketingConsent': marketingConsent,
+  };
 }
 
 class SignupProfileRequest {
@@ -35,12 +35,12 @@ class SignupProfileRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'nickname': nickname,
-        'gender': gender,
-        'birthDate': birthDate,
-        'hobbyIds': hobbyIds,
-        if (introduction != null) 'introduction': introduction,
-      };
+    'nickname': nickname,
+    'gender': gender,
+    'birthDate': birthDate,
+    'hobbyIds': hobbyIds,
+    if (introduction != null) 'introduction': introduction,
+  };
 }
 
 class PhotoUploadResponse {
@@ -50,7 +50,8 @@ class PhotoUploadResponse {
 
   factory PhotoUploadResponse.fromJson(Map<String, dynamic> json) {
     return PhotoUploadResponse(
-      photos: (json['photos'] as List<dynamic>?)
+      photos:
+          (json['photos'] as List<dynamic>?)
               ?.map((e) => PhotoItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
@@ -70,8 +71,8 @@ class PhotoItem {
   });
 
   factory PhotoItem.fromJson(Map<String, dynamic> json) => PhotoItem(
-        id: json['id'] as int,
-        url: json['url'] as String,
-        isRepresentative: json['isRepresentative'] as bool? ?? false,
-      );
+    id: json['id'] as int,
+    url: json['url'] as String,
+    isRepresentative: json['isRepresentative'] as bool? ?? false,
+  );
 }
