@@ -41,9 +41,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       final currentUserId =
           context.read<ProfileProvider>().myProfile?.userId ?? 0;
       context.read<ChatProvider>().subscribeToChatMessages(
-            widget.chatId,
-            currentUserId,
-          );
+        widget.chatId,
+        currentUserId,
+      );
     });
   }
 
@@ -66,10 +66,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     setState(() => _showAttachmentMenu = false);
 
     final success = await context.read<ChatProvider>().sendMessage(
-          chatRoomId: widget.chatId,
-          senderId: currentUserId,
-          text: text,
-        );
+      chatRoomId: widget.chatId,
+      senderId: currentUserId,
+      text: text,
+    );
 
     if (!success && mounted) {
       SnackBarUtils.showError(context, '메시지 전송에 실패했습니다');
@@ -114,7 +114,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               onTap: () => Navigator.of(context).pop(ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library, color: AppColors.primary),
+              leading: const Icon(
+                Icons.photo_library,
+                color: AppColors.primary,
+              ),
               title: const Text(
                 '갤러리',
                 style: TextStyle(color: AppColors.textPrimary),
@@ -160,8 +163,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   int? _getOtherUserId() {
-    final relationships =
-        context.read<RelationshipProvider>().getByStatus('INYEON');
+    final relationships = context.read<RelationshipProvider>().getByStatus(
+      'INYEON',
+    );
     final rel = relationships
         .where((r) => r.chatRoomId == widget.chatId)
         .firstOrNull;
@@ -216,22 +220,30 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         ),
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        children: {
-          'HARASSMENT': '성희롱/스토킹',
-          'PROFANITY': '욕설/혐오 발언',
-          'THREAT': '위협',
-          'SPAM': '스팸/광고',
-          'OTHER': '기타',
-        }.entries.map((entry) => SimpleDialogOption(
-          onPressed: () => Navigator.of(ctx).pop(entry.key),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text(
-              entry.value,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-            ),
-          ),
-        )).toList(),
+        children:
+            {
+                  'HARASSMENT': '성희롱/스토킹',
+                  'PROFANITY': '욕설/혐오 발언',
+                  'THREAT': '위협',
+                  'SPAM': '스팸/광고',
+                  'OTHER': '기타',
+                }.entries
+                .map(
+                  (entry) => SimpleDialogOption(
+                    onPressed: () => Navigator.of(ctx).pop(entry.key),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        entry.value,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
       ),
     );
     if (category == null || !mounted) return;
@@ -253,8 +265,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _navigateToMap() {
-    final relationships =
-        context.read<RelationshipProvider>().getByStatus('INYEON');
+    final relationships = context.read<RelationshipProvider>().getByStatus(
+      'INYEON',
+    );
     final rel = relationships
         .where((r) => r.chatRoomId == widget.chatId)
         .firstOrNull;
@@ -267,7 +280,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUserId = context.read<ProfileProvider>().myProfile?.userId ?? 0;
+    final currentUserId =
+        context.read<ProfileProvider>().myProfile?.userId ?? 0;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -312,7 +326,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   children: [
                     Icon(Icons.block, size: 20, color: AppColors.textSecondary),
                     SizedBox(width: 8),
-                    Text('차단하기', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                    Text(
+                      '차단하기',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -322,7 +342,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   children: [
                     Icon(Icons.report, size: 20, color: AppColors.error),
                     SizedBox(width: 8),
-                    Text('신고하기', style: TextStyle(color: AppColors.textPrimary, fontSize: 14)),
+                    Text(
+                      '신고하기',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -383,13 +409,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       final isSent = message.senderId == currentUserId;
 
                       final isFirst = index == 0;
-                      final isNewGroup = isFirst ||
+                      final isNewGroup =
+                          isFirst ||
                           messages[index - 1].senderId != message.senderId ||
                           _isDifferentTimeGroup(
                             messages[index - 1].createdAt,
                             message.createdAt,
                           );
-                      final isLastInGroup = index == messages.length - 1 ||
+                      final isLastInGroup =
+                          index == messages.length - 1 ||
                           messages[index + 1].senderId != message.senderId ||
                           _isDifferentTimeGroup(
                             message.createdAt,
@@ -397,8 +425,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           );
 
                       // 1:1 채팅: readBy에 본인 외 다른 사람이 포함되면 읽음
-                      final isRead =
-                          isSent && message.readBy.length >= 2;
+                      final isRead = isSent && message.readBy.length >= 2;
 
                       return _MessageBubble(
                         message: message,
@@ -434,9 +461,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -467,9 +492,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
       decoration: const BoxDecoration(
         color: AppColors.surface,
-        border: Border(
-          top: BorderSide(color: AppColors.divider, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -633,12 +656,14 @@ class _MessageBubble extends StatelessWidget {
         bottom: showTimestamp ? 4 : 2,
       ),
       child: Column(
-        crossAxisAlignment:
-            isSent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isSent
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment:
-                isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isSent
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               // Avatar for received messages
@@ -664,7 +689,6 @@ class _MessageBubble extends StatelessWidget {
                 )
               else if (!isSent)
                 const SizedBox(width: 44), // Space for missing avatar
-
               // Message bubble
               Flexible(
                 child: Container(
@@ -699,8 +723,9 @@ class _MessageBubble extends StatelessWidget {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment:
-                    isSent ? MainAxisAlignment.end : MainAxisAlignment.start,
+                mainAxisAlignment: isSent
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                 children: [
                   if (isSent && isRead) ...[
                     const Text(
@@ -754,11 +779,7 @@ class _AttachmentButton extends StatelessWidget {
               color: AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.textPrimary,
-              size: 24,
-            ),
+            child: Icon(icon, color: AppColors.textPrimary, size: 24),
           ),
           const SizedBox(height: 6),
           Text(

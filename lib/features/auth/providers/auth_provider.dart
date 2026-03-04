@@ -47,9 +47,9 @@ class AuthProvider extends ChangeNotifier {
     required AuthService authService,
     required FirebaseAuthService firebaseAuthService,
     required TokenStorage tokenStorage,
-  })  : _authService = authService,
-        _firebaseAuthService = firebaseAuthService,
-        _tokenStorage = tokenStorage;
+  }) : _authService = authService,
+       _firebaseAuthService = firebaseAuthService,
+       _tokenStorage = tokenStorage;
 
   // ── Getter: 외부(화면)에서 상태 값을 읽을 수 있도록 공개하는 부분 ──
   // (private 변수 _isLoggedIn을 직접 접근 못하게 하고, 읽기만 허용)

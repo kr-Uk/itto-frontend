@@ -64,7 +64,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     SizedBox(width: 8),
                     Text(
                       '차단하기',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -77,7 +80,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     SizedBox(width: 8),
                     Text(
                       '신고하기',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -100,11 +106,18 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person_off, color: AppColors.textTertiary, size: 48),
+                  const Icon(
+                    Icons.person_off,
+                    color: AppColors.textTertiary,
+                    size: 48,
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     provider.error ?? '프로필을 불러올 수 없습니다',
-                    style: const TextStyle(color: AppColors.textTertiary, fontSize: 16),
+                    style: const TextStyle(
+                      color: AppColors.textTertiary,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -176,7 +189,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 const SizedBox(height: 12),
 
                 // Introduction
-                if (profile.introduction != null && profile.introduction!.isNotEmpty)
+                if (profile.introduction != null &&
+                    profile.introduction!.isNotEmpty)
                   Text(
                     profile.introduction!,
                     style: const TextStyle(
@@ -236,8 +250,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                     fit: BoxFit.cover,
                                     errorWidget: (_, _, _) => Container(
                                       color: AppColors.surfaceLight,
-                                      child: const Icon(Icons.image,
-                                          color: AppColors.textTertiary),
+                                      child: const Icon(
+                                        Icons.image,
+                                        color: AppColors.textTertiary,
+                                      ),
                                     ),
                                   ),
                           ),
@@ -267,8 +283,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.place,
-                                    color: AppColors.primary, size: 20),
+                                const Icon(
+                                  Icons.place,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   '${profile.encounterCount}번 마주침',
@@ -294,8 +313,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                 '/chat/${relItem.chatRoomId}?name=${relItem.otherUser.nickname}',
                               ),
                               child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
                                   gradient: AppColors.buttonGradient,
                                   borderRadius: BorderRadius.circular(12),
@@ -303,8 +323,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                 child: const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.chat_bubble_outline,
-                                        color: Colors.white, size: 20),
+                                    Icon(
+                                      Icons.chat_bubble_outline,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 8),
                                     Text(
                                       '채팅하기',
@@ -357,10 +380,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       SnackBarUtils.showSuccess(context, '차단되었습니다');
       context.pop();
     } else {
-      SnackBarUtils.showError(
-        context,
-        blockProvider.error ?? '차단에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, blockProvider.error ?? '차단에 실패했습니다');
     }
   }
 
@@ -381,28 +401,30 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         ),
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        children: {
-          'INAPPROPRIATE_PHOTO': '부적절한 사진/프로필',
-          'HARASSMENT': '성희롱/스토킹',
-          'SPAM': '스팸/광고',
-          'PROFANITY': '욕설/혐오 발언',
-          'OTHER': '기타',
-        }
-            .entries
-            .map((entry) => SimpleDialogOption(
-                  onPressed: () => Navigator.of(context).pop(entry.key),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      entry.value,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
+        children:
+            {
+                  'INAPPROPRIATE_PHOTO': '부적절한 사진/프로필',
+                  'HARASSMENT': '성희롱/스토킹',
+                  'SPAM': '스팸/광고',
+                  'PROFANITY': '욕설/혐오 발언',
+                  'OTHER': '기타',
+                }.entries
+                .map(
+                  (entry) => SimpleDialogOption(
+                    onPressed: () => Navigator.of(context).pop(entry.key),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        entry.value,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
-                ))
-            .toList(),
+                )
+                .toList(),
       ),
     );
 
@@ -422,10 +444,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     if (success) {
       SnackBarUtils.showSuccess(context, '신고가 접수되었습니다');
     } else {
-      SnackBarUtils.showError(
-        context,
-        blockProvider.error ?? '신고에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, blockProvider.error ?? '신고에 실패했습니다');
     }
   }
 

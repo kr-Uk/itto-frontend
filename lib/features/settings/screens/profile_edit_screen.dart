@@ -56,9 +56,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (!mounted) return;
     if (result != null && result.trim().isNotEmpty) {
       final trimmed = result.trim();
-      final success = await context
-          .read<ProfileProvider>()
-          .updateProfile(nickname: trimmed);
+      final success = await context.read<ProfileProvider>().updateProfile(
+        nickname: trimmed,
+      );
       if (success && mounted) {
         setState(() => _nickname = trimmed);
       }
@@ -81,9 +81,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (!mounted) return;
     if (result != null && result.trim().isNotEmpty) {
       final trimmed = result.trim();
-      final success = await context
-          .read<ProfileProvider>()
-          .updateProfile(introduction: trimmed);
+      final success = await context.read<ProfileProvider>().updateProfile(
+        introduction: trimmed,
+      );
       if (success && mounted) {
         setState(() => _bio = trimmed);
       }
@@ -156,8 +156,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
 
     if (confirmed != true || !mounted) return;
 
-    final success =
-        await context.read<ProfileProvider>().reverify(image.path);
+    final success = await context.read<ProfileProvider>().reverify(image.path);
     if (!mounted) return;
     if (success) {
       SnackBarUtils.showSuccess(context, '재인증 요청이 접수되었습니다');
@@ -193,8 +192,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           backgroundColor: AppColors.background,
           appBar: const IttoAppBar(title: '프로필 설정'),
           body: SingleChildScrollView(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -213,8 +211,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             shape: BoxShape.circle,
                             color: AppColors.surfaceLight,
                             border: Border.all(
-                              color:
-                                  AppColors.primary.withValues(alpha: 0.4),
+                              color: AppColors.primary.withValues(alpha: 0.4),
                               width: 2.5,
                             ),
                           ),
@@ -225,12 +222,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                                 final representativePhotos = profile?.photos
                                     .where((p) => p.isRepresentative)
                                     .toList();
-                                final photoUrl = (representativePhotos != null &&
+                                final photoUrl =
+                                    (representativePhotos != null &&
                                         representativePhotos.isNotEmpty)
                                     ? representativePhotos.first.url
                                     : (profile?.photos.isNotEmpty == true
-                                        ? profile!.photos.first.url
-                                        : null);
+                                          ? profile!.photos.first.url
+                                          : null);
 
                                 if (photoUrl != null && photoUrl.isNotEmpty) {
                                   return CachedNetworkImage(
@@ -314,15 +312,14 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 const SizedBox(height: 36),
 
                 // -- Bio section --
-                _SectionHeader(
-                  title: '한줄소개',
-                  onEdit: _editBio,
-                ),
+                _SectionHeader(title: '한줄소개', onEdit: _editBio),
                 const SizedBox(height: 10),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
@@ -355,23 +352,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       onTap: _addKeyword,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 9),
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color:
-                                AppColors.primary.withValues(alpha: 0.6),
+                            color: AppColors.primary.withValues(alpha: 0.6),
                             width: 1.2,
                           ),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.add,
-                              color: AppColors.primary,
-                              size: 18,
-                            ),
+                            Icon(Icons.add, color: AppColors.primary, size: 18),
                             SizedBox(width: 4),
                             Text(
                               '추가',
@@ -397,7 +391,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
@@ -581,8 +577,10 @@ class _TextEditDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
               ),
             ),
             const SizedBox(height: 12),

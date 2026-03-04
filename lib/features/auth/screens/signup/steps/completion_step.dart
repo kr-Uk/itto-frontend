@@ -55,10 +55,7 @@ class CompletionStep extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          PurpleButton(
-            text: '시작하기',
-            onPressed: () => context.go('/home'),
-          ),
+          PurpleButton(text: '시작하기', onPressed: () => context.go('/home')),
           const SizedBox(height: 40),
         ],
       ),

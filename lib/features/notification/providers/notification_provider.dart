@@ -14,7 +14,7 @@ class NotificationProvider extends ChangeNotifier {
   int _currentPage = 0;
 
   NotificationProvider({required NotificationService service})
-      : _service = service;
+    : _service = service;
 
   List<NotificationItem> get notifications => _notifications;
   bool get isLoading => _isLoading;
@@ -96,22 +96,19 @@ class NotificationProvider extends ChangeNotifier {
         return;
       }
 
-      await _service.updateFcmToken(
-        fcmToken: token,
-        deviceId: deviceId,
-      );
+      await _service.updateFcmToken(fcmToken: token, deviceId: deviceId);
       debugPrint('FCM 토큰 등록 성공');
 
       // 토큰 갱신 시 자동 재등록 콜백 설정
       fcmService.setOnTokenRefresh((newToken) {
-        _service.updateFcmToken(
-          fcmToken: newToken,
-          deviceId: deviceId,
-        ).then((_) {
-          debugPrint('FCM 토큰 갱신 → 백엔드 재등록 성공');
-        }).catchError((e) {
-          debugPrint('FCM 토큰 갱신 → 백엔드 재등록 실패: $e');
-        });
+        _service
+            .updateFcmToken(fcmToken: newToken, deviceId: deviceId)
+            .then((_) {
+              debugPrint('FCM 토큰 갱신 → 백엔드 재등록 성공');
+            })
+            .catchError((e) {
+              debugPrint('FCM 토큰 갱신 → 백엔드 재등록 실패: $e');
+            });
       });
     } on ApiException catch (e) {
       debugPrint('FCM 토큰 등록 실패: ${e.message}');

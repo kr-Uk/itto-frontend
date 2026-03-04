@@ -17,40 +17,41 @@ class ChatService {
         .orderBy('lastMessageAt', descending: true)
         .snapshots()
         .asyncMap((snapshot) async {
-      final chatRooms = <ChatRoom>[];
+          final chatRooms = <ChatRoom>[];
 
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        final participants = (data['participants'] as List<dynamic>?)
-                ?.map((e) => e as int)
-                .toList() ??
-            [];
+          for (final doc in snapshot.docs) {
+            final data = doc.data();
+            final participants =
+                (data['participants'] as List<dynamic>?)
+                    ?.map((e) => e as int)
+                    .toList() ??
+                [];
 
-        final names = <int, String>{};
-        for (final participantId in participants) {
-          if (chatRoomIdToName.containsKey(doc.id)) {
-            names[participantId] = chatRoomIdToName[doc.id]!;
-          } else {
-            names[participantId] = '알 수 없음';
+            final names = <int, String>{};
+            for (final participantId in participants) {
+              if (chatRoomIdToName.containsKey(doc.id)) {
+                names[participantId] = chatRoomIdToName[doc.id]!;
+              } else {
+                names[participantId] = '알 수 없음';
+              }
+            }
+
+            final unreadCount = await _getUnreadCount(doc.id, userId);
+
+            final chatRoom = ChatRoom(
+              id: doc.id,
+              participantIds: participants,
+              participantNames: names,
+              lastMessage: data['lastMessage'] as String?,
+              lastMessageAt: (data['lastMessageAt'] as Timestamp?)?.toDate(),
+              unreadCount: unreadCount,
+            );
+
+            chatRooms.add(chatRoom);
           }
-        }
 
-        final unreadCount = await _getUnreadCount(doc.id, userId);
-
-        final chatRoom = ChatRoom(
-          id: doc.id,
-          participantIds: participants,
-          participantNames: names,
-          lastMessage: data['lastMessage'] as String?,
-          lastMessageAt: (data['lastMessageAt'] as Timestamp?)?.toDate(),
-          unreadCount: unreadCount,
-        );
-
-        chatRooms.add(chatRoom);
-      }
-
-      return chatRooms;
-    });
+          return chatRooms;
+        });
   }
 
   Future<int> _getUnreadCount(String chatRoomId, int userId) async {
@@ -66,7 +67,7 @@ class ChatService {
       final data = doc.data();
       final readBy =
           (data['readBy'] as List<dynamic>?)?.map((e) => e as int).toList() ??
-              [];
+          [];
       if (!readBy.contains(userId)) {
         count++;
       }
@@ -82,8 +83,10 @@ class ChatService {
         .orderBy('createdAt', descending: false)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => ChatMessage.fromFirestore(doc)).toList();
-    });
+          return snapshot.docs
+              .map((doc) => ChatMessage.fromFirestore(doc))
+              .toList();
+        });
   }
 
   Future<void> sendMessage({
@@ -112,14 +115,10 @@ class ChatService {
 
     batch.set(messageRef, message.toFirestore());
 
-    batch.set(
-      _firestore.collection('chatRooms').doc(chatRoomId),
-      {
-        'lastMessage': text,
-        'lastMessageAt': Timestamp.fromDate(now),
-      },
-      SetOptions(merge: true),
-    );
+    batch.set(_firestore.collection('chatRooms').doc(chatRoomId), {
+      'lastMessage': text,
+      'lastMessageAt': Timestamp.fromDate(now),
+    }, SetOptions(merge: true));
 
     await batch.commit();
   }
@@ -137,7 +136,7 @@ class ChatService {
       final data = doc.data();
       final readBy =
           (data['readBy'] as List<dynamic>?)?.map((e) => e as int).toList() ??
-              [];
+          [];
       if (!readBy.contains(userId)) {
         batch.update(doc.reference, {
           'readBy': FieldValue.arrayUnion([userId]),
@@ -152,7 +151,8 @@ class ChatService {
     required String chatRoomId,
     required String filePath,
   }) async {
-    final fileName = '${DateTime.now().millisecondsSinceEpoch}_${filePath.split('/').last}';
+    final fileName =
+        '${DateTime.now().millisecondsSinceEpoch}_${filePath.split('/').last}';
     final ref = _storage.ref().child('chat_images/$chatRoomId/$fileName');
     await ref.putFile(File(filePath));
     return await ref.getDownloadURL();

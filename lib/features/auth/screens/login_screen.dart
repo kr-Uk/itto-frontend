@@ -6,7 +6,6 @@ import '../../../shared/utils/snackbar_utils.dart';
 import '../../notification/providers/notification_provider.dart';
 import '../providers/auth_provider.dart';
 
-
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -38,11 +37,12 @@ class LoginScreen extends StatelessWidget {
         // 프로필 완성 → 인증 상태에 따라 분기
         switch (authProvider.verificationStatus) {
           case 'APPROVED':
+          case 'NONE': // TODO: 본인인증 임시 스킵
             context.read<NotificationProvider>().registerFcmToken();
             context.go('/home');
           case 'PENDING':
             context.go('/verification-pending');
-          default: // NONE, REJECTED
+          default: // REJECTED
             context.go('/verification-rejected');
         }
       }
@@ -85,11 +85,7 @@ class LoginScreen extends StatelessWidget {
             ),
           ),
           // Decorative curved line art
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _CurvedLinePainter(),
-            ),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _CurvedLinePainter())),
           // Main content
           SafeArea(
             child: Column(

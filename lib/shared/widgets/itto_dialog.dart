@@ -54,7 +54,8 @@ class IttoDialog extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextButton(
-                    onPressed: onCancel ?? () => Navigator.of(context).pop(false),
+                    onPressed:
+                        onCancel ?? () => Navigator.of(context).pop(false),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.grey[600],
                       shape: RoundedRectangleBorder(
@@ -74,7 +75,8 @@ class IttoDialog extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: TextButton(
-                      onPressed: onConfirm ?? () => Navigator.of(context).pop(true),
+                      onPressed:
+                          onConfirm ?? () => Navigator.of(context).pop(true),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),

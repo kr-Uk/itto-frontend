@@ -124,8 +124,7 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
     for (int i = 0; i < cells.length; i++) {
       final cell = cells[i];
       final isSelected = selected.contains(cell.h3Index);
-      final coords =
-          cell.boundary.map((p) => NLatLng(p[0], p[1])).toList();
+      final coords = cell.boundary.map((p) => NLatLng(p[0], p[1])).toList();
 
       // 폴리곤은 닫혀야 하므로 첫 점 == 마지막 점 확인
       if (coords.isNotEmpty && coords.first != coords.last) {
@@ -155,8 +154,7 @@ class _ExcludedAreaScreenState extends State<ExcludedAreaScreen> {
       SnackBarUtils.showSuccess(context, '제외 지역이 저장되었습니다');
       Navigator.of(context).pop();
     } else {
-      SnackBarUtils.showError(
-          context, locationProvider.error ?? '저장에 실패했습니다');
+      SnackBarUtils.showError(context, locationProvider.error ?? '저장에 실패했습니다');
     }
   }
 

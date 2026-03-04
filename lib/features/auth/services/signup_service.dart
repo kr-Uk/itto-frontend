@@ -30,24 +30,20 @@ class SignupService {
   }) async {
     final formData = FormData();
     for (final path in filePaths) {
-      formData.files.add(MapEntry(
-        'photos',
-        await MultipartFile.fromFile(path),
-      ));
+      formData.files.add(
+        MapEntry('photos', await MultipartFile.fromFile(path)),
+      );
     }
-    formData.fields.add(MapEntry('representativeIndex', representativeIndex.toString()));
+    formData.fields.add(
+      MapEntry('representativeIndex', representativeIndex.toString()),
+    );
 
-    final json = await _client.postMultipart('/signup/photos', formData: formData);
+    final json = await _client.postMultipart(
+      '/signup/photos',
+      formData: formData,
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PhotoUploadResponse.fromJson(data);
-  }
-
-  Future<Map<String, dynamic>> uploadVerification(String filePath) async {
-    final formData = FormData.fromMap({
-      'selfie': await MultipartFile.fromFile(filePath),
-    });
-    final json = await _client.postMultipart('/signup/verification', formData: formData);
-    return json['data'] as Map<String, dynamic>? ?? json;
   }
 
   Future<void> complete() async {

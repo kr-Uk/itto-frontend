@@ -20,7 +20,8 @@ class PageResponse<T> {
     T Function(Map<String, dynamic>) fromItem,
   ) {
     return PageResponse(
-      content: (json['content'] as List<dynamic>?)
+      content:
+          (json['content'] as List<dynamic>?)
               ?.map((e) => fromItem(e as Map<String, dynamic>))
               .toList() ??
           [],

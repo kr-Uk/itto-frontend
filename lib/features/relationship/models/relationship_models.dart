@@ -30,6 +30,7 @@ class RelationshipItem {
   final String createdAt;
   final List<RelationshipHobby> hobbies;
   final String? chatRoomId;
+  final bool destinyBadge;
 
   const RelationshipItem({
     required this.relationshipId,
@@ -41,23 +42,29 @@ class RelationshipItem {
     required this.createdAt,
     this.hobbies = const [],
     this.chatRoomId,
+    this.destinyBadge = false,
   });
 
   factory RelationshipItem.fromJson(Map<String, dynamic> json) =>
       RelationshipItem(
         relationshipId: json['relationshipId'] as int,
         otherUser: RelationshipOtherUser.fromJson(
-            json['otherUser'] as Map<String, dynamic>),
+          json['otherUser'] as Map<String, dynamic>,
+        ),
         status: json['status'] as String,
         encounterCount: json['encounterCount'] as int? ?? 0,
         lastEncounterAt: json['lastEncounterAt'] as String?,
         expiresAt: json['expiresAt'] as String?,
         createdAt: json['createdAt'] as String? ?? '',
-        hobbies: (json['hobbies'] as List<dynamic>?)
-                ?.map((e) => RelationshipHobby.fromJson(e as Map<String, dynamic>))
+        hobbies:
+            (json['hobbies'] as List<dynamic>?)
+                ?.map(
+                  (e) => RelationshipHobby.fromJson(e as Map<String, dynamic>),
+                )
                 .toList() ??
             [],
         chatRoomId: json['chatRoomId'] as String?,
+        destinyBadge: json['destinyBadge'] as bool? ?? false,
       );
 }
 
@@ -88,7 +95,8 @@ class RelationshipDetail {
       RelationshipDetail(
         relationshipId: json['relationshipId'] as int,
         otherUser: RelationshipDetailUser.fromJson(
-            json['otherUser'] as Map<String, dynamic>),
+          json['otherUser'] as Map<String, dynamic>,
+        ),
         status: json['status'] as String,
         encounterCount: json['encounterCount'] as int? ?? 0,
         firstEncounterAt: json['firstEncounterAt'] as String?,
@@ -118,22 +126,25 @@ class RelationshipDetailUser {
     required this.photos,
   });
 
-  factory RelationshipDetailUser.fromJson(Map<String, dynamic> json) =>
-      RelationshipDetailUser(
-        userId: json['userId'] as int,
-        nickname: json['nickname'] as String,
-        gender: json['gender'] as String?,
-        age: json['age'] as int?,
-        hobbies: (json['hobbies'] as List<dynamic>?)
-                ?.map((e) => RelationshipHobby.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-        introduction: json['introduction'] as String?,
-        photos: (json['photos'] as List<dynamic>?)
-                ?.map((e) => RelationshipPhoto.fromJson(e as Map<String, dynamic>))
-                .toList() ??
-            [],
-      );
+  factory RelationshipDetailUser.fromJson(
+    Map<String, dynamic> json,
+  ) => RelationshipDetailUser(
+    userId: json['userId'] as int,
+    nickname: json['nickname'] as String,
+    gender: json['gender'] as String?,
+    age: json['age'] as int?,
+    hobbies:
+        (json['hobbies'] as List<dynamic>?)
+            ?.map((e) => RelationshipHobby.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
+    introduction: json['introduction'] as String?,
+    photos:
+        (json['photos'] as List<dynamic>?)
+            ?.map((e) => RelationshipPhoto.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        [],
+  );
 }
 
 class RelationshipHobby {
@@ -143,10 +154,7 @@ class RelationshipHobby {
   const RelationshipHobby({required this.id, required this.name});
 
   factory RelationshipHobby.fromJson(Map<String, dynamic> json) =>
-      RelationshipHobby(
-        id: json['id'] as int,
-        name: json['name'] as String,
-      );
+      RelationshipHobby(id: json['id'] as int, name: json['name'] as String);
 }
 
 class RelationshipPhoto {
