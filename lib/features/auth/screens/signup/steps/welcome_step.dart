@@ -32,9 +32,9 @@ class _WelcomeStepState extends State<WelcomeStep> {
     setState(() => _isLoading = false);
 
     if (success) {
-      // 신규 사용자 가입 완료 → FCM 토큰 등록
+      // 신규 사용자 가입 완료 → FCM 토큰 등록 → 튜토리얼
       context.read<NotificationProvider>().registerFcmToken();
-      context.go('/home');
+      context.go('/tutorial', extra: true);
     } else {
       SnackBarUtils.showError(context, provider.error ?? '가입 완료에 실패했습니다');
     }

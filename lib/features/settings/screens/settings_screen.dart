@@ -118,8 +118,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
                 _SettingsItemData(
-                  title: '구독하기',
+                  title: '매듭 관리',
                   onTap: () => context.push('/settings/currency'),
+                ),
+                _SettingsItemData(
+                  title: '구독하기',
+                  onTap: () => context.push('/settings/subscription'),
+                ),
+                _SettingsItemData(
+                  title: '튜토리얼',
+                  onTap: () => context.push('/tutorial'),
                 ),
                 _SettingsItemData(
                   title: '도움받기',
