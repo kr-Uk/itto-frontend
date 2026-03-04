@@ -23,7 +23,8 @@ void main() {
   });
 
   Widget createWidget({ContactHashProvider? provider}) {
-    final p = provider ??
+    final p =
+        provider ??
         ContactHashProvider(
           repository: mockRepository,
           syncContactHashesUseCase: mockSyncUseCase,
@@ -32,9 +33,7 @@ void main() {
       home: Scaffold(
         body: ChangeNotifierProvider<ContactHashProvider>.value(
           value: p,
-          child: const SingleChildScrollView(
-            child: ContactBlockSection(),
-          ),
+          child: const SingleChildScrollView(child: ContactBlockSection()),
         ),
       ),
     );
@@ -68,10 +67,8 @@ void main() {
     });
 
     testWidgets('tapping block button calls addManualBlock', (tester) async {
-      when(() => mockRepository.addManualBlock(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepository.getHashes())
-          .thenAnswer((_) async => []);
+      when(() => mockRepository.addManualBlock(any())).thenAnswer((_) async {});
+      when(() => mockRepository.getHashes()).thenAnswer((_) async => []);
 
       await tester.pumpWidget(createWidget());
 
@@ -83,14 +80,11 @@ void main() {
     });
 
     testWidgets('shows hash list with remove button', (tester) async {
-      when(() => mockRepository.getHashes())
-          .thenAnswer((_) async => [
-                ContactHash(
-                  id: 1,
-                  phoneHash: 'a' * 64,
-                  createdAt: DateTime.now(),
-                ),
-              ]);
+      when(() => mockRepository.getHashes()).thenAnswer(
+        (_) async => [
+          ContactHash(id: 1, phoneHash: 'a' * 64, createdAt: DateTime.now()),
+        ],
+      );
 
       final provider = ContactHashProvider(
         repository: mockRepository,
@@ -105,16 +99,12 @@ void main() {
     });
 
     testWidgets('tapping remove calls removeHash', (tester) async {
-      when(() => mockRepository.removeHash(any()))
-          .thenAnswer((_) async {});
-      when(() => mockRepository.getHashes())
-          .thenAnswer((_) async => [
-                ContactHash(
-                  id: 1,
-                  phoneHash: 'a' * 64,
-                  createdAt: DateTime.now(),
-                ),
-              ]);
+      when(() => mockRepository.removeHash(any())).thenAnswer((_) async {});
+      when(() => mockRepository.getHashes()).thenAnswer(
+        (_) async => [
+          ContactHash(id: 1, phoneHash: 'a' * 64, createdAt: DateTime.now()),
+        ],
+      );
 
       final provider = ContactHashProvider(
         repository: mockRepository,
