@@ -58,10 +58,7 @@ class ExcludedAreaInfoStep extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          PurpleButton(
-            text: '다음',
-            onPressed: onNext,
-          ),
+          PurpleButton(text: '다음', onPressed: onNext),
           const SizedBox(height: 40),
         ],
       ),

@@ -77,10 +77,9 @@ class AuthInterceptor extends Interceptor {
     /// 이미 다른 요청에서 토큰 갱신 중이면, 이 요청은 대기열에 넣고 기다립니다
     /// (동시에 여러 요청이 401을 받으면, 한 번만 갱신하고 나머지는 대기)
     if (_isRefreshing) {
-      _pendingRequests.add(_RetryRequest(
-        options: err.requestOptions,
-        handler: handler,
-      ));
+      _pendingRequests.add(
+        _RetryRequest(options: err.requestOptions, handler: handler),
+      );
       return;
     }
 

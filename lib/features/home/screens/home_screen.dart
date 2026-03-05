@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/utils/snackbar_utils.dart';
@@ -113,8 +114,9 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Switch(
                       value: isEnabled,
                       onChanged: (value) async {
-                        final success =
-                            await locationProvider.toggleMatching(value);
+                        final success = await locationProvider.toggleMatching(
+                          value,
+                        );
                         if (!success && context.mounted) {
                           SnackBarUtils.showError(
                             context,
@@ -123,8 +125,9 @@ class _HomeScreenState extends State<HomeScreen>
                         }
                       },
                       activeThumbColor: AppColors.primary,
-                      activeTrackColor:
-                          AppColors.primary.withValues(alpha: 0.3),
+                      activeTrackColor: AppColors.primary.withValues(
+                        alpha: 0.3,
+                      ),
                       inactiveThumbColor: AppColors.textTertiary,
                       inactiveTrackColor: AppColors.surfaceLight,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -194,31 +197,35 @@ class _HomeScreenState extends State<HomeScreen>
               }),
             ),
           ),
-          // Heart icon + knot count
+          // Heart icon + knot count (tap to navigate to knot management)
           Consumer<ShopProvider>(
             builder: (context, shopProvider, _) {
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ShaderMask(
-                    shaderCallback: (bounds) =>
-                        AppColors.primaryGradient.createShader(bounds),
-                    child: const Icon(
-                      Icons.favorite,
-                      color: Colors.white,
-                      size: 18,
+              return GestureDetector(
+                key: const Key('knot_display'),
+                onTap: () => context.push('/settings/currency'),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ShaderMask(
+                      shaderCallback: (bounds) =>
+                          AppColors.primaryGradient.createShader(bounds),
+                      child: const Icon(
+                        Icons.favorite,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${shopProvider.knots}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(width: 4),
+                    Text(
+                      '${shopProvider.knots}',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),

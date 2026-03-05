@@ -37,7 +37,7 @@ class ApiClient {
   /// private 생성자 - 외부에서 직접 new ApiClient()로 만들 수 없고,
   /// 반드시 getInstance()를 통해서만 생성/접근합니다 (싱글톤 패턴)
   ApiClient._({required TokenStorage tokenStorage})
-      : _tokenStorage = tokenStorage {
+    : _tokenStorage = tokenStorage {
     /// Dio 객체 생성 및 기본 설정
     /// - baseUrl: 모든 요청의 기본 서버 주소 (예: https://api.hguitto.site/api/v1)
     /// - connectTimeout: 서버 연결 최대 대기 시간
@@ -54,19 +54,22 @@ class ApiClient {
         },
       ),
     );
+
     /// 인터셉터 등록 - 모든 요청/응답을 중간에서 가로채는 역할
     /// AuthInterceptor: 요청마다 자동으로 로그인 토큰을 붙여주고, 만료되면 갱신합니다
-    _dio.interceptors.add(AuthInterceptor(
-      dio: _dio,
-      tokenStorage: _tokenStorage,
-    ));
+    _dio.interceptors.add(
+      AuthInterceptor(dio: _dio, tokenStorage: _tokenStorage),
+    );
+
     /// 디버그 모드(개발 중)일 때만 통신 내역을 콘솔에 출력합니다
     if (kDebugMode) {
-      _dio.interceptors.add(LogInterceptor(
-        requestBody: false,
-        responseBody: true,
-        logPrint: (o) => debugPrint('[API] $o'),
-      ));
+      _dio.interceptors.add(
+        LogInterceptor(
+          requestBody: false,
+          responseBody: true,
+          logPrint: (o) => debugPrint('[API] $o'),
+        ),
+      );
     }
   }
 
@@ -92,10 +95,7 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      final response = await _dio.get(
-        path,
-        queryParameters: queryParameters,
-      );
+      final response = await _dio.get(path, queryParameters: queryParameters);
       return _handleResponse(response);
     } on DioException catch (e) {
       throw _handleDioError(e);
@@ -104,10 +104,7 @@ class ApiClient {
 
   // ─── POST: 서버에 새 데이터를 보내는 요청 (예: 회원가입, 로그인, 메시지 전송) ───
 
-  Future<Map<String, dynamic>> post(
-    String path, {
-    dynamic data,
-  }) async {
+  Future<Map<String, dynamic>> post(String path, {dynamic data}) async {
     try {
       final response = await _dio.post(path, data: data);
       return _handleResponse(response);
@@ -118,10 +115,7 @@ class ApiClient {
 
   // ─── PUT: 서버의 기존 데이터를 통째로 수정하는 요청 (예: 프로필 전체 수정) ───
 
-  Future<Map<String, dynamic>> put(
-    String path, {
-    dynamic data,
-  }) async {
+  Future<Map<String, dynamic>> put(String path, {dynamic data}) async {
     try {
       final response = await _dio.put(path, data: data);
       return _handleResponse(response);
@@ -132,10 +126,7 @@ class ApiClient {
 
   // ─── PATCH: 서버의 기존 데이터 중 일부만 수정하는 요청 (예: 닉네임만 변경) ───
 
-  Future<Map<String, dynamic>> patch(
-    String path, {
-    dynamic data,
-  }) async {
+  Future<Map<String, dynamic>> patch(String path, {dynamic data}) async {
     try {
       final response = await _dio.patch(path, data: data);
       return _handleResponse(response);
@@ -146,10 +137,7 @@ class ApiClient {
 
   // ─── DELETE: 서버의 데이터를 삭제하는 요청 (예: 계정 탈퇴, 채팅방 나가기) ───
 
-  Future<Map<String, dynamic>> delete(
-    String path, {
-    dynamic data,
-  }) async {
+  Future<Map<String, dynamic>> delete(String path, {dynamic data}) async {
     try {
       final response = await _dio.delete(path, data: data);
       return _handleResponse(response);
@@ -216,7 +204,9 @@ class ApiClient {
   /// 서버 통신 중 오류가 발생했을 때 사용자에게 보여줄 에러 메시지를 만듭니다
   /// (타임아웃, 서버 다운, 네트워크 끊김 등 상황별로 다른 메시지를 반환)
   ApiException _handleDioError(DioException e) {
-    debugPrint('[API ERROR] type=${e.type} url=${e.requestOptions.uri} message=${e.message}');
+    debugPrint(
+      '[API ERROR] type=${e.type} url=${e.requestOptions.uri} message=${e.message}',
+    );
     if (e.response != null) {
       final data = e.response!.data;
       if (data is Map<String, dynamic>) {

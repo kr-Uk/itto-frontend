@@ -93,9 +93,7 @@ class _NicknameStepState extends State<NicknameStep> {
               fontSize: 16,
               color: AppColors.textPrimary,
             ),
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(_maxLength),
-            ],
+            inputFormatters: [LengthLimitingTextInputFormatter(_maxLength)],
             decoration: InputDecoration(
               hintText: '닉네임을 입력해주세요',
               hintStyle: GoogleFonts.notoSansKr(
@@ -126,8 +124,10 @@ class _NicknameStepState extends State<NicknameStep> {
                       : AppColors.primary,
                 ),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
           ),
           if (_errorText.isNotEmpty) ...[

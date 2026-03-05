@@ -31,7 +31,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('회원탈퇴', style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(
+          '회원탈퇴',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: const Text(
           '정말 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.',
           style: TextStyle(color: AppColors.textSecondary),
@@ -60,10 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const IttoAppBar(
-        title: '설정',
-        showBack: false,
-      ),
+      appBar: const IttoAppBar(title: '설정', showBack: false),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Column(
@@ -72,9 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // -- Profile section --
             _SectionLabel(label: '내 프로필'),
             const SizedBox(height: 8),
-            _ProfileCard(
-              onTap: () => context.push('/profile/edit'),
-            ),
+            _ProfileCard(onTap: () => context.push('/profile/edit')),
             const SizedBox(height: 24),
 
             // -- Features section --
@@ -112,19 +110,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Itto 공유하기',
                   onTap: () {
                     SharePlus.instance.share(
-                      ShareParams(text: '스친 인연을 이토로 잇다! Itto 앱을 만나보세요.\nhttps://play.google.com/store/apps/details?id=com.itto.app'),
+                      ShareParams(
+                        text:
+                            '스친 인연을 이토로 잇다! Itto 앱을 만나보세요.\nhttps://play.google.com/store/apps/details?id=com.itto.app',
+                      ),
                     );
                   },
                 ),
                 _SettingsItemData(
-                  title: '구독하기',
+                  title: '매듭 관리',
                   onTap: () => context.push('/settings/currency'),
+                ),
+                _SettingsItemData(
+                  title: '구독하기',
+                  onTap: () => context.push('/settings/subscription'),
+                ),
+                _SettingsItemData(
+                  title: '튜토리얼',
+                  onTap: () => context.push('/tutorial'),
                 ),
                 _SettingsItemData(
                   title: '도움받기',
                   onTap: () {
                     launchUrl(
-                      Uri.parse('mailto:support@hguitto.site?subject=[Itto] 문의사항'),
+                      Uri.parse(
+                        'mailto:support@hguitto.site?subject=[Itto] 문의사항',
+                      ),
                       mode: LaunchMode.externalApplication,
                     );
                   },
@@ -138,10 +149,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         backgroundColor: AppColors.surface,
-                        title: const Text('Itto', style: TextStyle(color: AppColors.textPrimary)),
+                        title: const Text(
+                          'Itto',
+                          style: TextStyle(color: AppColors.textPrimary),
+                        ),
                         content: Text(
                           '버전 ${info.version} (${info.buildNumber})',
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                         actions: [
                           TextButton(
@@ -218,18 +234,17 @@ class _ProfileCard extends StatelessWidget {
         final representativePhoto = profile?.photos
             .where((p) => p.isRepresentative)
             .toList();
-        final photoUrl = (representativePhoto != null &&
-                representativePhoto.isNotEmpty)
+        final photoUrl =
+            (representativePhoto != null && representativePhoto.isNotEmpty)
             ? representativePhoto.first.url
             : (profile?.photos.isNotEmpty == true
-                ? profile!.photos.first.url
-                : null);
+                  ? profile!.photos.first.url
+                  : null);
 
         return GestureDetector(
           onTap: onTap,
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(12),
@@ -291,8 +306,7 @@ class _ProfileCard extends StatelessWidget {
                       Text(
                         introduction,
                         style: TextStyle(
-                          color:
-                              AppColors.textSecondary.withValues(alpha: 0.8),
+                          color: AppColors.textSecondary.withValues(alpha: 0.8),
                           fontSize: 13,
                         ),
                       ),
@@ -321,10 +335,7 @@ class _HighlightedSettingsItem extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _HighlightedSettingsItem({
-    required this.title,
-    required this.onTap,
-  });
+  const _HighlightedSettingsItem({required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -373,7 +384,11 @@ class _SettingsItemData {
   final VoidCallback onTap;
   final bool isDestructive;
 
-  const _SettingsItemData({required this.title, required this.onTap, this.isDestructive = false});
+  const _SettingsItemData({
+    required this.title,
+    required this.onTap,
+    this.isDestructive = false,
+  });
 }
 
 class _SettingsCard extends StatelessWidget {

@@ -32,8 +32,7 @@ import 'core/storage/token_storage.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/background_location_handler.dart';
 import 'features/auth/services/auth_service.dart';
-import 'features/auth/services/oauth_service.dart';
-import 'features/auth/services/identity_service.dart';
+import 'features/auth/services/firebase_auth_service.dart';
 import 'features/auth/services/signup_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/providers/signup_provider.dart';
@@ -69,7 +68,10 @@ void main() async {
   /// 앱이 종료된 상태에서도 위치 추적이 동작하도록, 서버 주소를 기기 저장소에 미리 저장합니다
   /// (SharedPreferences: 앱 내부에 간단한 데이터를 저장하는 저장소, 메모장처럼 사용)
   final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('api_base_url', dotenv.env['API_BASE_URL'] ?? 'https://api.hguitto.site/api/v1');
+  await prefs.setString(
+    'api_base_url',
+    dotenv.env['API_BASE_URL'] ?? 'https://api.hguitto.site/api/v1',
+  );
 
   /// Firebase 초기화 - 구글에서 제공하는 로그인, 푸시알림, 분석 등의 서비스를 사용하기 위한 준비
   await Firebase.initializeApp();
@@ -85,12 +87,11 @@ void main() async {
   /// 백그라운드 위치 추적 등록 - 앱을 완전히 종료해도 위치 변화를 감지하여 서버에 전송합니다
   /// (headless task: 앱 화면이 없어도 뒤에서 돌아가는 작업)
   bg.BackgroundGeolocation.registerHeadlessTask(
-      backgroundGeolocationHeadlessTask);
+    backgroundGeolocationHeadlessTask,
+  );
 
   /// 카카오 SDK 초기화 - 카카오 로그인 기능을 사용하기 위한 준비
-  kakao.KakaoSdk.init(
-    nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '',
-  );
+  kakao.KakaoSdk.init(nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY'] ?? '');
 
   /// 상단 상태바(시간, 배터리 표시 영역) 스타일 설정 - 투명 배경, 흰색 아이콘
   SystemChrome.setSystemUIOverlayStyle(
@@ -102,8 +103,11 @@ void main() async {
 
   /// 핵심 서비스 객체들을 생성합니다
   final tokenStorage = TokenStorage(); // 로그인 토큰(출입증)을 저장/관리하는 객체
-  final apiClient = ApiClient.getInstance(tokenStorage: tokenStorage); // 서버와 통신하는 HTTP 클라이언트
-  final oAuthService = OAuthService(); // OAuth 직접 소셜 로그인 처리 객체
+  final apiClient = ApiClient.getInstance(
+    tokenStorage: tokenStorage,
+  ); // 서버와 통신하는 HTTP 클라이언트
+  final firebaseAuthService =
+      FirebaseAuthService(); // Firebase를 통한 소셜 로그인 처리 객체
 
   /// runApp: Flutter 앱을 실제로 화면에 띄우는 함수
   ///
@@ -120,67 +124,58 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => AuthProvider(
             authService: AuthService(apiClient),
-            oAuthService: oAuthService,
+            firebaseAuthService: firebaseAuthService,
             tokenStorage: tokenStorage,
           ),
         ),
-        /// 본인인증 서비스 Provider
-        Provider<IdentityService>(
-          create: (_) => IdentityService(apiClient),
-        ),
+
         /// 회원가입 과정 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => SignupProvider(
-            signupService: SignupService(apiClient),
-          ),
+          create: (_) =>
+              SignupProvider(signupService: SignupService(apiClient)),
         ),
+
         /// 사용자 프로필(닉네임, 사진 등) 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => ProfileProvider(
-            profileService: ProfileService(apiClient),
-          ),
+          create: (_) =>
+              ProfileProvider(profileService: ProfileService(apiClient)),
         ),
+
         /// 인연(매칭된 사람들과의 관계) 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => RelationshipProvider(
-            service: RelationshipService(apiClient),
-          ),
+          create: (_) =>
+              RelationshipProvider(service: RelationshipService(apiClient)),
         ),
+
         /// 알림 목록 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => NotificationProvider(
-            service: NotificationService(apiClient),
-          ),
+          create: (_) =>
+              NotificationProvider(service: NotificationService(apiClient)),
         ),
+
         /// 앱 설정(알림 설정, 연결 범위 등) 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => SettingsProvider(
-            service: SettingsService(apiClient),
-          ),
+          create: (_) => SettingsProvider(service: SettingsService(apiClient)),
         ),
+
         /// 위치 관련 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => LocationProvider(
-            service: LocationService(apiClient),
-          ),
+          create: (_) => LocationProvider(service: LocationService(apiClient)),
         ),
+
         /// 상점(아이템 구매 등) 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => ShopProvider(
-            service: ShopService(apiClient),
-          ),
+          create: (_) => ShopProvider(service: ShopService(apiClient)),
         ),
+
         /// 차단 기능 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => BlockProvider(
-            service: BlockService(apiClient),
-          ),
+          create: (_) => BlockProvider(service: BlockService(apiClient)),
         ),
+
         /// 채팅 기능 데이터를 관리하는 Provider
         ChangeNotifierProvider(
-          create: (_) => ChatProvider(
-            chatService: ChatService(),
-          ),
+          create: (_) => ChatProvider(chatService: ChatService()),
         ),
       ],
       child: const IttoApp(), // 실제 앱 화면을 시작하는 위젯

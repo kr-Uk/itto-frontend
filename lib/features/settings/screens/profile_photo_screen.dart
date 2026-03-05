@@ -48,7 +48,9 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
     // Determine representative index (keep existing representative, or 0 if first photo)
     final existingPhotoIds = photos.map((p) => p.id).toList();
     final representativeIndex = photos.isNotEmpty
-        ? photos.indexWhere((p) => p.isRepresentative).clamp(0, photos.length - 1)
+        ? photos
+              .indexWhere((p) => p.isRepresentative)
+              .clamp(0, photos.length - 1)
         : 0;
 
     await profileProvider.updatePhotos(
@@ -71,8 +73,10 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
           return Stack(
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -95,8 +99,8 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
                           if (i > 0) const SizedBox(width: 14),
                           _PhotoThumbnail(
                             photo: i < photos.length ? photos[i] : null,
-                            isPrimary: i < photos.length &&
-                                photos[i].isRepresentative,
+                            isPrimary:
+                                i < photos.length && photos[i].isRepresentative,
                             onDelete: i < photos.length
                                 ? () => _deletePhoto(photos[i].id)
                                 : null,
@@ -117,15 +121,14 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
                           side: BorderSide(
                             color: hasEmptySlot
                                 ? AppColors.textTertiary
-                                : AppColors.textTertiary
-                                    .withValues(alpha: 0.3),
+                                : AppColors.textTertiary.withValues(alpha: 0.3),
                             width: 1.2,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          disabledForegroundColor:
-                              AppColors.textTertiary.withValues(alpha: 0.4),
+                          disabledForegroundColor: AppColors.textTertiary
+                              .withValues(alpha: 0.4),
                           textStyle: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -149,9 +152,7 @@ class _ProfilePhotoScreenState extends State<ProfilePhotoScreen> {
               if (profileProvider.isLoading)
                 Container(
                   color: Colors.black.withValues(alpha: 0.3),
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
             ],
           );
@@ -211,16 +212,14 @@ class _PhotoThumbnail extends StatelessWidget {
                       placeholder: (context, url) => Center(
                         child: Icon(
                           Icons.image,
-                          color:
-                              AppColors.textTertiary.withValues(alpha: 0.6),
+                          color: AppColors.textTertiary.withValues(alpha: 0.6),
                           size: 36,
                         ),
                       ),
                       errorWidget: (context, url, error) => Center(
                         child: Icon(
                           Icons.broken_image,
-                          color:
-                              AppColors.textTertiary.withValues(alpha: 0.6),
+                          color: AppColors.textTertiary.withValues(alpha: 0.6),
                           size: 36,
                         ),
                       ),
@@ -247,11 +246,7 @@ class _PhotoThumbnail extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: AppColors.primary,
                 ),
-                child: const Icon(
-                  Icons.star,
-                  color: Colors.white,
-                  size: 14,
-                ),
+                child: const Icon(Icons.star, color: Colors.white, size: 14),
               ),
             ),
 

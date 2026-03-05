@@ -38,28 +38,38 @@ class _MainShellState extends State<MainShell> {
       body: widget.child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.divider, width: 0.5),
-          ),
+          border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: _onTap,
           items: [
             BottomNavigationBarItem(
-              icon: Icon(_currentIndex == 0 ? Icons.favorite : Icons.favorite_border),
+              icon: Icon(
+                _currentIndex == 0 ? Icons.favorite : Icons.favorite_border,
+              ),
               label: '홈',
             ),
             BottomNavigationBarItem(
-              icon: Icon(_currentIndex == 1 ? Icons.chat_bubble : Icons.chat_bubble_outline),
+              icon: Icon(
+                _currentIndex == 1
+                    ? Icons.chat_bubble
+                    : Icons.chat_bubble_outline,
+              ),
               label: '채팅',
             ),
             BottomNavigationBarItem(
-              icon: Icon(_currentIndex == 2 ? Icons.notifications : Icons.notifications_none),
+              icon: Icon(
+                _currentIndex == 2
+                    ? Icons.notifications
+                    : Icons.notifications_none,
+              ),
               label: '알림',
             ),
             BottomNavigationBarItem(
-              icon: Icon(_currentIndex == 3 ? Icons.settings : Icons.settings_outlined),
+              icon: Icon(
+                _currentIndex == 3 ? Icons.settings : Icons.settings_outlined,
+              ),
               label: '설정',
             ),
           ],

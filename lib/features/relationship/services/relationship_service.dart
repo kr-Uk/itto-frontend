@@ -12,11 +12,10 @@ class RelationshipService {
     int page = 0,
     int size = 20,
   }) async {
-    final json = await _client.get('/relationships', queryParameters: {
-      'status': status,
-      'page': page,
-      'size': size,
-    });
+    final json = await _client.get(
+      '/relationships',
+      queryParameters: {'status': status, 'page': page, 'size': size},
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return PageResponse.fromJson(data, RelationshipItem.fromJson);
   }
@@ -63,17 +62,23 @@ class RelationshipService {
   }
 
   Future<Map<String, dynamic>> restoreAccept(int relationshipId) async {
-    final json = await _client.post('/relationships/$relationshipId/restore/accept');
+    final json = await _client.post(
+      '/relationships/$relationshipId/restore/accept',
+    );
     return json['data'] as Map<String, dynamic>? ?? json;
   }
 
   Future<Map<String, dynamic>> restoreReject(int relationshipId) async {
-    final json = await _client.post('/relationships/$relationshipId/restore/reject');
+    final json = await _client.post(
+      '/relationships/$relationshipId/restore/reject',
+    );
     return json['data'] as Map<String, dynamic>? ?? json;
   }
 
   Future<EncounterLocation> getEncounterLocation(int relationshipId) async {
-    final json = await _client.get('/relationships/$relationshipId/encounter-location');
+    final json = await _client.get(
+      '/relationships/$relationshipId/encounter-location',
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return EncounterLocation.fromJson(data);
   }

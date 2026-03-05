@@ -10,11 +10,9 @@ class VerificationWaitingStep extends StatelessWidget {
   const VerificationWaitingStep({super.key, required this.onNext});
 
   void _openTutorial(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const TutorialScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const TutorialScreen()));
   }
 
   @override

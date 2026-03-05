@@ -23,7 +23,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class TokenStorage {
   static const _keyAccess = 'access_token'; // 저장소에서 accessToken을 찾을 때 쓰는 키(이름표)
-  static const _keyRefresh = 'refresh_token'; // 저장소에서 refreshToken을 찾을 때 쓰는 키(이름표)
+  static const _keyRefresh =
+      'refresh_token'; // 저장소에서 refreshToken을 찾을 때 쓰는 키(이름표)
 
   SharedPreferences? _prefs; // SharedPreferences 인스턴스를 캐싱(재사용)하기 위한 변수
 

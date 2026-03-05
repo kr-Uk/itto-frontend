@@ -9,7 +9,6 @@ import '../../../shared/widgets/purple_button.dart';
 import '../providers/settings_provider.dart';
 import '../models/settings_models.dart';
 import '../../block/providers/block_provider.dart';
-import '../../profile/providers/profile_provider.dart';
 
 class ConnectionRangeScreen extends StatefulWidget {
   const ConnectionRangeScreen({super.key});
@@ -19,6 +18,10 @@ class ConnectionRangeScreen extends StatefulWidget {
 }
 
 class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
+  // -- Gender selection --
+  // 0 = female, 1 = male
+  int _selectedGender = 0;
+
   // -- Age range --
   // Mapped to decades: 20=0, 30=1, 40=2, 50=3, 60+=4
   // Subdivisions: 초반/중반/후반 (early/mid/late)
@@ -41,7 +44,19 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
 
   // Map slider index to actual age value
   static const List<int> _ageValues = [
-    20, 22, 27, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60,
+    20,
+    22,
+    27,
+    30,
+    33,
+    37,
+    40,
+    43,
+    47,
+    50,
+    53,
+    57,
+    60,
   ];
 
   RangeValues _ageRange = const RangeValues(3, 9); // 30대 초반 - 50대 초반
@@ -61,6 +76,13 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
     if (_initialized) return;
     final settings = context.read<SettingsProvider>().matchingSettings;
     if (settings != null) {
+      // Map gender string to index
+      if (settings.genderFilter == 'FEMALE') {
+        _selectedGender = 0;
+      } else if (settings.genderFilter == 'MALE') {
+        _selectedGender = 1;
+      }
+
       // Map age values to slider indices
       _ageRange = RangeValues(
         _ageToSliderIndex(settings.ageRangeMin).toDouble(),
@@ -116,10 +138,11 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
   }
 
   void _save() {
-    final myGender = context.read<ProfileProvider>().myProfile?.gender;
-    final genderFilter = myGender == 'MALE' ? 'FEMALE' : 'MALE';
-    final ageMin = _ageValues[_ageRange.start.round().clamp(0, _ageValues.length - 1)];
-    final ageMax = _ageValues[_ageRange.end.round().clamp(0, _ageValues.length - 1)];
+    final genderFilter = _selectedGender == 0 ? 'FEMALE' : 'MALE';
+    final ageMin =
+        _ageValues[_ageRange.start.round().clamp(0, _ageValues.length - 1)];
+    final ageMax =
+        _ageValues[_ageRange.end.round().clamp(0, _ageValues.length - 1)];
 
     context.read<SettingsProvider>().updateMatchingSettings(
       MatchingSettings(
@@ -144,8 +167,10 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -157,6 +182,30 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                           fontSize: 14,
                           height: 1.5,
                         ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      // -- Gender section --
+                      _sectionTitle('성별'),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _GenderButton(
+                              label: '여자',
+                              selected: _selectedGender == 0,
+                              onTap: () => setState(() => _selectedGender = 0),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _GenderButton(
+                              label: '남자',
+                              selected: _selectedGender == 1,
+                              onTap: () => setState(() => _selectedGender = 1),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 28),
 
@@ -179,14 +228,16 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                           activeTrackColor: AppColors.primary,
                           inactiveTrackColor: AppColors.surfaceLight,
                           thumbColor: Colors.white,
-                          overlayColor:
-                              AppColors.primary.withValues(alpha: 0.15),
+                          overlayColor: AppColors.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           trackHeight: 4,
                           thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 10),
-                          rangeThumbShape:
-                              const RoundRangeSliderThumbShape(
-                                  enabledThumbRadius: 10),
+                            enabledThumbRadius: 10,
+                          ),
+                          rangeThumbShape: const RoundRangeSliderThumbShape(
+                            enabledThumbRadius: 10,
+                          ),
                         ),
                         child: RangeSlider(
                           values: _ageRange,
@@ -208,7 +259,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                               '30대',
                               '40대',
                               '50대',
-                              '60대 이상'
+                              '60대 이상',
                             ])
                               Text(
                                 label,
@@ -228,7 +279,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(12),
@@ -277,7 +330,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 // Table header
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                   child: Row(
                                     children: const [
                                       Expanded(
@@ -314,7 +369,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 if (blocks.isEmpty)
                                   const Padding(
                                     padding: EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 12),
+                                      horizontal: 16,
+                                      vertical: 12,
+                                    ),
                                     child: Text(
                                       '차단된 사용자가 없습니다',
                                       style: TextStyle(
@@ -326,7 +383,9 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                 for (final block in blocks)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 10),
+                                      horizontal: 16,
+                                      vertical: 10,
+                                    ),
                                     child: Row(
                                       children: [
                                         Expanded(
@@ -341,8 +400,10 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
                                         Expanded(
                                           child: Text(
                                             block.createdAt.length >= 10
-                                                ? block.createdAt
-                                                    .substring(0, 10)
+                                                ? block.createdAt.substring(
+                                                    0,
+                                                    10,
+                                                  )
                                                 : block.createdAt,
                                             style: const TextStyle(
                                               color: AppColors.textSecondary,
@@ -394,10 +455,7 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
               // -- Save button --
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-                child: PurpleButton(
-                  text: '저장하기',
-                  onPressed: _save,
-                ),
+                child: PurpleButton(text: '저장하기', onPressed: _save),
               ),
             ],
           ),
@@ -418,3 +476,45 @@ class _ConnectionRangeScreenState extends State<ConnectionRangeScreen> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Gender toggle button
+// ---------------------------------------------------------------------------
+
+class _GenderButton extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _GenderButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        height: 48,
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : AppColors.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: selected
+              ? null
+              : Border.all(color: AppColors.divider, width: 1),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.black : AppColors.textSecondary,
+            fontSize: 15,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
+    );
+  }
+}

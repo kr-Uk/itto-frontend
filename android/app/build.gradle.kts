@@ -40,6 +40,11 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("com.google.android.gms:play-services-location:20.0.0")
+    }
+}
 
 flutter {
     source = "../.."
