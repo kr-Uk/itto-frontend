@@ -222,10 +222,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         children:
             {
-                  'HARASSMENT': '성희롱/스토킹',
-                  'PROFANITY': '욕설/혐오 발언',
-                  'THREAT': '위협',
+                  'INAPPROPRIATE_PHOTO': '부적절한 사진',
+                  'HARASSMENT': '괴롭힘',
                   'SPAM': '스팸/광고',
+                  'PROFANITY': '욕설/혐오 발언',
                   'OTHER': '기타',
                 }.entries
                 .map(
