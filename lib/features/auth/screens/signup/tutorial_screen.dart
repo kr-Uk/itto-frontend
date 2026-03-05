@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class TutorialScreen extends StatefulWidget {
-  const TutorialScreen({super.key});
+  final bool fromSignup;
+
+  const TutorialScreen({super.key, this.fromSignup = false});
 
   @override
   State<TutorialScreen> createState() => _TutorialScreenState();
@@ -43,6 +46,14 @@ class _TutorialScreenState extends State<TutorialScreen> {
     }
   }
 
+  void _close() {
+    if (widget.fromSignup) {
+      context.go('/home');
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
   void _nextPage() {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
@@ -50,7 +61,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.of(context).pop();
+      _close();
     }
   }
 
@@ -81,7 +92,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: _close,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
