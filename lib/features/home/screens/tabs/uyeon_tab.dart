@@ -102,7 +102,7 @@ class _UyeonThumbnailCard extends StatelessWidget {
       context: context,
       builder: (ctx) => IttoDialog(
         title: "'${item.otherUser.nickname}'님의\n프로필을 확인할까요?",
-        subtitle: '매듭 20개를 사용합니다.',
+        subtitle: '매듭 30개를 사용합니다.',
         icon: Container(
           width: 48,
           height: 48,
