@@ -42,16 +42,12 @@ void main() {
       });
 
       test('success sets isSynced and loads hashes', () async {
-        when(() => mockSyncUseCase.execute(any()))
-            .thenAnswer((_) async {});
-        when(() => mockRepository.getHashes())
-            .thenAnswer((_) async => [
-                  ContactHash(
-                    id: 1,
-                    phoneHash: 'a' * 64,
-                    createdAt: DateTime.now(),
-                  ),
-                ]);
+        when(() => mockSyncUseCase.execute(any())).thenAnswer((_) async {});
+        when(() => mockRepository.getHashes()).thenAnswer(
+          (_) async => [
+            ContactHash(id: 1, phoneHash: 'a' * 64, createdAt: DateTime.now()),
+          ],
+        );
 
         await provider.syncContacts(['01012345678']);
 
@@ -61,8 +57,9 @@ void main() {
       });
 
       test('error sets error state', () async {
-        when(() => mockSyncUseCase.execute(any()))
-            .thenThrow(Exception('Sync failed'));
+        when(
+          () => mockSyncUseCase.execute(any()),
+        ).thenThrow(Exception('Sync failed'));
 
         await provider.syncContacts(['01012345678']);
 
@@ -73,16 +70,14 @@ void main() {
 
     group('addManualBlock', () {
       test('success refreshes hash list', () async {
-        when(() => mockRepository.addManualBlock(any()))
-            .thenAnswer((_) async {});
-        when(() => mockRepository.getHashes())
-            .thenAnswer((_) async => [
-                  ContactHash(
-                    id: 1,
-                    phoneHash: 'a' * 64,
-                    createdAt: DateTime.now(),
-                  ),
-                ]);
+        when(
+          () => mockRepository.addManualBlock(any()),
+        ).thenAnswer((_) async {});
+        when(() => mockRepository.getHashes()).thenAnswer(
+          (_) async => [
+            ContactHash(id: 1, phoneHash: 'a' * 64, createdAt: DateTime.now()),
+          ],
+        );
 
         await provider.addManualBlock('010-1234-5678');
 
@@ -94,21 +89,13 @@ void main() {
 
     group('removeHash', () {
       test('success removes from list', () async {
-        when(() => mockRepository.removeHash(any()))
-            .thenAnswer((_) async {});
-        when(() => mockRepository.getHashes())
-            .thenAnswer((_) async => [
-                  ContactHash(
-                    id: 1,
-                    phoneHash: 'a' * 64,
-                    createdAt: DateTime.now(),
-                  ),
-                  ContactHash(
-                    id: 2,
-                    phoneHash: 'b' * 64,
-                    createdAt: DateTime.now(),
-                  ),
-                ]);
+        when(() => mockRepository.removeHash(any())).thenAnswer((_) async {});
+        when(() => mockRepository.getHashes()).thenAnswer(
+          (_) async => [
+            ContactHash(id: 1, phoneHash: 'a' * 64, createdAt: DateTime.now()),
+            ContactHash(id: 2, phoneHash: 'b' * 64, createdAt: DateTime.now()),
+          ],
+        );
 
         // First load hashes
         await provider.loadHashes();
@@ -126,8 +113,9 @@ void main() {
 
     group('error handling', () {
       test('addManualBlock error sets error state', () async {
-        when(() => mockRepository.addManualBlock(any()))
-            .thenThrow(Exception('Block failed'));
+        when(
+          () => mockRepository.addManualBlock(any()),
+        ).thenThrow(Exception('Block failed'));
 
         await provider.addManualBlock('010-1234-5678');
 
@@ -136,8 +124,9 @@ void main() {
       });
 
       test('removeHash error sets error state', () async {
-        when(() => mockRepository.removeHash(any()))
-            .thenThrow(Exception('Remove failed'));
+        when(
+          () => mockRepository.removeHash(any()),
+        ).thenThrow(Exception('Remove failed'));
 
         await provider.removeHash(1);
 
