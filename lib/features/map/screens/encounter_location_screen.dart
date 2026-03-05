@@ -31,8 +31,9 @@ class _EncounterLocationScreenState extends State<EncounterLocationScreen> {
   Future<void> _loadEncounterLocation() async {
     try {
       final service = context.read<RelationshipService>();
-      final location =
-          await service.getEncounterLocation(widget.relationshipId);
+      final location = await service.getEncounterLocation(
+        widget.relationshipId,
+      );
       if (!mounted) return;
       setState(() {
         _location = location;
@@ -77,124 +78,123 @@ class _EncounterLocationScreenState extends State<EncounterLocationScreen> {
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.location_off,
-                        color: AppColors.textTertiary,
-                        size: 48,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _error!,
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.location_off,
+                    color: AppColors.textTertiary,
+                    size: 48,
                   ),
-                )
-              : _location?.latitude == null || _location?.longitude == null
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  const SizedBox(height: 12),
+                  Text(
+                    _error!,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : _location?.latitude == null || _location?.longitude == null
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.location_off,
+                    color: AppColors.textTertiary,
+                    size: 48,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    '만남 위치 정보가 없습니다',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: NaverMap(
+                    options: NaverMapViewOptions(
+                      initialCameraPosition: NCameraPosition(
+                        target: NLatLng(
+                          _location!.latitude!,
+                          _location!.longitude!,
+                        ),
+                        zoom: 16,
+                      ),
+                    ),
+                    onMapReady: _onMapReady,
+                  ),
+                ),
+                // 하단 정보 패널
+                Container(
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    16,
+                    24,
+                    16 + MediaQuery.of(context).padding.bottom,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: AppColors.surface,
+                    border: Border(
+                      top: BorderSide(color: AppColors.divider, width: 0.5),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_location!.encounterAt != null) ...[
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              color: AppColors.primary,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '만남 시간: ${_formatDate(_location!.encounterAt)}',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      const Row(
                         children: [
                           Icon(
-                            Icons.location_off,
+                            Icons.info_outline,
                             color: AppColors.textTertiary,
-                            size: 48,
+                            size: 16,
                           ),
-                          SizedBox(height: 12),
+                          SizedBox(width: 8),
                           Text(
-                            '만남 위치 정보가 없습니다',
+                            '약 100m 범위 내 위치입니다',
                             style: TextStyle(
                               color: AppColors.textSecondary,
-                              fontSize: 15,
+                              fontSize: 13,
                             ),
                           ),
                         ],
                       ),
-                    )
-                  : Column(
-                      children: [
-                        Expanded(
-                          child: NaverMap(
-                            options: NaverMapViewOptions(
-                              initialCameraPosition: NCameraPosition(
-                                target: NLatLng(
-                                  _location!.latitude!,
-                                  _location!.longitude!,
-                                ),
-                                zoom: 16,
-                              ),
-                            ),
-                            onMapReady: _onMapReady,
-                          ),
-                        ),
-                        // 하단 정보 패널
-                        Container(
-                          padding: EdgeInsets.fromLTRB(
-                            24,
-                            16,
-                            24,
-                            16 + MediaQuery.of(context).padding.bottom,
-                          ),
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface,
-                            border: Border(
-                              top: BorderSide(
-                                  color: AppColors.divider, width: 0.5),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (_location!.encounterAt != null) ...[
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.access_time,
-                                      color: AppColors.primary,
-                                      size: 18,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '만남 시간: ${_formatDate(_location!.encounterAt)}',
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.info_outline,
-                                    color: AppColors.textTertiary,
-                                    size: 16,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    '약 100m 범위 내 위치입니다',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

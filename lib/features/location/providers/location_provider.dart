@@ -38,38 +38,40 @@ class LocationProvider extends ChangeNotifier {
       }
     });
 
-    bg.BackgroundGeolocation.onProviderChange(
-        (bg.ProviderChangeEvent event) {
+    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
       if (kDebugMode) {
         print('[BGGeo] providerchange: $event');
       }
     });
 
-    // 플러그인 설정 (v5 compound config)
-    bg.State state = await bg.BackgroundGeolocation.ready(bg.Config(
-      geolocation: bg.GeoConfig(
-        desiredAccuracy: bg.DesiredAccuracy.high,
+    // 플러그인 설정
+    bg.State state = await bg.BackgroundGeolocation.ready(
+      bg.Config(
+        desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
         distanceFilter: 30.0, // 30m 이동마다 위치 업데이트
-        locationUpdateInterval: 30000, // 30초
-        fastestLocationUpdateInterval: 15000, // 최소 15초
-      ),
-      app: bg.AppConfig(
+        // 백그라운드 + 앱 종료 후에도 추적 유지
         stopOnTerminate: false,
         startOnBoot: true,
         enableHeadless: true,
-      ),
-      notification: bg.Notification(
-        title: 'Itto',
-        text: '인연을 찾고 있습니다',
-        channelName: 'Itto 위치 서비스',
-      ),
-      logger: bg.LoggerConfig(
+
+        // Android 포어그라운드 서비스
+        foregroundService: true,
+        notification: bg.Notification(
+          title: 'Itto',
+          text: '인연을 찾고 있습니다',
+          channelName: 'Itto 위치 서비스',
+        ),
+
+        // 위치 업데이트 주기 (Android)
+        locationUpdateInterval: 30000, // 30초
+        fastestLocationUpdateInterval: 15000, // 최소 15초
+        // 디버그
         debug: kDebugMode,
         logLevel: kDebugMode
-            ? bg.LogLevel.verbose
-            : bg.LogLevel.off,
+            ? bg.Config.LOG_LEVEL_VERBOSE
+            : bg.Config.LOG_LEVEL_OFF,
       ),
-    ));
+    );
 
     _isPluginReady = true;
 
@@ -86,21 +88,22 @@ class LocationProvider extends ChangeNotifier {
 
   /// 위치 이벤트 수신 → 서버 전송
   void _onLocation(bg.Location location) {
-    final timestamp =
-        DateFormat("yyyy-MM-dd'T'HH:mm:ss").format(DateTime.now());
+    final timestamp = DateFormat(
+      "yyyy-MM-dd'T'HH:mm:ss",
+    ).format(DateTime.now());
 
     _service
         .sendLocation(
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      accuracy: location.coords.accuracy,
-      timestamp: timestamp,
-    )
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          accuracy: location.coords.accuracy,
+          timestamp: timestamp,
+        )
         .catchError((e) {
-      if (kDebugMode) {
-        print('[BGGeo] 위치 전송 실패: $e');
-      }
-    });
+          if (kDebugMode) {
+            print('[BGGeo] 위치 전송 실패: $e');
+          }
+        });
   }
 
   /// 위치 권한 확인 및 요청
@@ -177,11 +180,11 @@ class LocationProvider extends ChangeNotifier {
 
     final bg.Location location =
         await bg.BackgroundGeolocation.getCurrentPosition(
-      samples: 1,
-      timeout: 30,
-      maximumAge: 5000,
-      desiredAccuracy: 10,
-    );
+          samples: 1,
+          timeout: 30,
+          maximumAge: 5000,
+          desiredAccuracy: 10,
+        );
 
     return (
       latitude: location.coords.latitude,

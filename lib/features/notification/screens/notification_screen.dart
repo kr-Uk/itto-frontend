@@ -113,11 +113,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final accepted = await showDialog<bool>(
       context: context,
       builder: (context) => IttoDialog(
-        icon: const Icon(
-          Icons.favorite,
-          color: AppColors.primary,
-          size: 36,
-        ),
+        icon: const Icon(Icons.favorite, color: AppColors.primary, size: 36),
         title: "'${notification.title}'\n수락하시겠습니까?",
         subtitle: '*인연이 되면 채팅이 가능합니다.',
         cancelText: '거절하기',
@@ -130,7 +126,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final relationshipProvider = context.read<RelationshipProvider>();
 
     if (accepted == true) {
-      final success = await relationshipProvider.acceptRequest(notification.referenceId!);
+      final success = await relationshipProvider.acceptRequest(
+        notification.referenceId!,
+      );
       if (!mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, '인연 요청을 수락했습니다!');
@@ -141,7 +139,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         );
       }
     } else if (accepted == false) {
-      final success = await relationshipProvider.rejectRequest(notification.referenceId!);
+      final success = await relationshipProvider.rejectRequest(
+        notification.referenceId!,
+      );
       if (!mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, '인연 요청을 거절했습니다.');
@@ -163,11 +163,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final accepted = await showDialog<bool>(
       context: context,
       builder: (context) => IttoDialog(
-        icon: const Icon(
-          Icons.refresh,
-          color: AppColors.primary,
-          size: 36,
-        ),
+        icon: const Icon(Icons.refresh, color: AppColors.primary, size: 36),
         title: "'${notification.title}'님이\n다시 만나기를 요청했습니다",
         subtitle: '다시 만나시겠습니까?',
         cancelText: '거절하기',
@@ -180,7 +176,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
     final relationshipProvider = context.read<RelationshipProvider>();
 
     if (accepted == true) {
-      final success = await relationshipProvider.restoreAccept(notification.referenceId!);
+      final success = await relationshipProvider.restoreAccept(
+        notification.referenceId!,
+      );
       if (!mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, '다시 만나기를 수락했습니다!');
@@ -191,7 +189,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         );
       }
     } else if (accepted == false) {
-      final success = await relationshipProvider.restoreReject(notification.referenceId!);
+      final success = await relationshipProvider.restoreReject(
+        notification.referenceId!,
+      );
       if (!mounted) return;
       if (success) {
         SnackBarUtils.showSuccess(context, '다시 만나기를 거절했습니다.');
@@ -231,10 +231,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const IttoAppBar(
-        title: '알림',
-        showBack: false,
-      ),
+      appBar: const IttoAppBar(title: '알림', showBack: false),
       body: Consumer<NotificationProvider>(
         builder: (context, notificationProvider, child) {
           if (notificationProvider.isLoading &&
@@ -292,8 +289,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: _NotificationCard(
                       notification: notification,
-                      formattedTime:
-                          _formatRelativeTime(notification.createdAt),
+                      formattedTime: _formatRelativeTime(
+                        notification.createdAt,
+                      ),
                       onTap: () => _onNotificationTap(notification),
                     ),
                   ),
@@ -319,10 +317,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           SizedBox(height: 12),
           Text(
             '알림이 없습니다',
-            style: TextStyle(
-              color: AppColors.textTertiary,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.textTertiary, fontSize: 16),
           ),
         ],
       ),
@@ -373,8 +368,9 @@ class _NotificationCard extends StatelessWidget {
                       color: AppColors.textPrimary,
                       fontSize: 14,
                       height: 1.4,
-                      fontWeight:
-                          notification.isRead ? FontWeight.normal : FontWeight.w500,
+                      fontWeight: notification.isRead
+                          ? FontWeight.normal
+                          : FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -409,11 +405,7 @@ class _NotificationCard extends StatelessWidget {
           color: AppColors.primary.withValues(alpha: 0.15),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          Icons.favorite,
-          color: AppColors.primary,
-          size: 20,
-        ),
+        child: const Icon(Icons.favorite, color: AppColors.primary, size: 20),
       );
     }
 

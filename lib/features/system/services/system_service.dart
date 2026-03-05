@@ -23,9 +23,10 @@ class SystemService {
   }
 
   Future<NicknameValidation> validateNickname(String nickname) async {
-    final json = await _client.post('/nickname/validate', data: {
-      'nickname': nickname,
-    });
+    final json = await _client.post(
+      '/nickname/validate',
+      data: {'nickname': nickname},
+    );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return NicknameValidation.fromJson(data);
   }

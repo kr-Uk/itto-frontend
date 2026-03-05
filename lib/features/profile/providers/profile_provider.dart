@@ -13,7 +13,7 @@ class ProfileProvider extends ChangeNotifier {
   String? _error;
 
   ProfileProvider({required ProfileService profileService})
-      : _profileService = profileService;
+    : _profileService = profileService;
 
   MyProfile? get myProfile => _myProfile;
   OtherProfile? get otherProfile => _otherProfile;

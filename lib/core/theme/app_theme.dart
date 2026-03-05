@@ -44,18 +44,9 @@ class AppTheme {
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
-          bodyLarge: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-          ),
-          bodyMedium: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-          bodySmall: TextStyle(
-            color: AppColors.textTertiary,
-            fontSize: 12,
-          ),
+          bodyLarge: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+          bodyMedium: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+          bodySmall: TextStyle(color: AppColors.textTertiary, fontSize: 12),
           labelLarge: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 16,
@@ -66,9 +57,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.cardBackground,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.divider,
@@ -97,13 +86,14 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         titleTextStyle: GoogleFonts.notoSansKr(
           color: Colors.black,
           fontSize: 18,

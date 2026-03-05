@@ -121,8 +121,7 @@ class _BirthdayStepState extends State<BirthdayStep> {
                     _isValid ? _formattedDate : '생년월일을 선택해 주세요',
                     style: GoogleFonts.notoSansKr(
                       fontSize: 15,
-                      fontWeight:
-                          _isValid ? FontWeight.w500 : FontWeight.w400,
+                      fontWeight: _isValid ? FontWeight.w500 : FontWeight.w400,
                       color: _isValid
                           ? AppColors.textPrimary
                           : AppColors.textTertiary,

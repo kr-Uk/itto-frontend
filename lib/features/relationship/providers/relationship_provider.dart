@@ -13,7 +13,7 @@ class RelationshipProvider extends ChangeNotifier {
   String? _error;
 
   RelationshipProvider({required RelationshipService service})
-      : _service = service;
+    : _service = service;
 
   List<RelationshipItem> getByStatus(String status) =>
       _relationships[status] ?? [];

@@ -36,10 +36,7 @@ class PastInyeonTab extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text(
                   '아직 지난 인연이 없어요.',
-                  style: TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: AppColors.textTertiary, fontSize: 16),
                 ),
               ],
             ),
@@ -76,16 +73,13 @@ class PastInyeonTab extends StatelessWidget {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = items[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: _PastProfileCard(item: item),
-                    );
-                  },
-                  childCount: items.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final item = items[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _PastProfileCard(item: item),
+                  );
+                }, childCount: items.length),
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -116,11 +110,7 @@ class _PastProfileCard extends StatelessWidget {
               colors: [AppColors.gradientStart, AppColors.gradientEnd],
             ),
           ),
-          child: const Icon(
-            Icons.refresh,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: const Icon(Icons.refresh, color: Colors.white, size: 24),
         ),
         cancelText: '취소',
         confirmText: '다시 만나기',
@@ -128,8 +118,9 @@ class _PastProfileCard extends StatelessWidget {
         onConfirm: () async {
           Navigator.of(ctx).pop();
           final provider = context.read<RelationshipProvider>();
-          final success =
-              await provider.restoreRelationship(item.relationshipId);
+          final success = await provider.restoreRelationship(
+            item.relationshipId,
+          );
           if (context.mounted) {
             if (success) {
               SnackBarUtils.showSuccess(context, '다시 만나기 요청을 보냈습니다.');
@@ -154,94 +145,92 @@ class _PastProfileCard extends StatelessWidget {
         child: SizedBox(
           height: 200,
           child: Stack(
-          fit: StackFit.expand,
-          children: [
-            _buildPhoto(),
-            Container(
-              color: Colors.black.withValues(alpha: 0.3),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
+            fit: StackFit.expand,
+            children: [
+              _buildPhoto(),
+              Container(color: Colors.black.withValues(alpha: 0.3)),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.8),
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        item.otherUser.nickname,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      GestureDetector(
+                        onTap: () => _showRestoreDialog(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: const Text(
+                            '다시 만나기',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item.otherUser.nickname,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    GestureDetector(
-                      onTap: () => _showRestoreDialog(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: const Text(
-                          '다시 만나기',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ),
-            ),
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  '지난 인연',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    '지난 인연',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }

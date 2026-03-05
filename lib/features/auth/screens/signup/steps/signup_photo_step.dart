@@ -27,7 +27,7 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
   bool get _hasPhotos => _photos.isNotEmpty;
 
   Future<void> _addPhoto() async {
-    if (_photos.length >= 3) return;
+    if (_photos.length >= SignupProvider.maxPhotos) return;
     final XFile? image = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 1080,
@@ -77,10 +77,7 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
     if (success) {
       widget.onNext();
     } else {
-      SnackBarUtils.showError(
-        context,
-        provider.error ?? '사진 업로드에 실패했습니다',
-      );
+      SnackBarUtils.showError(context, provider.error ?? '사진 업로드에 실패했습니다');
     }
   }
 
@@ -103,9 +100,7 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
           ),
           const SizedBox(height: 12),
           Text(
-            _hasPhotos
-                ? '사진은 언제든 변경할 수 있어요.'
-                : '사진은 최대 3장까지 등록이 가능해요.',
+            _hasPhotos ? '사진은 언제든 변경할 수 있어요.' : '프로필 사진 1장을 등록해 주세요.',
             style: GoogleFonts.notoSansKr(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -139,8 +134,9 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
                   final isRepresentative = _representativeIndex == index;
                   return Padding(
                     padding: EdgeInsets.only(
-                      right: index < _photos.length - 1 ||
-                              _photos.length < 3
+                      right:
+                          index < _photos.length - 1 ||
+                              _photos.length < SignupProvider.maxPhotos
                           ? 12
                           : 0,
                     ),
@@ -201,7 +197,7 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
                     ),
                   );
                 }),
-                if (_photos.length < 3)
+                if (_photos.length < SignupProvider.maxPhotos)
                   GestureDetector(
                     onTap: _addPhoto,
                     child: Container(
@@ -249,7 +245,9 @@ class _SignupPhotoStepState extends State<SignupPhotoStep> {
           _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                   ),
                 )
               : PurpleButton(

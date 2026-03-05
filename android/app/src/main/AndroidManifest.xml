@@ -52,10 +52,6 @@
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
             android:value="zrvsr1vh4k" />
-        <!-- Background Geolocation License -->
-        <meta-data
-            android:name="com.transistorsoft.locationmanager.license"
-            android:value="eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSJ9.eyJvcyI6ImFuZHJvaWQiLCJhcHBfaWQiOiJjb20uaXR0by5hcHAiLCJvcmRlcl9udW1iZXIiOjE0MDc2LCJyZW5ld2FsX3VybCI6Imh0dHBzOi8vc2hvcC50cmFuc2lzdG9yc29mdC5jb20vY2FydC8zMTg3NDM1NjA1MjA3MToxP25vdGU9OTQ1NyIsImN1c3RvbWVyX2lkIjo4NjExLCJwcm9kdWN0IjoiZmx1dHRlci1iYWNrZ3JvdW5kLWdlb2xvY2F0aW9uIiwia2V5X3ZlcnNpb24iOjEsImFsbG93ZWRfc3VmZml4ZXMiOlsiLmRldiIsIi5kZXZlbG9wbWVudCIsIi5zdGFnaW5nIiwiLnN0YWdlIiwiLnFhIiwiLnVhdCIsIi50ZXN0IiwiLmRlYnVnIl0sIm1heF9idWlsZF9zdGFtcCI6MjAyNjA3MDUsImdyYWNlX2J1aWxkcyI6MCwiZW50aXRsZW1lbnRzIjpbImNvcmUiXSwiaWF0IjoxNzcxNjc1MzA0fQ.557CNL0Ej62GeDLnXbHzm8WA4fsNiqmJSxRvLdVj6fucffXNHZFDkav1fBTwO6c8KjsKopBLqn-F36YuVPUWCA" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
