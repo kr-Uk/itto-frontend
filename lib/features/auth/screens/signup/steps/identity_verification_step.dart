@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../../../../core/config/app_config.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/widgets/purple_button.dart';
 import '../../../providers/signup_provider.dart';
@@ -21,11 +22,22 @@ class _IdentityVerificationStepState extends State<IdentityVerificationStep> {
   Future<void> _startVerification() async {
     setState(() => _isVerifying = true);
 
-    // TODO: NICE 본인인증 SDK 연동
-    // 현재는 플레이스홀더로, 실제 구현 시 NICE 인증 모듈 호출 후
-    // 결과를 setIdentityResult로 저장합니다.
+    if (AppConfig.isDevMode) {
+      // DEV 모드: mock 데이터로 본인인증 통과
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        context.read<SignupProvider>().setIdentityResult(
+              name: '테스트유저',
+              phone: '01012345678',
+              gender: 'MALE',
+              birthDate: '1995-01-01',
+            );
+      }
+    } else {
+      // TODO: NICE 본인인증 SDK 연동
+    }
 
-    setState(() => _isVerifying = false);
+    if (mounted) setState(() => _isVerifying = false);
   }
 
   @override

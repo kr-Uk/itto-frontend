@@ -57,6 +57,14 @@ class PhotoUploadResponse {
           [],
     );
   }
+
+  factory PhotoUploadResponse.fromList(List<dynamic> list) {
+    return PhotoUploadResponse(
+      photos: list
+          .map((e) => PhotoItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
 
 class PhotoItem {

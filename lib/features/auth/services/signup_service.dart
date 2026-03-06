@@ -42,8 +42,11 @@ class SignupService {
       '/signup/photos',
       formData: formData,
     );
-    final data = json['data'] as Map<String, dynamic>? ?? json;
-    return PhotoUploadResponse.fromJson(data);
+    final data = json['data'];
+    if (data is List) {
+      return PhotoUploadResponse.fromList(data);
+    }
+    return PhotoUploadResponse.fromJson(data as Map<String, dynamic>);
   }
 
   Future<void> complete() async {

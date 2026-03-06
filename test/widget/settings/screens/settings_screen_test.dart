@@ -9,14 +9,14 @@ import 'package:itto/features/profile/services/profile_service.dart';
 import 'package:itto/features/profile/models/profile_models.dart';
 import 'package:itto/features/auth/providers/auth_provider.dart';
 import 'package:itto/features/auth/services/auth_service.dart';
-import 'package:itto/features/auth/services/firebase_auth_service.dart';
+import 'package:itto/features/auth/services/oauth_service.dart';
 import 'package:itto/core/storage/token_storage.dart';
 
 class MockProfileService extends Mock implements ProfileService {}
 
 class MockAuthService extends Mock implements AuthService {}
 
-class MockFirebaseAuthService extends Mock implements FirebaseAuthService {}
+class MockOAuthService extends Mock implements OAuthService {}
 
 class MockTokenStorage extends Mock implements TokenStorage {}
 
@@ -45,11 +45,11 @@ void main() {
     profileProvider = ProfileProvider(profileService: mockProfileService);
 
     final mockAuthService = MockAuthService();
-    final mockFirebaseAuthService = MockFirebaseAuthService();
+    final mockOAuthService = MockOAuthService();
     final mockTokenStorage = MockTokenStorage();
     authProvider = AuthProvider(
       authService: mockAuthService,
-      firebaseAuthService: mockFirebaseAuthService,
+      oauthService: mockOAuthService,
       tokenStorage: mockTokenStorage,
     );
 
