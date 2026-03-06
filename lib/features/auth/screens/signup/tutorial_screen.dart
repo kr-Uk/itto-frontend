@@ -26,7 +26,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
     {'icon': 'toggle', 'text': '인연 만나기 버튼을 누르면\n위치 정보가 활성화 되고,\n인연을 찾을 수 있어요.'},
     {'icon': 'tabs', 'text': '버튼을 눌러서\n당신의 인연, 필연, 우연을\n확인해보세요.'},
     {'icon': 'chat', 'text': '마음에 드는 인연을 찾아\nItto 버튼을 누르면\n메시지를 전송 할 수 있어요.'},
-    {'icon': 'timer', 'text': '24시간이 지나면\n프로필이 사라지니\n유의하세요!'},
+    {'icon': 'timer', 'text': '소중한 인연을\n놓치지 마세요!'},
   ];
 
   int get _totalPages => _introPages.length + _featurePages.length;
