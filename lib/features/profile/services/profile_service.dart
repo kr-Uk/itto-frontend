@@ -70,6 +70,14 @@ class ProfileService {
     await _client.postMultipart('/profile/reverify', formData: formData);
   }
 
+  Future<List<HobbyItem>> getHobbies() async {
+    final json = await _client.get('/hobbies');
+    final list = json['data'] as List<dynamic>? ?? [];
+    return list
+        .map((e) => HobbyItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
   Future<OtherProfile> getOtherProfile(int userId) async {
     final json = await _client.get('/profile/$userId');
     final data = json['data'] as Map<String, dynamic>? ?? json;

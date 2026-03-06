@@ -69,14 +69,14 @@ void main() {
   });
 
   group('E2E: 인증 에러 처리', () {
-    testWidgets('POST /auth/login - 잘못된 Firebase 토큰으로 401 반환', (tester) async {
+    testWidgets('POST /auth/login - 잘못된 OAuth 토큰으로 401 반환', (tester) async {
       final result = await postJson('/auth/login', {
-        'firebaseIdToken': 'invalid_token_for_testing',
+        'oauthToken': 'invalid_token_for_testing',
         'provider': 'KAKAO',
       });
 
       expect(result.statusCode, 401);
-      expect(result.body['code'], 'FIREBASE_AUTH_FAILED');
+      expect(result.body['code'], 'OAUTH_VERIFICATION_FAILED');
       expect(result.body['message'], isNotEmpty);
     });
 
@@ -117,7 +117,7 @@ void main() {
 
     testWidgets('에러 응답에 status, message, code 필드 존재', (tester) async {
       final result = await postJson('/auth/login', {
-        'firebaseIdToken': 'invalid',
+        'oauthToken': 'invalid',
         'provider': 'KAKAO',
       });
 

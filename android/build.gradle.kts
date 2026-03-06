@@ -2,8 +2,15 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // flutter_background_geolocation requires tslocationmanager from its local libs
-        maven { url = uri("${project(":flutter_background_geolocation").projectDir}/libs") }
+        // flutter_background_geolocation 로컬 tslocationmanager AAR
+        maven {
+            val bgGeo = rootProject.findProject(":flutter_background_geolocation")
+            url = if (bgGeo != null) {
+                uri("${bgGeo.projectDir}/libs")
+            } else {
+                uri("${rootProject.projectDir}/libs")
+            }
+        }
     }
 }
 

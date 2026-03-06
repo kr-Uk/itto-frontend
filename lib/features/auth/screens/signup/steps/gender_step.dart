@@ -16,6 +16,17 @@ class GenderStep extends StatefulWidget {
 
 class _GenderStepState extends State<GenderStep> {
   String? _selectedGender;
+  bool _isReadOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = context.read<SignupProvider>();
+    if (provider.identityVerified && provider.verifiedGender != null) {
+      _selectedGender = provider.verifiedGender == 'FEMALE' ? 'female' : 'male';
+      _isReadOnly = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +47,9 @@ class _GenderStepState extends State<GenderStep> {
           ),
           const SizedBox(height: 16),
           Text(
-            '성별은 추후 변경이 불가능해요.',
+            _isReadOnly
+                ? '본인인증으로 확인된 성별입니다.'
+                : '성별은 추후 변경이 불가능해요.',
             style: GoogleFonts.notoSansKr(
               fontSize: 14,
               color: AppColors.textSecondary,
@@ -46,13 +59,17 @@ class _GenderStepState extends State<GenderStep> {
           _GenderOption(
             label: '여성',
             isSelected: _selectedGender == 'female',
-            onTap: () => setState(() => _selectedGender = 'female'),
+            onTap: _isReadOnly
+                ? () {}
+                : () => setState(() => _selectedGender = 'female'),
           ),
           const SizedBox(height: 16),
           _GenderOption(
             label: '남성',
             isSelected: _selectedGender == 'male',
-            onTap: () => setState(() => _selectedGender = 'male'),
+            onTap: _isReadOnly
+                ? () {}
+                : () => setState(() => _selectedGender = 'male'),
           ),
           const Spacer(),
           PurpleButton(
