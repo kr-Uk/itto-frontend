@@ -44,7 +44,7 @@ class LocationProvider extends ChangeNotifier {
       }
     });
 
-    // 플러그인 설정
+    // 플러그인 설정 (라이센스 키는 AndroidManifest.xml / Info.plist에 설정)
     bg.State state = await bg.BackgroundGeolocation.ready(
       bg.Config(
         desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,

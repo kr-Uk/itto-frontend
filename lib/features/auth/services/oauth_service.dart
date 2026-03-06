@@ -13,8 +13,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-
 /// OAuth 로그인 결과를 담는 클래스
 class OAuthResult {
   final String token;
@@ -58,20 +56,10 @@ class OAuthService {
     );
   }
 
-  /// 애플 로그인 처리
-  /// Apple Identity Token을 직접 획득하여 반환합니다.
+  /// 애플 로그인 처리 (iOS 전용 - 추후 sign_in_with_apple 패키지 추가 시 구현)
   Future<OAuthResult?> signInWithApple() async {
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-    );
-
-    final identityToken = credential.identityToken;
-    if (identityToken == null) return null;
-
-    return OAuthResult(token: identityToken, provider: 'APPLE');
+    // TODO: sign_in_with_apple 패키지 추가 후 구현
+    return null;
   }
 
   /// 모든 소셜 로그인에서 로그아웃 처리
