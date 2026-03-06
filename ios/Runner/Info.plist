@@ -41,6 +41,17 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tauthlink</string>
+		<string>ktauthexternalcall</string>
+		<string>upluscorporation</string>
+	</array>
+	<key>TSLocationManager</key>
+	<dict>
+		<key>license</key>
+		<string>eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSJ9.eyJvcyI6ImlvcyIsImFwcF9pZCI6ImNvbS5pdHRvLmFwcCIsIm9yZGVyX251bWJlciI6MTQwNzYsInJlbmV3YWxfdXJsIjoiaHR0cHM6Ly9zaG9wLnRyYW5zaXN0b3Jzb2Z0LmNvbS9jYXJ0LzMxODc0MzU2MDUyMDcxOjE_bm90ZT05NDU3IiwiY3VzdG9tZXJfaWQiOjg2MTEsInByb2R1Y3QiOiJmbHV0dGVyLWJhY2tncm91bmQtZ2VvbG9jYXRpb24iLCJrZXlfdmVyc2lvbiI6MSwiYWxsb3dlZF9zdWZmaXhlcyI6WyIuZGV2IiwiLmRldmVsb3BtZW50IiwiLnN0YWdpbmciLCIuc3RhZ2UiLCIucWEiLCIudWF0IiwiLnRlc3QiLCIuZGVidWciXSwibWF4X2J1aWxkX3N0YW1wIjoyMDI2MDcwNSwiZ3JhY2VfYnVpbGRzIjowLCJlbnRpdGxlbWVudHMiOlsiY29yZSJdLCJpYXQiOjE3NzE2NzUzMDR9.gH3vo1mbrwDzzkpX3W6Jby7LxPctAUFf1nSRy6LIG8vDWYBPDyLelypTAdlv10tZQRrT3sW1aTvqGnADT27FCg</string>
+	</dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

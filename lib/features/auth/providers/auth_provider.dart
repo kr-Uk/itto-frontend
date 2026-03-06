@@ -29,11 +29,11 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/storage/token_storage.dart';
 import '../models/auth_models.dart';
 import '../services/auth_service.dart';
-import '../services/firebase_auth_service.dart';
+import '../services/oauth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService; // 백엔드 서버와 인증 관련 통신을 하는 서비스
-  final FirebaseAuthService _firebaseAuthService; // Firebase를 통한 소셜 로그인 처리 서비스
+  final OAuthService _oauthService; // 소셜 로그인(구글/카카오/애플) 처리 서비스
   final TokenStorage _tokenStorage; // 로그인 토큰(출입증)을 기기에 저장/관리하는 저장소
 
   // ── 상태 변수들: 화면에서 이 값들을 읽어서 UI를 그립니다 ──
@@ -45,10 +45,10 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider({
     required AuthService authService,
-    required FirebaseAuthService firebaseAuthService,
+    required OAuthService oauthService,
     required TokenStorage tokenStorage,
   }) : _authService = authService,
-       _firebaseAuthService = firebaseAuthService,
+       _oauthService = oauthService,
        _tokenStorage = tokenStorage;
 
   // ── Getter: 외부(화면)에서 상태 값을 읽을 수 있도록 공개하는 부분 ──
@@ -68,17 +68,17 @@ class AuthProvider extends ChangeNotifier {
 
   /// Google 소셜 로그인
   Future<bool> loginWithGoogle() async {
-    return _loginWithProvider('GOOGLE', _firebaseAuthService.signInWithGoogle);
+    return _loginWithProvider('GOOGLE', () async => (await _oauthService.signInWithGoogle())?.token);
   }
 
   /// Apple 소셜 로그인
   Future<bool> loginWithApple() async {
-    return _loginWithProvider('APPLE', _firebaseAuthService.signInWithApple);
+    return _loginWithProvider('APPLE', () async => (await _oauthService.signInWithApple())?.token);
   }
 
   /// Kakao 소셜 로그인 (Firebase OIDC provider 설정 필요)
   Future<bool> loginWithKakao() async {
-    return _loginWithProvider('KAKAO', _firebaseAuthService.signInWithKakao);
+    return _loginWithProvider('KAKAO', () async => (await _oauthService.signInWithKakao())?.token);
   }
 
   /// 소셜 로그인 공통 로직 - Google/Apple/Kakao 모두 이 메서드를 통해 로그인합니다
@@ -93,9 +93,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Firebase 소셜 로그인 → ID Token 획득
-      final idToken = await firebaseSignIn();
-      if (idToken == null) {
+      // 1. 소셜 로그인 → OAuth Token 획득
+      final oauthToken = await firebaseSignIn();
+      if (oauthToken == null) {
         // 사용자가 로그인 취소
         _isLoading = false;
         notifyListeners();
@@ -104,7 +104,7 @@ class AuthProvider extends ChangeNotifier {
 
       // 2. 백엔드 로그인 API 호출
       final request = LoginRequest(
-        firebaseIdToken: idToken,
+        oauthToken: oauthToken,
         provider: provider,
       );
 
@@ -167,7 +167,7 @@ class AuthProvider extends ChangeNotifier {
       await _authService.logout();
     } catch (_) {}
     try {
-      await _firebaseAuthService.signOut();
+      await _oauthService.signOut();
     } catch (_) {}
     await _tokenStorage.clearTokens();
     _isLoggedIn = false;
@@ -182,7 +182,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _authService.withdraw(reason: reason);
       try {
-        await _firebaseAuthService.signOut();
+        await _oauthService.signOut();
       } catch (_) {}
       await _tokenStorage.clearTokens();
       _isLoggedIn = false;
