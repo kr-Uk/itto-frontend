@@ -26,28 +26,28 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/splash/screens/splash_screen.dart';
-import '../../features/auth/screens/login_screen.dart';
-import '../../features/auth/screens/signup/signup_flow_screen.dart';
-import '../../features/auth/screens/verification_pending_screen.dart';
-import '../../features/auth/screens/verification_rejected_screen.dart';
-import '../../features/home/screens/home_screen.dart';
-import '../../features/chat/screens/chat_list_screen.dart';
-import '../../features/chat/screens/chat_room_screen.dart';
-import '../../features/notification/screens/notification_screen.dart';
-import '../../features/settings/screens/settings_screen.dart';
-import '../../features/settings/screens/profile_edit_screen.dart';
-import '../../features/settings/screens/profile_photo_screen.dart';
-import '../../features/settings/screens/connection_range_screen.dart';
-import '../../features/settings/screens/currency_screen.dart';
-import '../../features/settings/screens/notification_settings_screen.dart';
-import '../../features/map/screens/map_screen.dart';
-import '../../features/map/screens/excluded_area_screen.dart';
-import '../../features/map/screens/encounter_location_screen.dart';
-import '../../features/profile/screens/profile_detail_screen.dart';
-import '../../features/settings/screens/subscription_screen.dart';
-import '../../features/auth/screens/signup/tutorial_screen.dart';
-import '../../shared/widgets/main_shell.dart';
+import 'package:itto/presentation/splash/screens/splash_screen.dart';
+import 'package:itto/presentation/auth/screens/login_screen.dart';
+import 'package:itto/presentation/auth/screens/signup/signup_flow_screen.dart';
+import 'package:itto/presentation/auth/screens/verification_pending_screen.dart';
+import 'package:itto/presentation/auth/screens/verification_rejected_screen.dart';
+import 'package:itto/presentation/home/screens/home_screen.dart';
+import 'package:itto/presentation/chat/screens/chat_list_screen.dart';
+import 'package:itto/presentation/chat/screens/chat_room_screen.dart';
+import 'package:itto/presentation/notification/screens/notification_screen.dart';
+import 'package:itto/presentation/settings/screens/settings_screen.dart';
+import 'package:itto/presentation/settings/screens/profile_edit_screen.dart';
+import 'package:itto/presentation/settings/screens/profile_photo_screen.dart';
+import 'package:itto/presentation/settings/screens/connection_range_screen.dart';
+import 'package:itto/presentation/settings/screens/currency_screen.dart';
+import 'package:itto/presentation/settings/screens/notification_settings_screen.dart';
+import 'package:itto/presentation/map/screens/map_screen.dart';
+import 'package:itto/presentation/map/screens/excluded_area_screen.dart';
+import 'package:itto/presentation/map/screens/encounter_location_screen.dart';
+import 'package:itto/presentation/profile/screens/profile_detail_screen.dart';
+import 'package:itto/presentation/settings/screens/subscription_screen.dart';
+import 'package:itto/presentation/auth/screens/signup/tutorial_screen.dart';
+import 'package:itto/presentation/common/widgets/main_shell.dart';
 
 /// 전체 화면 이동용 키 (하단 탭바 없이 전체 화면으로 이동할 때 사용)
 /// 인앱 알림 배너 표시 등에서도 사용됩니다.

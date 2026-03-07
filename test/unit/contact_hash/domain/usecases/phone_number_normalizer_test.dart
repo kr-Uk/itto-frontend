@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itto/features/contact_hash/domain/usecases/phone_number_normalizer.dart';
+import 'package:itto/domain/contact_hash/usecases/phone_number_normalizer.dart';
 
 void main() {
   group('PhoneNumberNormalizer', () {

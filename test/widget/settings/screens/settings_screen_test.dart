@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
-import 'package:itto/features/settings/screens/settings_screen.dart';
-import 'package:itto/features/profile/providers/profile_provider.dart';
-import 'package:itto/features/profile/services/profile_service.dart';
-import 'package:itto/features/profile/models/profile_models.dart';
-import 'package:itto/features/auth/providers/auth_provider.dart';
-import 'package:itto/features/auth/services/auth_service.dart';
-import 'package:itto/features/auth/services/oauth_service.dart';
+import 'package:itto/core/di/providers.dart';
+import 'package:itto/presentation/settings/screens/settings_screen.dart';
+import 'package:itto/presentation/profile/providers/profile_provider.dart';
+import 'package:itto/domain/profile/entities/my_profile.dart';
+import 'package:itto/domain/profile/repositories/profile_repository.dart';
+import 'package:itto/presentation/auth/providers/auth_provider.dart';
+import 'package:itto/domain/auth/repositories/auth_repository.dart';
+import 'package:itto/data/auth/datasources/oauth_service.dart';
 import 'package:itto/core/storage/token_storage.dart';
 
-class MockProfileService extends Mock implements ProfileService {}
+class MockProfileRepository extends Mock implements ProfileRepository {}
 
-class MockAuthService extends Mock implements AuthService {}
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockOAuthService extends Mock implements OAuthService {}
 
 class MockTokenStorage extends Mock implements TokenStorage {}
 
 void main() {
-  late MockProfileService mockProfileService;
+  late MockProfileRepository mockProfileRepository;
   late ProfileProvider profileProvider;
   late AuthProvider authProvider;
 
@@ -41,20 +42,20 @@ void main() {
   );
 
   setUp(() {
-    mockProfileService = MockProfileService();
-    profileProvider = ProfileProvider(profileService: mockProfileService);
+    mockProfileRepository = MockProfileRepository();
+    profileProvider = ProfileProvider(repository: mockProfileRepository);
 
-    final mockAuthService = MockAuthService();
+    final mockAuthRepository = MockAuthRepository();
     final mockOAuthService = MockOAuthService();
     final mockTokenStorage = MockTokenStorage();
     authProvider = AuthProvider(
-      authService: mockAuthService,
+      authRepository: mockAuthRepository,
       oauthService: mockOAuthService,
       tokenStorage: mockTokenStorage,
     );
 
     when(
-      () => mockProfileService.getMyProfile(),
+      () => mockProfileRepository.getMyProfile(),
     ).thenAnswer((_) async => dummyProfile);
   });
 
@@ -98,21 +99,19 @@ void main() {
       routes: [
         GoRoute(
           path: '/settings',
-          builder: (context, state) => MultiProvider(
-            providers: [
-              ChangeNotifierProvider<ProfileProvider>.value(
-                value: profileProvider,
-              ),
-              ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
-            ],
-            child: const SettingsScreen(),
-          ),
+          builder: (context, state) => const SettingsScreen(),
         ),
         ...testRoutes(),
       ],
     );
 
-    return MaterialApp.router(routerConfig: router);
+    return ProviderScope(
+      overrides: [
+        profileChangeNotifierProvider.overrideWith((_) => profileProvider),
+        authChangeNotifierProvider.overrideWith((_) => authProvider),
+      ],
+      child: MaterialApp.router(routerConfig: router),
+    );
   }
 
   group('SettingsScreen - Menu items', () {

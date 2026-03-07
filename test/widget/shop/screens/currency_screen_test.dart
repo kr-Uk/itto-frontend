@@ -1,17 +1,20 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
-import 'package:itto/features/shop/providers/shop_provider.dart';
-import 'package:itto/features/shop/models/shop_models.dart';
-import 'package:itto/features/shop/services/shop_service.dart';
-import 'package:itto/features/settings/screens/currency_screen.dart';
+import 'package:itto/core/di/providers.dart';
+import 'package:itto/presentation/shop/providers/shop_provider.dart';
+import 'package:itto/domain/shop/entities/knot_balance.dart';
+import 'package:itto/domain/shop/entities/knot_package.dart';
+import 'package:itto/domain/shop/entities/subscription.dart';
+import 'package:itto/domain/shop/repositories/shop_repository.dart';
+import 'package:itto/presentation/settings/screens/currency_screen.dart';
 
-class MockShopService extends Mock implements ShopService {}
+class MockShopRepository extends Mock implements ShopRepository {}
 
 void main() {
-  late MockShopService mockService;
+  late MockShopRepository mockRepository;
   late ShopProvider shopProvider;
 
   final testPackages = [
@@ -51,21 +54,23 @@ void main() {
   final testSubscription = const SubscriptionInfo(isPremium: false);
 
   setUp(() {
-    mockService = MockShopService();
-    shopProvider = ShopProvider(service: mockService);
+    mockRepository = MockShopRepository();
+    shopProvider = ShopProvider(repository: mockRepository);
 
-    when(() => mockService.getKnots()).thenAnswer((_) async => testBalance);
-    when(() => mockService.getPackages()).thenAnswer((_) async => testPackages);
+    when(() => mockRepository.getKnots()).thenAnswer((_) async => testBalance);
+    when(() => mockRepository.getPackages()).thenAnswer((_) async => testPackages);
     when(
-      () => mockService.getSubscription(),
+      () => mockRepository.getSubscription(),
     ).thenAnswer((_) async => testSubscription);
   });
 
   Widget buildWidget() {
-    return MaterialApp(
-      home: ChangeNotifierProvider<ShopProvider>.value(
-        value: shopProvider,
-        child: const CurrencyScreen(),
+    return ProviderScope(
+      overrides: [
+        shopChangeNotifierProvider.overrideWith((_) => shopProvider),
+      ],
+      child: const MaterialApp(
+        home: CurrencyScreen(),
       ),
     );
   }
@@ -144,17 +149,19 @@ void main() {
           .toList();
 
       when(
-        () => mockService.getPackages(),
+        () => mockRepository.getPackages(),
       ).thenAnswer((_) async => usedPackages);
 
-      final usedProvider = ShopProvider(service: mockService);
+      final usedProvider = ShopProvider(repository: mockRepository);
       await usedProvider.loadPackages();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: ChangeNotifierProvider<ShopProvider>.value(
-            value: usedProvider,
-            child: const CurrencyScreen(),
+        ProviderScope(
+          overrides: [
+            shopChangeNotifierProvider.overrideWith((_) => usedProvider),
+          ],
+          child: const MaterialApp(
+            home: CurrencyScreen(),
           ),
         ),
       );
@@ -181,7 +188,6 @@ void main() {
       await tester.pumpWidget(buildWidget());
       await tester.pumpAndSettle();
 
-      // Tap first package card
       await tester.tap(find.text('실마리').first);
       await tester.pumpAndSettle();
 
@@ -195,19 +201,18 @@ void main() {
       final packagesCompleter = Completer<List<KnotPackage>>();
 
       when(
-        () => mockService.getKnots(),
+        () => mockRepository.getKnots(),
       ).thenAnswer((_) => balanceCompleter.future);
       when(
-        () => mockService.getPackages(),
+        () => mockRepository.getPackages(),
       ).thenAnswer((_) => packagesCompleter.future);
 
       await tester.pumpWidget(buildWidget());
-      await tester.pump(); // post frame callback
-      await tester.pump(); // rebuild after notifyListeners
+      await tester.pump();
+      await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);
 
-      // Complete the futures to clean up
       balanceCompleter.complete(testBalance);
       packagesCompleter.complete(testPackages);
       await tester.pumpAndSettle();

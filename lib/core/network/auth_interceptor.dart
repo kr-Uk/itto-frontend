@@ -20,7 +20,7 @@
 /// ==========================================================================
 
 import 'package:dio/dio.dart';
-import '../storage/token_storage.dart';
+import 'package:itto/core/storage/token_storage.dart';
 
 class AuthInterceptor extends Interceptor {
   final Dio dio; // HTTP 통신 객체

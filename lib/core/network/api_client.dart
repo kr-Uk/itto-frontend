@@ -24,10 +24,10 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../config/app_config.dart';
-import 'api_exception.dart';
-import 'auth_interceptor.dart';
-import '../storage/token_storage.dart';
+import 'package:itto/core/config/app_config.dart';
+import 'package:itto/core/network/api_exception.dart';
+import 'package:itto/core/network/auth_interceptor.dart';
+import 'package:itto/core/storage/token_storage.dart';
 
 class ApiClient {
   static ApiClient? _instance; // 싱글톤: 앱 전체에서 이 변수에 딱 하나의 인스턴스만 저장됩니다

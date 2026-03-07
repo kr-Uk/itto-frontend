@@ -1,9 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itto/features/contact_hash/domain/entities/contact_hash.dart';
-import 'package:itto/features/contact_hash/domain/repositories/contact_hash_repository.dart';
-import 'package:itto/features/contact_hash/domain/usecases/hash_contacts_usecase.dart';
-import 'package:itto/features/contact_hash/domain/usecases/sync_contact_hashes_usecase.dart';
+import 'package:itto/domain/contact_hash/repositories/contact_hash_repository.dart';
+import 'package:itto/domain/contact_hash/usecases/hash_contacts_usecase.dart';
+import 'package:itto/domain/contact_hash/usecases/sync_contact_hashes_usecase.dart';
 
 class MockContactHashRepository extends Mock implements ContactHashRepository {}
 
