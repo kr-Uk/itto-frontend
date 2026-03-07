@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
-import 'package:itto/features/shop/providers/shop_provider.dart';
-import 'package:itto/features/shop/models/shop_models.dart';
-import 'package:itto/features/shop/services/shop_service.dart';
-import 'package:itto/features/settings/screens/subscription_screen.dart';
+import 'package:itto/core/di/providers.dart';
+import 'package:itto/presentation/shop/providers/shop_provider.dart';
+import 'package:itto/domain/shop/entities/knot_balance.dart';
+import 'package:itto/domain/shop/entities/subscription.dart';
+import 'package:itto/domain/shop/repositories/shop_repository.dart';
+import 'package:itto/presentation/settings/screens/subscription_screen.dart';
 
-class MockShopService extends Mock implements ShopService {}
+class MockShopRepository extends Mock implements ShopRepository {}
 
 void main() {
-  late MockShopService mockService;
+  late MockShopRepository mockRepository;
 
   final notSubscribed = const SubscriptionInfo(
     isPremium: false,
@@ -33,11 +35,11 @@ void main() {
   );
 
   setUp(() {
-    mockService = MockShopService();
+    mockRepository = MockShopRepository();
     when(
-      () => mockService.getSubscription(),
+      () => mockRepository.getSubscription(),
     ).thenAnswer((_) async => notSubscribed);
-    when(() => mockService.getKnots()).thenAnswer(
+    when(() => mockRepository.getKnots()).thenAnswer(
       (_) async => const KnotBalance(
         knots: 0,
         freeConvertRemaining: 0,
@@ -45,28 +47,29 @@ void main() {
         freeRestoreRemaining: 0,
       ),
     );
-    when(() => mockService.getPackages()).thenAnswer((_) async => []);
+    when(() => mockRepository.getPackages()).thenAnswer((_) async => []);
     when(
-      () => mockService.subscribe(
+      () => mockRepository.subscribe(
         receiptToken: any(named: 'receiptToken'),
         store: any(named: 'store'),
       ),
     ).thenAnswer((_) async {});
-    when(() => mockService.cancelSubscription()).thenAnswer((_) async {});
+    when(() => mockRepository.cancelSubscription()).thenAnswer((_) async {});
   });
 
   Widget buildWidget({SubscriptionInfo? initialSub}) {
-    final provider = ShopProvider(service: mockService);
+    final provider = ShopProvider(repository: mockRepository);
     if (initialSub != null) {
-      // Pre-load subscription data
       when(
-        () => mockService.getSubscription(),
+        () => mockRepository.getSubscription(),
       ).thenAnswer((_) async => initialSub);
     }
-    return MaterialApp(
-      home: ChangeNotifierProvider<ShopProvider>.value(
-        value: provider,
-        child: const SubscriptionScreen(),
+    return ProviderScope(
+      overrides: [
+        shopChangeNotifierProvider.overrideWith((_) => provider),
+      ],
+      child: const MaterialApp(
+        home: SubscriptionScreen(),
       ),
     );
   }
@@ -142,15 +145,17 @@ void main() {
     testWidgets('shows loading indicator while fetching', (tester) async {
       final completer = Completer<SubscriptionInfo>();
       when(
-        () => mockService.getSubscription(),
+        () => mockRepository.getSubscription(),
       ).thenAnswer((_) => completer.future);
 
-      final provider = ShopProvider(service: mockService);
+      final provider = ShopProvider(repository: mockRepository);
       await tester.pumpWidget(
-        MaterialApp(
-          home: ChangeNotifierProvider<ShopProvider>.value(
-            value: provider,
-            child: const SubscriptionScreen(),
+        ProviderScope(
+          overrides: [
+            shopChangeNotifierProvider.overrideWith((_) => provider),
+          ],
+          child: const MaterialApp(
+            home: SubscriptionScreen(),
           ),
         ),
       );

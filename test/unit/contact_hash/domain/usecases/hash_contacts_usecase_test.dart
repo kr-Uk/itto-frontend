@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itto/features/contact_hash/domain/usecases/hash_contacts_usecase.dart';
+import 'package:itto/domain/contact_hash/usecases/hash_contacts_usecase.dart';
 
 void main() {
   late HashContactsUseCase useCase;
