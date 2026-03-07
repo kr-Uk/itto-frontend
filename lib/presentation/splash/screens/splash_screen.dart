@@ -5,10 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:itto/core/di/providers.dart';
-import 'package:itto/core/network/api_client.dart';
-import 'package:itto/core/storage/token_storage.dart';
-import 'package:itto/data/system/datasources/system_remote_datasource.dart';
-import 'package:itto/data/system/repositories/system_repository_impl.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -86,10 +82,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<bool> _checkForceUpdate() async {
     try {
-      final tokenStorage = TokenStorage();
-      final apiClient = ApiClient.getInstance(tokenStorage: tokenStorage);
-      final systemDataSource = SystemRemoteDataSource(apiClient);
-      final systemRepository = SystemRepositoryImpl(remoteDataSource: systemDataSource);
+      final systemRepository = ref.read(systemRepositoryProvider);
       final versionInfo = await systemRepository.checkVersion();
       final packageInfo = await PackageInfo.fromPlatform();
 

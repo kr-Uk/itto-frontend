@@ -1,4 +1,4 @@
-import 'package:itto/data/common/models/page_response.dart';
+import 'package:itto/domain/common/entities/page_response.dart';
 import 'package:itto/domain/relationship/entities/encounter_location.dart';
 import 'package:itto/domain/relationship/entities/relationship.dart';
 import 'package:itto/domain/relationship/entities/relationship_detail.dart';

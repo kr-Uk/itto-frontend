@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itto/core/network/api_client.dart';
 import 'package:itto/core/storage/token_storage.dart';
 import 'package:itto/data/auth/datasources/auth_remote_datasource.dart';
-import 'package:itto/data/auth/datasources/oauth_service.dart';
+import 'package:itto/data/auth/datasources/oauth_service.dart' as data;
+import 'package:itto/domain/auth/services/oauth_service.dart';
 import 'package:itto/data/auth/datasources/signup_remote_datasource.dart';
 import 'package:itto/data/auth/repositories/auth_repository_impl.dart';
 import 'package:itto/data/auth/repositories/signup_repository_impl.dart';
@@ -24,6 +25,8 @@ import 'package:itto/data/settings/datasources/settings_remote_datasource.dart';
 import 'package:itto/data/settings/repositories/settings_repository_impl.dart';
 import 'package:itto/data/shop/datasources/shop_remote_datasource.dart';
 import 'package:itto/data/shop/repositories/shop_repository_impl.dart';
+import 'package:itto/data/system/datasources/system_remote_datasource.dart';
+import 'package:itto/data/system/repositories/system_repository_impl.dart';
 import 'package:itto/domain/auth/repositories/auth_repository.dart';
 import 'package:itto/domain/auth/repositories/signup_repository.dart';
 import 'package:itto/domain/block/repositories/block_repository.dart';
@@ -37,6 +40,7 @@ import 'package:itto/domain/profile/repositories/profile_repository.dart';
 import 'package:itto/domain/relationship/repositories/relationship_repository.dart';
 import 'package:itto/domain/settings/repositories/settings_repository.dart';
 import 'package:itto/domain/shop/repositories/shop_repository.dart';
+import 'package:itto/domain/system/repositories/system_repository.dart';
 import 'package:itto/presentation/auth/providers/auth_provider.dart';
 import 'package:itto/presentation/auth/providers/signup_provider.dart';
 import 'package:itto/presentation/block/providers/block_provider.dart';
@@ -61,7 +65,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 });
 
 final oauthServiceProvider = Provider<OAuthService>((ref) {
-  return OAuthService();
+  return data.OAuthServiceImpl();
 });
 
 // ─── DataSources ───
@@ -117,6 +121,11 @@ final contactHashRemoteDataSourceProvider =
   return ContactHashRemoteDataSource(
     apiClient: ref.watch(apiClientProvider),
   );
+});
+
+final systemRemoteDataSourceProvider =
+    Provider<SystemRemoteDataSource>((ref) {
+  return SystemRemoteDataSource(ref.watch(apiClientProvider));
 });
 
 // ─── Repositories ───
@@ -184,6 +193,12 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
 final contactHashRepositoryProvider = Provider<ContactHashRepository>((ref) {
   return ContactHashRepositoryImpl(
     remoteDataSource: ref.watch(contactHashRemoteDataSourceProvider),
+  );
+});
+
+final systemRepositoryProvider = Provider<SystemRepository>((ref) {
+  return SystemRepositoryImpl(
+    remoteDataSource: ref.watch(systemRemoteDataSourceProvider),
   );
 });
 
