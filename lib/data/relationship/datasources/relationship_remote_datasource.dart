@@ -19,7 +19,7 @@ class RelationshipRemoteDataSource {
       queryParameters: {'status': status, 'page': page, 'size': size},
     );
     final data = json['data'] as Map<String, dynamic>? ?? json;
-    return PageResponse.fromJson(data, RelationshipItemModel.fromJson);
+    return parsePageResponse(data, RelationshipItemModel.fromJson);
   }
 
   Future<RelationshipDetailModel> getDetail(int relationshipId) async {

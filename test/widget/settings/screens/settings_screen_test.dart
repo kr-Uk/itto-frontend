@@ -10,7 +10,7 @@ import 'package:itto/domain/profile/entities/my_profile.dart';
 import 'package:itto/domain/profile/repositories/profile_repository.dart';
 import 'package:itto/presentation/auth/providers/auth_provider.dart';
 import 'package:itto/domain/auth/repositories/auth_repository.dart';
-import 'package:itto/data/auth/datasources/oauth_service.dart';
+import 'package:itto/domain/auth/services/oauth_service.dart';
 import 'package:itto/core/storage/token_storage.dart';
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
