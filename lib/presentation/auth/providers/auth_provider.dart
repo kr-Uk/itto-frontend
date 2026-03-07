@@ -3,7 +3,7 @@ import 'package:itto/core/network/api_client.dart';
 import 'package:itto/core/network/api_exception.dart';
 import 'package:itto/core/storage/token_storage.dart';
 import 'package:itto/domain/auth/repositories/auth_repository.dart';
-import 'package:itto/data/auth/datasources/oauth_service.dart';
+import 'package:itto/domain/auth/services/oauth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository;

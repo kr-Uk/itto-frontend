@@ -16,7 +16,7 @@ class NotificationRemoteDataSource {
       queryParameters: {'page': page, 'size': size},
     );
     final data = json['data'] as Map<String, dynamic>? ?? json;
-    return PageResponse.fromJson(data, NotificationItemModel.fromJson);
+    return parsePageResponse(data, NotificationItemModel.fromJson);
   }
 
   Future<void> markRead(List<int> notificationIds) async {
