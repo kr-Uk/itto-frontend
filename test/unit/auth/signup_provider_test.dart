@@ -1,40 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itto/features/auth/providers/signup_provider.dart';
-import 'package:itto/features/auth/services/signup_service.dart';
-import 'package:itto/features/auth/models/signup_models.dart';
-
-class MockSignupService extends Mock implements SignupService {}
-
-class FakeSignupTermsRequest extends Fake implements SignupTermsRequest {}
-
-class FakeSignupProfileRequest extends Fake implements SignupProfileRequest {}
+import 'package:itto/presentation/auth/providers/signup_provider.dart';
+import 'package:itto/domain/auth/repositories/signup_repository.dart';
+class MockSignupRepository extends Mock implements SignupRepository {}
 
 void main() {
-  late MockSignupService mockService;
+  late MockSignupRepository mockRepository;
   late SignupProvider provider;
 
-  setUpAll(() {
-    registerFallbackValue(FakeSignupTermsRequest());
-    registerFallbackValue(FakeSignupProfileRequest());
-  });
-
   setUp(() {
-    mockService = MockSignupService();
-    provider = SignupProvider(signupService: mockService);
+    mockRepository = MockSignupRepository();
+    provider = SignupProvider(repository: mockRepository);
   });
 
   group('SignupProvider - verification removal', () {
     test('should NOT have verificationFilePath field', () {
-      // The provider should not expose verificationFilePath.
-      // After removal, accessing provider.verificationFilePath will cause
-      // a compile error. We verify the field does not exist by checking
-      // the provider's public API does not include it.
-      //
-      // If verificationFilePath still exists, this test file will compile
-      // but the assertion below ensures it is not part of the intended API.
-      // We check via reflection-like approach: the resetForm should NOT
-      // reset verificationFilePath (it should not exist).
       final hasField = _hasPublicField(provider, 'verificationFilePath');
       expect(
         hasField,
@@ -44,12 +24,9 @@ void main() {
     });
 
     test('should NOT have uploadVerification method', () {
-      // After removal, calling provider.uploadVerification() will cause
-      // a compile error. We use a dynamic check here.
       final dynamic dynamicProvider = provider;
       bool hasMethod = true;
       try {
-        // This will throw NoSuchMethodError if the method doesn't exist
         dynamicProvider.uploadVerification;
       } on NoSuchMethodError {
         hasMethod = false;
@@ -81,7 +58,15 @@ void main() {
     });
 
     test('saveProfile includes birthDate from NICE identity result', () async {
-      when(() => mockService.saveProfile(any())).thenAnswer((_) async {});
+      when(
+        () => mockRepository.saveProfile(
+          nickname: any(named: 'nickname'),
+          gender: any(named: 'gender'),
+          birthDate: any(named: 'birthDate'),
+          hobbyIds: any(named: 'hobbyIds'),
+          introduction: any(named: 'introduction'),
+        ),
+      ).thenAnswer((_) async {});
 
       provider.setIdentityResult(
         name: '홍길동',
@@ -94,19 +79,20 @@ void main() {
 
       await provider.saveProfile();
 
-      final captured = verify(
-        () => mockService.saveProfile(captureAny()),
-      ).captured;
-      final request = captured.first as SignupProfileRequest;
-      expect(request.birthDate, equals('1990-01-15'));
-      expect(request.gender, equals('MALE'));
-      expect(request.nickname, equals('테스트유저'));
+      verify(
+        () => mockRepository.saveProfile(
+          nickname: '테스트유저',
+          gender: 'MALE',
+          birthDate: '1990-01-15',
+          hobbyIds: [1, 2],
+          introduction: null,
+        ),
+      ).called(1);
     });
   });
 
   group('SignupProvider - photo limit', () {
     test('photoFilePaths should not exceed maxPhotos (1)', () {
-      // The provider should enforce max 1 photo
       expect(
         SignupProvider.maxPhotos,
         equals(1),
@@ -118,7 +104,6 @@ void main() {
       provider.addPhoto('/path/photo1.jpg');
       expect(provider.photoFilePaths.length, equals(1));
 
-      // Adding a second photo should be rejected
       provider.addPhoto('/path/photo2.jpg');
       expect(
         provider.photoFilePaths.length,
@@ -164,7 +149,6 @@ void main() {
 /// Helper to check if a dynamic object has a public field via noSuchMethod
 bool _hasPublicField(dynamic obj, String fieldName) {
   try {
-    // Use dynamic invocation to check field existence
     final dynamic d = obj;
     switch (fieldName) {
       case 'verificationFilePath':

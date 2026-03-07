@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itto/features/contact_hash/data/datasources/contact_hash_remote_datasource.dart';
-import 'package:itto/features/contact_hash/data/models/contact_hash_model.dart';
-import 'package:itto/features/contact_hash/data/repositories/contact_hash_repository_impl.dart';
+import 'package:itto/data/contact_hash/datasources/contact_hash_remote_datasource.dart';
+import 'package:itto/data/contact_hash/models/contact_hash_model.dart';
+import 'package:itto/data/contact_hash/repositories/contact_hash_repository_impl.dart';
 
 class MockContactHashRemoteDataSource extends Mock
     implements ContactHashRemoteDataSource {}

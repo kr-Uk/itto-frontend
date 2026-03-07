@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itto/features/contact_hash/data/models/contact_hash_model.dart';
+import 'package:itto/data/contact_hash/models/contact_hash_model.dart';
 
 void main() {
   group('ContactHashModel', () {

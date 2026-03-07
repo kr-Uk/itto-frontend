@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:provider/provider.dart';
-import 'package:itto/features/contact_hash/domain/entities/contact_hash.dart';
-import 'package:itto/features/contact_hash/domain/repositories/contact_hash_repository.dart';
-import 'package:itto/features/contact_hash/domain/usecases/sync_contact_hashes_usecase.dart';
-import 'package:itto/features/contact_hash/presentation/providers/contact_hash_provider.dart';
-import 'package:itto/features/contact_hash/presentation/widgets/contact_block_section.dart';
+import 'package:itto/core/di/providers.dart';
+import 'package:itto/domain/contact_hash/entities/contact_hash.dart';
+import 'package:itto/domain/contact_hash/repositories/contact_hash_repository.dart';
+import 'package:itto/domain/contact_hash/usecases/sync_contact_hashes_usecase.dart';
+import 'package:itto/presentation/contact_hash/providers/contact_hash_provider.dart';
+import 'package:itto/presentation/contact_hash/widgets/contact_block_section.dart';
 
 class MockContactHashRepository extends Mock implements ContactHashRepository {}
 
@@ -29,11 +30,13 @@ void main() {
           repository: mockRepository,
           syncContactHashesUseCase: mockSyncUseCase,
         );
-    return MaterialApp(
-      home: Scaffold(
-        body: ChangeNotifierProvider<ContactHashProvider>.value(
-          value: p,
-          child: const SingleChildScrollView(child: ContactBlockSection()),
+    return ProviderScope(
+      overrides: [
+        contactHashChangeNotifierProvider.overrideWith((_) => p),
+      ],
+      child: const MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(child: ContactBlockSection()),
         ),
       ),
     );

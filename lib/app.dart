@@ -1,10 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'core/theme/app_theme.dart';
-import 'core/theme/app_colors.dart';
-import 'core/router/app_router.dart';
-import 'core/services/fcm_service.dart';
+import 'package:itto/core/theme/app_theme.dart';
+import 'package:itto/core/theme/app_colors.dart';
+import 'package:itto/core/router/app_router.dart';
+import 'package:itto/core/services/fcm_service.dart';
 
 class IttoApp extends StatefulWidget {
   const IttoApp({super.key});
