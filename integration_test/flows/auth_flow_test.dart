@@ -7,8 +7,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itto/app.dart';
 import 'package:itto/domain/auth/entities/login_result.dart';
+import '../helpers/test_app.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -27,7 +27,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
 
@@ -48,7 +48,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -67,7 +67,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -95,17 +95,20 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
 
-      // 구글 로그인 버튼 탭
-      await tester.tap(find.text('G'));
+      // 로그인 화면 확인
+      expect(find.text('스친 인연을, 이토로 잇다'), findsOneWidget);
+
+      // 카카오 로그인 버튼 탭 (신규 사용자 응답)
+      await tester.tap(find.text('TALK'));
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      // 회원가입 화면 진입 확인 (뒤로가기 버튼 존재)
-      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+      // 회원가입 화면 진입 확인
+      expect(find.text('스친 인연을, 이토로 잇다'), findsNothing);
     });
   });
 
@@ -119,7 +122,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -140,7 +143,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));

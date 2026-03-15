@@ -8,7 +8,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itto/app.dart';
+import '../helpers/test_app.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -37,7 +37,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -55,7 +55,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -72,7 +72,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -93,7 +93,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: mocks.overrides,
-          child: const IttoApp(),
+          child: const TestIttoApp(),
         ),
       );
       await tester.pumpAndSettle(const Duration(seconds: 4));

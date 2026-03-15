@@ -394,7 +394,7 @@ class MockSetup {
     when(() => mockSignupRepo.uploadPhotos(
           filePaths: any(named: 'filePaths'),
           representativeIndex: any(named: 'representativeIndex'),
-        )).thenAnswer((_) async {});
+        )).thenAnswer((_) async => [const Photo(id: 1, url: 'https://example.com/photo.jpg', isRepresentative: true)]);
     when(() => mockSignupRepo.complete()).thenAnswer((_) async {});
   }
 
