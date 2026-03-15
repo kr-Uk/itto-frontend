@@ -5,15 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itto/app.dart';
+import '../helpers/test_app.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
+  setUpAll(() async {
+    await initializeDateFormatting('ko_KR', null);
     registerFallbackValues();
   });
 
@@ -29,7 +31,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: mocks.overrides,
-        child: const IttoApp(),
+        child: const TestIttoApp(),
       ),
     );
     await tester.pumpAndSettle(const Duration(seconds: 4));

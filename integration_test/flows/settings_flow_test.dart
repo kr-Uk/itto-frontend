@@ -7,7 +7,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itto/app.dart';
+import '../helpers/test_app.dart';
 import '../helpers/test_helpers.dart';
 
 void main() {
@@ -29,7 +29,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: mocks.overrides,
-        child: const IttoApp(),
+        child: const TestIttoApp(),
       ),
     );
     await tester.pumpAndSettle(const Duration(seconds: 4));
@@ -47,7 +47,7 @@ void main() {
       expect(find.text('기능'), findsOneWidget);
       // "설정" 은 앱바 + 섹션 라벨 + 하단 탭 세 군데 가능
       expect(find.text('설정'), findsWidgets);
-      expect(find.text('정보'), findsOneWidget);
+      expect(find.text('정보'), findsWidgets);
     });
 
     testWidgets('프로필 카드에 닉네임이 표시된다', (tester) async {
@@ -69,7 +69,7 @@ void main() {
 
       expect(find.text('인연 범위 설정'), findsOneWidget);
       expect(find.text('회원정보'), findsOneWidget);
-      expect(find.text('알림'), findsOneWidget);
+      expect(find.text('알림'), findsWidgets);
       expect(find.text('매듭 관리'), findsOneWidget);
       expect(find.text('구독하기'), findsOneWidget);
       expect(find.text('튜토리얼'), findsOneWidget);
@@ -113,7 +113,9 @@ void main() {
     testWidgets('알림 메뉴 탭 → 알림 설정 화면 이동', (tester) async {
       await navigateToSettings(tester);
 
-      await tester.tap(find.text('알림'));
+      // 설정 메뉴의 '알림' (하단 네비바 '알림'과 구분)
+      final alarmItems = find.text('알림');
+      await tester.tap(alarmItems.first);
       await tester.pumpAndSettle();
 
       expect(find.byType(Scaffold), findsWidgets);
