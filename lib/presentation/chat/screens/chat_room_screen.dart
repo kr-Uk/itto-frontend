@@ -48,7 +48,6 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
-    ref.read(chatChangeNotifierProvider).clearMessages();
     super.dispose();
   }
 
