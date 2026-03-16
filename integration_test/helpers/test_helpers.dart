@@ -16,7 +16,6 @@ import 'package:itto/domain/auth/entities/login_result.dart';
 import 'package:itto/domain/auth/repositories/auth_repository.dart';
 import 'package:itto/domain/auth/repositories/signup_repository.dart';
 import 'package:itto/domain/auth/services/oauth_service.dart';
-import 'package:itto/domain/block/entities/block_item.dart';
 import 'package:itto/domain/block/entities/report_request.dart';
 import 'package:itto/domain/block/repositories/block_repository.dart';
 import 'package:itto/domain/chat/entities/chat_message.dart';
