@@ -7,7 +7,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itto/domain/auth/entities/login_result.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_helpers.dart';
 
