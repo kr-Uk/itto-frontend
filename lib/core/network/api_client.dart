@@ -60,9 +60,10 @@ class ApiClient {
   }
 
   /// 로그인/로그아웃 시 인스턴스 리셋
-  /// Dio를 close하지 않음 — 서비스들이 이 인스턴스를 계속 참조하므로
-  /// close하면 재로그인 시 "connection closed" 에러 발생
+  /// 기존 Dio 인스턴스를 close()하여 리소스 누수를 방지한 후 null로 초기화.
+  /// 다음 getInstance() 호출 시 새 Dio 인스턴스가 생성됩니다.
   static void reset() {
+    _instance?._dio.close();
     _instance = null;
   }
 
