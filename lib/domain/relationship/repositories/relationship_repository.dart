@@ -12,7 +12,7 @@ abstract class RelationshipRepository {
   Future<RelationshipDetail> getDetail(int relationshipId);
   Future<void> request(int relationshipId);
   Future<void> cancel(int relationshipId);
-  Future<void> accept(int relationshipId);
+  Future<Map<String, dynamic>> accept(int relationshipId);
   Future<void> reject(int relationshipId);
   Future<void> deleteRelationship(int relationshipId);
   Future<void> convert(int relationshipId);

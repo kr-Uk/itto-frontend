@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:itto/core/network/api_exception.dart';
+import 'package:itto/domain/chat/repositories/chat_repository.dart';
 import 'package:itto/domain/relationship/entities/encounter_location.dart';
 import 'package:itto/domain/relationship/entities/relationship.dart';
 import 'package:itto/domain/relationship/entities/relationship_detail.dart';
@@ -7,6 +8,7 @@ import 'package:itto/domain/relationship/repositories/relationship_repository.da
 
 class RelationshipProvider extends ChangeNotifier {
   final RelationshipRepository _repository;
+  final ChatRepository? _chatRepository;
 
   final Map<String, List<Relationship>> _relationships = {};
   final Map<String, int> _totalCounts = {};
@@ -14,8 +16,8 @@ class RelationshipProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  RelationshipProvider({required RelationshipRepository repository})
-    : _repository = repository;
+  RelationshipProvider({required RelationshipRepository repository, ChatRepository? chatRepository})
+    : _repository = repository, _chatRepository = chatRepository;
 
   List<Relationship> getByStatus(String status) =>
       _relationships[status] ?? [];
@@ -96,7 +98,15 @@ class RelationshipProvider extends ChangeNotifier {
 
   Future<bool> acceptRequest(int relationshipId) async {
     try {
-      await _repository.accept(relationshipId);
+      final response = await _repository.accept(relationshipId);
+      final chatRoomId = response['chatRoomId'] as String?;
+      if (chatRoomId != null && _chatRepository != null) {
+        // Firestore에 채팅방 document 생성
+        await _chatRepository!.ensureChatRoomExists(
+          chatRoomId: chatRoomId,
+          participantIds: [],
+        );
+      }
       await loadAllTabs();
       return true;
     } on ApiException catch (e) {

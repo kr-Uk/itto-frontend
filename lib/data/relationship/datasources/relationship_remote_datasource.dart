@@ -36,8 +36,9 @@ class RelationshipRemoteDataSource {
     await _client.post('/relationships/$relationshipId/cancel');
   }
 
-  Future<void> accept(int relationshipId) async {
-    await _client.post('/relationships/$relationshipId/accept');
+  Future<Map<String, dynamic>> accept(int relationshipId) async {
+    final json = await _client.post('/relationships/$relationshipId/accept');
+    return (json['data'] as Map<String, dynamic>?) ?? json;
   }
 
   Future<void> reject(int relationshipId) async {

@@ -34,10 +34,18 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final currentUserId =
           ref.read(profileChangeNotifierProvider).myProfile?.userId ?? 0;
-      ref.read(chatChangeNotifierProvider).subscribeToChatMessages(
+      final chatProvider = ref.read(chatChangeNotifierProvider);
+
+      // Firestore에 채팅방이 없으면 생성
+      await chatProvider.ensureChatRoomExists(
+        chatRoomId: widget.chatId,
+        participantIds: [currentUserId],
+      );
+
+      chatProvider.subscribeToChatMessages(
         widget.chatId,
         currentUserId,
       );

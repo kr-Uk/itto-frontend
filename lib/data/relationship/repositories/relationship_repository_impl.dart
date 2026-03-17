@@ -42,7 +42,7 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
       remoteDataSource.cancel(relationshipId);
 
   @override
-  Future<void> accept(int relationshipId) =>
+  Future<Map<String, dynamic>> accept(int relationshipId) =>
       remoteDataSource.accept(relationshipId);
 
   @override

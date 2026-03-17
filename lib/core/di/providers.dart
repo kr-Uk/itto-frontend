@@ -240,6 +240,7 @@ final relationshipChangeNotifierProvider =
     ChangeNotifierProvider<RelationshipProvider>((ref) {
   return RelationshipProvider(
     repository: ref.watch(relationshipRepositoryProvider),
+    chatRepository: ref.watch(chatRepositoryProvider),
   );
 });
 

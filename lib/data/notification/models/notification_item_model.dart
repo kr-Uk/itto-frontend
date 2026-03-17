@@ -29,7 +29,7 @@ class NotificationItemModel {
         message: json['message'] as String? ?? '',
         isRead: json['isRead'] as bool? ?? false,
         deepLink: json['deepLink'] as String?,
-        referenceId: json['referenceId'] as int?,
+        referenceId: json['referenceId'] as int? ?? int.tryParse(json['deepLink']?.toString() ?? ''),
         createdAt: json['createdAt'] as String? ?? '',
       );
 
