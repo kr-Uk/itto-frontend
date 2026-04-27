@@ -7,7 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Headless 모드에서 사용할 기본 API base URL 상수.
 /// dotenv가 로드된 경우 환경변수에서 읽고, 아니면 기본값을 사용합니다.
-const String _fallbackBaseUrl = 'https://api.hguitto.site/api/v1';
+const String _fallbackBaseUrl = 'https://itto.hguitto.site/api/v1';
 
 /// 앱이 종료된 상태에서도 위치 이벤트를 처리하는 headless task.
 /// main()에서 BackgroundGeolocation.registerHeadlessTask()로 등록해야 함.

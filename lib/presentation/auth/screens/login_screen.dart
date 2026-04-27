@@ -3,12 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:itto/core/di/providers.dart';
+import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/utils/snackbar_utils.dart';
+import 'package:itto/presentation/common/widgets/itto_curve.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
-  Future<void> _handleLogin(BuildContext context, WidgetRef ref, String provider) async {
+  Future<void> _handleLogin(
+    BuildContext context,
+    WidgetRef ref,
+    String provider,
+  ) async {
     final authProv = ref.read(authChangeNotifierProvider);
 
     bool success;
@@ -54,110 +60,90 @@ class LoginScreen extends ConsumerWidget {
     final isLoading = ref.watch(authChangeNotifierProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          Positioned(
-            bottom: -60,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 320,
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(160),
-                  gradient: const RadialGradient(
-                    colors: [
-                      Color(0x66E8A0BF),
-                      Color(0x33B794F6),
-                      Colors.transparent,
-                    ],
-                    stops: [0.0, 0.5, 1.0],
-                    radius: 0.8,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(child: CustomPaint(painter: _CurvedLinePainter())),
+          const Positioned.fill(child: IttoCurve(opacity: 0.35)),
           SafeArea(
             child: Column(
               children: [
-                const Spacer(flex: 3),
+                const SizedBox(height: 140),
                 Text(
                   'Itto',
                   style: GoogleFonts.notoSansKr(
-                    fontSize: 60,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 90,
+                    fontWeight: FontWeight.w900,
                     color: Colors.white,
-                    letterSpacing: 2,
+                    letterSpacing: -3,
+                    height: 1.0,
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 18),
+                const Text(
                   '스친 인연을, 이토로 잇다',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 16,
+                  style: TextStyle(
+                    color: Color(0xFFD8D8D8),
+                    fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
-                const Spacer(flex: 3),
+                const Spacer(),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 80),
+                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 80),
                   child: isLoading
-                      ? const SizedBox(
-                          width: 48,
-                          height: 48,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
+                      ? const Center(
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
                           ),
                         )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      : Column(
                           children: [
-                            _SocialLoginButton(
+                            _SocialButton(
+                              label: '카카오로 시작하기',
                               backgroundColor: const Color(0xFFFEE500),
-                              onTap: () => _handleLogin(context, ref, 'KAKAO'),
-                              child: Text(
-                                'TALK',
-                                style: GoogleFonts.notoSansKr(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.black,
-                                  height: 1.0,
-                                ),
+                              foregroundColor: const Color(0xFF191919),
+                              icon: Image.asset(
+                                'assets/images/kakao.png',
+                                width: 20,
+                                height: 18,
                               ),
+                              onTap: () =>
+                                  _handleLogin(context, ref, 'KAKAO'),
                             ),
-                            const SizedBox(width: 24),
-                            _SocialLoginButton(
+                            const SizedBox(height: 12),
+                            _SocialButton(
+                              label: '구글로 시작하기',
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF111111),
+                              icon: Image.asset(
+                                'assets/images/google.png',
+                                width: 18,
+                                height: 18,
+                              ),
+                              onTap: () =>
+                                  _handleLogin(context, ref, 'GOOGLE'),
+                            ),
+                            const SizedBox(height: 12),
+                            _SocialButton(
+                              label: 'Apple로 시작하기',
                               backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
+                                color: Colors.white.withValues(alpha: 0.18),
                                 width: 1,
                               ),
-                              onTap: () => _handleLogin(context, ref, 'APPLE'),
-                              child: const Icon(
-                                Icons.apple,
-                                color: Colors.white,
-                                size: 26,
+                              icon: Image.asset(
+                                'assets/images/apple1.png',
+                                width: 16,
+                                height: 20,
                               ),
-                            ),
-                            const SizedBox(width: 24),
-                            _SocialLoginButton(
-                              backgroundColor: Colors.white,
-                              onTap: () => _handleLogin(context, ref, 'GOOGLE'),
-                              child: Text(
-                                'G',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black87,
-                                  height: 1.0,
-                                ),
-                              ),
+                              onTap: () =>
+                                  _handleLogin(context, ref, 'APPLE'),
                             ),
                           ],
                         ),
@@ -171,16 +157,20 @@ class LoginScreen extends ConsumerWidget {
   }
 }
 
-class _SocialLoginButton extends StatelessWidget {
+class _SocialButton extends StatelessWidget {
+  final String label;
   final Color backgroundColor;
+  final Color foregroundColor;
   final BoxBorder? border;
-  final Widget child;
+  final Widget icon;
   final VoidCallback onTap;
 
-  const _SocialLoginButton({
+  const _SocialButton({
+    required this.label,
     required this.backgroundColor,
+    required this.foregroundColor,
     this.border,
-    required this.child,
+    required this.icon,
     required this.onTap,
   });
 
@@ -189,51 +179,29 @@ class _SocialLoginButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 48,
-        height: 48,
+        height: 54,
         decoration: BoxDecoration(
           color: backgroundColor,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(14),
           border: border,
         ),
-        child: Center(child: child),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon,
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                color: foregroundColor,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CurvedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.12)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final centerX = size.width / 2;
-    final centerY = size.height * 0.42;
-
-    final path = Path();
-    path.moveTo(centerX - 120, centerY + 80);
-    path.cubicTo(centerX - 80, centerY + 20, centerX - 40, centerY - 60, centerX, centerY - 40);
-    path.cubicTo(centerX + 30, centerY - 25, centerX + 40, centerY + 15, centerX + 10, centerY + 20);
-    path.cubicTo(centerX - 10, centerY + 24, centerX + 20, centerY - 10, centerX + 50, centerY - 50);
-    path.cubicTo(centerX + 80, centerY - 90, centerX + 100, centerY - 20, centerX + 120, centerY + 80);
-    canvas.drawPath(path, paint);
-
-    final paint2 = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path2 = Path();
-    path2.moveTo(centerX - 140, centerY + 100);
-    path2.cubicTo(centerX - 60, centerY, centerX + 60, centerY - 80, centerX + 140, centerY + 100);
-    canvas.drawPath(path2, paint2);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

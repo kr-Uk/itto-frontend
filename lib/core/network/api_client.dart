@@ -17,7 +17,7 @@ class ApiClient {
   ApiClient._({required TokenStorage tokenStorage})
     : _tokenStorage = tokenStorage {
     /// Dio 객체 생성 및 기본 설정
-    /// - baseUrl: 모든 요청의 기본 서버 주소 (예: https://api.hguitto.site/api/v1)
+    /// - baseUrl: 모든 요청의 기본 서버 주소 (예: https://itto.hguitto.site/api/v1)
     /// - connectTimeout: 서버 연결 최대 대기 시간
     /// - headers: 모든 요청에 기본으로 붙는 정보 (JSON 형식으로 통신하겠다는 약속)
     _dio = Dio(

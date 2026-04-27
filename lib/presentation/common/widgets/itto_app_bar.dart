@@ -22,16 +22,57 @@ class IttoAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: AppColors.background,
+      elevation: 0,
       leading: showBack
           ? IconButton(
-              icon: const Icon(Icons.chevron_left, size: 28),
+              icon: const _BackChevron(),
               onPressed: onBack ?? () => Navigator.of(context).pop(),
+              splashRadius: 22,
             )
           : null,
       automaticallyImplyLeading: false,
-      title: Text(title),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
       centerTitle: true,
       actions: actions,
     );
   }
+}
+
+class _BackChevron extends StatelessWidget {
+  const _BackChevron();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(11, 20),
+      painter: _ChevronPainter(),
+    );
+  }
+}
+
+class _ChevronPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final path = Path()
+      ..moveTo(size.width, 1)
+      ..lineTo(1, size.height / 2)
+      ..lineTo(size.width, size.height - 1);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

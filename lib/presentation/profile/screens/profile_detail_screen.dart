@@ -122,140 +122,196 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Photos
+                // Hero photo — full bleed, with gradient overlay + nickname/age over photo
                 if (profile.photos.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: SizedBox(
-                      height: 400,
-                      width: double.infinity,
-                      child: profile.photos.first.isMosaic
-                          ? _buildMosaicPhoto()
-                          : CachedNetworkImage(
-                              imageUrl: profile.photos.first.url,
-                              fit: BoxFit.cover,
-                              placeholder: (_, _) => Container(
-                                color: AppColors.surfaceLight,
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
+                  SizedBox(
+                    height: 480,
+                    width: double.infinity,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        profile.photos.first.isMosaic
+                            ? _buildMosaicPhoto()
+                            : CachedNetworkImage(
+                                imageUrl: profile.photos.first.url,
+                                fit: BoxFit.cover,
+                                placeholder: (_, _) => Container(
+                                  color: AppColors.surfaceLight,
+                                ),
+                                errorWidget: (_, _, _) => Container(
+                                  color: AppColors.surfaceLight,
+                                  child: const Icon(
+                                    Icons.person,
+                                    size: 80,
+                                    color: AppColors.textTertiary,
                                   ),
                                 ),
                               ),
-                              errorWidget: (_, _, _) => Container(
-                                color: AppColors.surfaceLight,
-                                child: const Icon(
-                                  Icons.person,
-                                  size: 80,
-                                  color: AppColors.textTertiary,
-                                ),
+                        // Bottom gradient overlay
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.center,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.7),
+                                  Colors.transparent,
+                                ],
+                                stops: const [0.0, 0.4],
                               ),
                             ),
+                          ),
+                        ),
+                        // Name + last seen
+                        Positioned(
+                          left: 24,
+                          right: 24,
+                          bottom: 24,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                profile.age != null
+                                    ? '${profile.nickname}, ${profile.age}'
+                                    : profile.nickname,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              if (profile.encounterCount != null &&
+                                  profile.encounterCount! > 0) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  '마주친 횟수 ${profile.encounterCount}회',
+                                  style: const TextStyle(
+                                    color: Color(0xFFD8D8D8),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                const SizedBox(height: 20),
-
-                // Name and age
-                Row(
-                  children: [
-                    Text(
-                      profile.nickname,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (profile.age != null) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        '${profile.age}',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 24),
 
                 // Introduction
                 if (profile.introduction != null &&
-                    profile.introduction!.isNotEmpty)
-                  Text(
-                    profile.introduction!,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 15,
-                      height: 1.5,
+                    profile.introduction!.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '한 줄 소개',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          profile.introduction!,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 24),
+                ],
 
                 // Hobbies
                 if (profile.hobbies.isNotEmpty)
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: profile.hobbies.map((hobby) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          '#${hobby.name}',
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '취미',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
                             fontSize: 13,
-                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      );
-                    }).toList(),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: profile.hobbies.map((hobby) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceLight,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                '#${hobby.name}',
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // Additional photos
                 if (profile.photos.length > 1)
-                  SizedBox(
-                    height: 120,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: profile.photos.length - 1,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (_, index) {
-                        final photo = profile.photos[index + 1];
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
-                            width: 120,
-                            child: photo.isMosaic
-                                ? _buildMosaicPhoto()
-                                : CachedNetworkImage(
-                                    imageUrl: photo.url,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, _, _) => Container(
-                                      color: AppColors.surfaceLight,
-                                      child: const Icon(
-                                        Icons.image,
-                                        color: AppColors.textTertiary,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      height: 120,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: profile.photos.length - 1,
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemBuilder: (_, index) {
+                          final photo = profile.photos[index + 1];
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: SizedBox(
+                              width: 120,
+                              child: photo.isMosaic
+                                  ? _buildMosaicPhoto()
+                                  : CachedNetworkImage(
+                                      imageUrl: photo.url,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, _, _) => Container(
+                                        color: AppColors.surfaceLight,
+                                        child: const Icon(
+                                          Icons.image,
+                                          color: AppColors.textTertiary,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                          ),
-                        );
-                      },
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
 
@@ -266,81 +322,49 @@ class _ProfileDetailScreenState extends ConsumerState<ProfileDetailScreen> {
                         .read(relationshipChangeNotifierProvider)
                         .findByOtherUserId(widget.userId);
 
-                    return Column(
-                      children: [
-                        if (profile.encounterCount != null &&
-                            profile.encounterCount! > 0) ...[
-                          const SizedBox(height: 24),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Icons.place,
-                                  color: AppColors.primary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${profile.encounterCount}번 마주침',
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-
-                        // Chat button for INYEON
-                        if (relItem != null &&
-                            relItem.chatRoomId != null &&
-                            relItem.status == 'INYEON') ...[
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: GestureDetector(
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Chat button for INYEON — peach→purple pill
+                          if (relItem != null &&
+                              relItem.chatRoomId != null &&
+                              relItem.status == 'INYEON') ...[
+                            const SizedBox(height: 16),
+                            GestureDetector(
                               onTap: () => context.push(
                                 '/chat/${relItem.chatRoomId}?name=${relItem.otherUser.nickname}',
                               ),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
+                                width: double.infinity,
+                                height: 56,
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.buttonGradient,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.chat_bubble_outline,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      '채팅하기',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  gradient: AppColors.pillGradient,
+                                  borderRadius: BorderRadius.circular(28),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x40A78BFA),
+                                      blurRadius: 20,
+                                      offset: Offset(0, 6),
                                     ),
                                   ],
                                 ),
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  '대화 시작하기',
+                                  style: TextStyle(
+                                    color: AppColors.pillText,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                          ],
+                          const SizedBox(height: 40),
                         ],
-                      ],
+                      ),
                     );
                   },
                 ),

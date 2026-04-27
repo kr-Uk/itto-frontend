@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:itto/core/theme/app_colors.dart';
+import 'package:itto/presentation/common/widgets/itto_curve.dart';
 
 class TutorialScreen extends StatefulWidget {
   final bool fromSignup;
@@ -82,60 +83,76 @@ class _TutorialScreenState extends State<TutorialScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isIntroPage = _currentPage < _introPages.length;
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: GestureDetector(
-                  onTap: _close,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.textTertiary),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      '건너뛰기',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
+      body: Stack(
+        children: [
+          // Decorative curve background on intro pages
+          if (isIntroPage)
+            Positioned.fill(
+              child: IttoCurve(
+                opacity: 0.6,
+                variant: _currentPage == 0
+                    ? IttoCurveVariant.top
+                    : IttoCurveVariant.both,
+              ),
+            ),
+          SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
+                    child: GestureDetector(
+                      onTap: _close,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0x14FFFFFF),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0x24FFFFFF)),
+                        ),
+                        child: const Text(
+                          '건너뛰기',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: _totalPages,
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                    },
+                    itemBuilder: (context, index) {
+                      if (index < _introPages.length) {
+                        return _buildIntroPage(_introPages[index]);
+                      } else {
+                        return _buildFeaturePage(
+                          _featurePages[index - _introPages.length],
+                        );
+                      }
+                    },
+                  ),
+                ),
+                _buildPageIndicator(),
+                _buildNavButtons(),
+                const SizedBox(height: 16),
+              ],
             ),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _totalPages,
-                onPageChanged: (index) {
-                  setState(() => _currentPage = index);
-                },
-                itemBuilder: (context, index) {
-                  if (index < _introPages.length) {
-                    return _buildIntroPage(_introPages[index]);
-                  } else {
-                    return _buildFeaturePage(
-                      _featurePages[index - _introPages.length],
-                    );
-                  }
-                },
-              ),
-            ),
-            _buildPageIndicator(),
-            _buildNavButtons(),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -147,28 +164,32 @@ class _TutorialScreenState extends State<TutorialScreen> {
         Text(
           'Itto',
           style: GoogleFonts.notoSansKr(
-            fontSize: 48,
-            fontWeight: FontWeight.w800,
+            fontSize: 84,
+            fontWeight: FontWeight.w900,
             color: AppColors.textPrimary,
+            letterSpacing: -3,
+            height: 1.0,
           ),
         ),
-        const SizedBox(height: 60),
+        const SizedBox(height: 80),
         Text(
           page['text']!,
           textAlign: TextAlign.center,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 16,
-            color: AppColors.textSecondary,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFFE8E8E8),
+            fontWeight: FontWeight.w500,
           ),
         ),
         if (page['sub']!.isNotEmpty) ...[
-          const SizedBox(height: 24),
+          const SizedBox(height: 80),
           Text(
             page['sub']!,
             textAlign: TextAlign.center,
-            style: GoogleFonts.notoSansKr(
+            style: const TextStyle(
               fontSize: 14,
-              color: AppColors.textTertiary,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -181,23 +202,30 @@ class _TutorialScreenState extends State<TutorialScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 80,
-          height: 80,
+          width: 88,
+          height: 88,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.primary.withValues(alpha: 0.15),
+            gradient: AppColors.pillGradient,
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x40A78BFA),
+                blurRadius: 20,
+                offset: Offset(0, 6),
+              ),
+            ],
           ),
           child: Icon(
             _getFeatureIcon(page['icon']!),
             size: 40,
-            color: AppColors.primary,
+            color: AppColors.pillText,
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 36),
         Text(
           page['text']!,
           textAlign: TextAlign.center,
-          style: GoogleFonts.notoSansKr(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w500,
             color: AppColors.textPrimary,
@@ -214,15 +242,17 @@ class _TutorialScreenState extends State<TutorialScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(_totalPages, (index) {
-          return Container(
+          final active = _currentPage == index;
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
             margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: _currentPage == index ? 8 : 6,
-            height: _currentPage == index ? 8 : 6,
+            width: active ? 8 : 6,
+            height: active ? 8 : 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _currentPage == index
-                  ? AppColors.primary
-                  : AppColors.textTertiary.withValues(alpha: 0.4),
+              color: active
+                  ? AppColors.accent
+                  : AppColors.textSecondary.withValues(alpha: 0.4),
             ),
           );
         }),
@@ -231,38 +261,60 @@ class _TutorialScreenState extends State<TutorialScreen> {
   }
 
   Widget _buildNavButtons() {
+    final canGoBack = _currentPage > 0;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          TextButton(
-            onPressed: _currentPage > 0 ? _previousPage : null,
-            child: Text(
-              '이전',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 15,
-                color: _currentPage > 0
-                    ? AppColors.textSecondary
-                    : Colors.transparent,
+          GestureDetector(
+            onTap: canGoBack ? _previousPage : null,
+            child: Opacity(
+              opacity: canGoBack ? 1.0 : 0.0,
+              child: Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 22),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                child: const Text(
+                  '이전',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
               ),
             ),
           ),
-          ElevatedButton(
-            onPressed: _nextPage,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            ),
-            child: Text(
-              _currentPage < _totalPages - 1 ? '다음' : '완료',
-              style: GoogleFonts.notoSansKr(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+          const SizedBox(width: 12),
+          Expanded(
+            child: GestureDetector(
+              onTap: _nextPage,
+              child: Container(
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: AppColors.pillGradient,
+                  borderRadius: BorderRadius.circular(26),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x40A78BFA),
+                      blurRadius: 16,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  _currentPage < _totalPages - 1 ? '다음' : '완료',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.pillText,
+                  ),
+                ),
               ),
             ),
           ),

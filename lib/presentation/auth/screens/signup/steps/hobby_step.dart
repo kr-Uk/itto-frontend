@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
@@ -18,7 +17,7 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
   final Set<int> _selectedHobbies = {};
 
   static const int _minSelection = 1;
-  static const int _maxSelection = 3;
+  static const int _maxSelection = 5;
 
   bool get _isValid => _selectedHobbies.length >= _minSelection;
 
@@ -48,7 +47,9 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, _) { final provider = ref.watch(signupChangeNotifierProvider);
+    return Consumer(
+      builder: (context, ref, _) {
+        final provider = ref.watch(signupChangeNotifierProvider);
         final hobbies = provider.hobbies;
         final isLoading = provider.isLoading;
 
@@ -57,21 +58,21 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
-              Text(
-                '당신의 취미는\n무엇인가요?',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
+              const SizedBox(height: 24),
+              const Text(
+                '취미를 골라주세요.',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
                   color: AppColors.textPrimary,
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                '최소 $_minSelection개 최대 $_maxSelection개 선택해 주세요. 다른 사람들이 볼 수 있어요!',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 14,
+              const SizedBox(height: 10),
+              const Text(
+                '최대 5개까지 선택할 수 있어요.',
+                style: TextStyle(
+                  fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -80,15 +81,15 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
                 child: isLoading
                     ? const Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: AppColors.accent,
                         ),
                       )
                     : hobbies.isEmpty
-                    ? Center(
+                    ? const Center(
                         child: Text(
                           '취미 데이터를 불러올 수 없습니다.\n잠시 후 다시 시도해 주세요.',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.notoSansKr(
+                          style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textSecondary,
                           ),
@@ -105,34 +106,30 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
                             return GestureDetector(
                               onTap: () => _toggleHobby(hobby.id),
                               child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
+                                duration: const Duration(milliseconds: 150),
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
+                                  horizontal: 18,
                                   vertical: 10,
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.primary.withValues(
-                                          alpha: 0.15,
-                                        )
-                                      : AppColors.surface,
+                                      ? AppColors.accent.withValues(alpha: 0.22)
+                                      : AppColors.surfaceLight,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.divider,
-                                    width: isSelected ? 1.5 : 1,
+                                        ? AppColors.accent
+                                        : Colors.transparent,
+                                    width: 1.5,
                                   ),
                                 ),
                                 child: Text(
-                                  hobby.name,
-                                  style: GoogleFonts.notoSansKr(
+                                  '#${hobby.name}',
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
+                                    fontWeight: FontWeight.w600,
                                     color: isSelected
-                                        ? AppColors.primary
+                                        ? Colors.white
                                         : AppColors.textPrimary,
                                   ),
                                 ),
@@ -148,7 +145,7 @@ class _HobbyStepState extends ConsumerState<HobbyStep> {
                 enabled: _isValid && !isLoading,
                 onPressed: _isValid && !isLoading ? _handleNext : null,
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 36),
             ],
           ),
         );

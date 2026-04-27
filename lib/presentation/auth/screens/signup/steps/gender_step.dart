@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/widgets/purple_button.dart';
@@ -35,27 +34,25 @@ class _GenderStepState extends ConsumerState<GenderStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          Text(
-            '본인의 성별을\n선택해주세요.',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 24),
+          const Text(
+            '성별을 알려주세요.',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Text(
-            _isReadOnly
-                ? '본인인증으로 확인된 성별입니다.'
-                : '성별은 추후 변경이 불가능해요.',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 14,
+            _isReadOnly ? '본인인증으로 확인된 성별입니다.' : '등록 후 변경은 어려워요.',
+            style: const TextStyle(
+              fontSize: 13,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
           _GenderOption(
             label: '여성',
             isSelected: _selectedGender == 'female',
@@ -63,7 +60,7 @@ class _GenderStepState extends ConsumerState<GenderStep> {
                 ? () {}
                 : () => setState(() => _selectedGender = 'female'),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _GenderOption(
             label: '남성',
             isSelected: _selectedGender == 'male',
@@ -81,7 +78,7 @@ class _GenderStepState extends ConsumerState<GenderStep> {
               widget.onNext();
             },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
         ],
       ),
     );
@@ -106,24 +103,32 @@ class _GenderOption extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
+        height: 62,
+        padding: const EdgeInsets.symmetric(horizontal: 22),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.surface : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isSelected
+              ? AppColors.accent.withValues(alpha: 0.18)
+              : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.surfaceLight,
-            width: isSelected ? 2 : 1,
+            color: isSelected ? AppColors.accent : Colors.transparent,
+            width: 1.5,
           ),
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
+            if (isSelected)
+              const Icon(Icons.check, color: AppColors.accent, size: 22),
+          ],
         ),
       ),
     );

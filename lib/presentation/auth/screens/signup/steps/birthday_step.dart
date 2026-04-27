@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/widgets/purple_button.dart';
@@ -32,7 +31,7 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
 
   DateTime get _lastSelectableDate {
     final now = DateTime.now();
-    return DateTime(now.year - 19, now.month, now.day);
+    return DateTime(now.year - 14, now.month, now.day);
   }
 
   Future<void> _showDatePickerDialog() async {
@@ -45,8 +44,8 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
         return Theme(
           data: ThemeData.dark().copyWith(
             colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
+              primary: AppColors.accent,
+              onPrimary: AppColors.pillText,
               surface: AppColors.surface,
               onSurface: AppColors.textPrimary,
             ),
@@ -63,7 +62,8 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
 
   String get _formattedDate {
     if (_selectedDate == null) return '';
-    return '${_selectedDate!.year}년 ${_selectedDate!.month}월 ${_selectedDate!.day}일';
+    final d = _selectedDate!;
+    return '${d.year} . ${d.month.toString().padLeft(2, '0')} . ${d.day.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -73,58 +73,62 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          Text(
-            '생년월일을\n입력해주세요.',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 24),
+          const Text(
+            '만 14세 이상이신가요?',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
             _isReadOnly
                 ? '본인인증으로 확인된 생년월일입니다.'
-                : '생년월일은 추후 변경이 불가능해요.',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 14,
+                : 'Itto는 만 14세 이상의 사용자만 이용할 수 있어요.\n나이를 확인해 주세요.',
+            style: const TextStyle(
+              fontSize: 13,
               color: AppColors.textSecondary,
+              height: 1.6,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
           GestureDetector(
             onTap: _isReadOnly ? null : _showDatePickerDialog,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 18,
+              ),
               decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _isValid ? AppColors.primary : AppColors.divider,
-                  width: _isValid ? 1.5 : 1,
-                ),
+                color: AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(14),
+                border: _isValid
+                    ? Border.all(color: AppColors.accent, width: 1.5)
+                    : null,
               ),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    Icons.calendar_today,
-                    size: 20,
-                    color: _isValid
-                        ? AppColors.primary
-                        : AppColors.textTertiary,
+                  const Text(
+                    '생년월일',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  const SizedBox(width: 12),
                   Text(
                     _isValid ? _formattedDate : '생년월일을 선택해 주세요',
-                    style: GoogleFonts.notoSansKr(
+                    style: TextStyle(
                       fontSize: 15,
-                      fontWeight: _isValid ? FontWeight.w500 : FontWeight.w400,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1,
                       color: _isValid
                           ? AppColors.textPrimary
-                          : AppColors.textTertiary,
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -143,7 +147,7 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
               widget.onNext();
             },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
         ],
       ),
     );

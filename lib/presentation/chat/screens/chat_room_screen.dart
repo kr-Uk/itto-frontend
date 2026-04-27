@@ -692,25 +692,30 @@ class _MessageBubble extends StatelessWidget {
                 )
               else if (!isSent)
                 const SizedBox(width: 44), // Space for missing avatar
-              // Message bubble
+              // Message bubble — sent uses peach→purple gradient (matches prototype)
               Flexible(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
+                    horizontal: 16,
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: isSent
-                        ? AppColors.chatBubbleSent
-                        : AppColors.chatBubbleReceived,
+                    gradient: isSent ? AppColors.pillGradient : null,
+                    color: isSent ? null : AppColors.surfaceLight,
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isSent ? 16 : 4),
-                      bottomRight: Radius.circular(isSent ? 4 : 16),
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isSent ? 18 : 4),
+                      bottomRight: Radius.circular(isSent ? 4 : 18),
                     ),
                   ),
-                  child: _buildMessageContent(),
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      color: isSent ? AppColors.pillText : Colors.white,
+                      fontSize: 14,
+                    ),
+                    child: _buildMessageContent(),
+                  ),
                 ),
               ),
             ],

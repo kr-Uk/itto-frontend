@@ -35,9 +35,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(relationshipChangeNotifierProvider).loadAllTabs();
       ref.read(shopChangeNotifierProvider).loadBalance();
-
-      // 백그라운드 위치 플러그인 초기화
-      // (이전에 매칭이 활성화된 상태였으면 자동으로 추적 재개됨)
       ref.read(locationChangeNotifierProvider).initBackgroundGeolocation();
     });
   }
@@ -76,39 +73,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+      padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "Itto" logo text
-          const Text(
-            'Itto',
-            style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
+          // Itto title + subtitle
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Itto',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 64,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -2,
+                    height: 1.0,
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  ': 스친 인연을, 이토로 잇다',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
-          // Toggle switch with label
-          Consumer(builder: (context, ref, _) { final locationProvider = ref.watch(locationChangeNotifierProvider);
-              final isEnabled = locationProvider.isMatchingEnabled;
-              return Row(
-                children: [
-                  Text(
-                    '인연 만나기',
-                    style: TextStyle(
-                      color: isEnabled
-                          ? AppColors.primary
-                          : AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 28,
-                    child: Switch(
+          // Right side: location toggle + label
+          Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final locationProvider = ref.watch(
+                  locationChangeNotifierProvider,
+                );
+                final isEnabled = locationProvider.isMatchingEnabled;
+                return Column(
+                  children: [
+                    _IttoSwitch(
                       value: isEnabled,
                       onChanged: (value) async {
                         final success = await locationProvider.toggleMatching(
@@ -121,18 +127,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           );
                         }
                       },
-                      activeThumbColor: AppColors.primary,
-                      activeTrackColor: AppColors.primary.withValues(
-                        alpha: 0.3,
-                      ),
-                      inactiveThumbColor: AppColors.textTertiary,
-                      inactiveTrackColor: AppColors.surfaceLight,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                  ),
-                ],
-              );
-            },
+                    const SizedBox(height: 6),
+                    const Text(
+                      '인연 만나기',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -140,53 +147,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildTabBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(24, 18, 24, 0),
+      padding: const EdgeInsets.only(bottom: 14),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0x14FFFFFF), width: 1),
+        ),
+      ),
       child: Row(
         children: [
-          // Tab items
           Expanded(
             child: Row(
               children: List.generate(_tabLabels.length, (index) {
                 final isSelected = _tabController.index == index;
                 return GestureDetector(
-                  onTap: () {
-                    _tabController.animateTo(index);
-                  },
+                  onTap: () => _tabController.animateTo(index),
+                  behavior: HitTestBehavior.opaque,
                   child: Padding(
                     padding: EdgeInsets.only(
-                      right: index < _tabLabels.length - 1 ? 24 : 0,
+                      right: index < _tabLabels.length - 1 ? 32 : 0,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.topCenter,
                       children: [
-                        const SizedBox(height: 8),
                         Text(
                           _tabLabels[index],
                           style: TextStyle(
                             color: isSelected
                                 ? AppColors.textPrimary
-                                : AppColors.textTertiary,
-                            fontSize: 16,
+                                : AppColors.textSecondary,
+                            fontSize: 15,
                             fontWeight: isSelected
                                 ? FontWeight.w700
-                                : FontWeight.w400,
+                                : FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        // Dot indicator
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 5,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isSelected
-                                ? AppColors.primary
-                                : Colors.transparent,
+                        if (isSelected)
+                          Positioned(
+                            top: -8,
+                            child: Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.accent,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
                       ],
                     ),
                   ),
@@ -194,8 +203,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               }),
             ),
           ),
-          // Heart icon + knot count (tap to navigate to knot management)
-          Consumer(builder: (context, ref, _) { final shopProvider = ref.watch(shopChangeNotifierProvider);
+          // Heart icon + knot count
+          Consumer(
+            builder: (context, ref, _) {
+              final shopProvider = ref.watch(shopChangeNotifierProvider);
               return GestureDetector(
                 key: const Key('knot_display'),
                 onTap: () => context.push('/settings/currency'),
@@ -204,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   children: [
                     ShaderMask(
                       shaderCallback: (bounds) =>
-                          AppColors.primaryGradient.createShader(bounds),
+                          AppColors.pillGradient.createShader(bounds),
                       child: const Icon(
                         Icons.favorite,
                         color: Colors.white,
@@ -226,6 +237,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 프로토타입 디자인의 그라데이션 토글 (켜져 있을 때 peach→purple).
+class _IttoSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  const _IttoSwitch({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 54,
+        height: 30,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          gradient: value ? AppColors.pillGradient : null,
+          color: value ? null : const Color(0xFF3A3A3A),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Stack(
+          children: [
+            AnimatedAlign(
+              duration: const Duration(milliseconds: 200),
+              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x4D000000),
+                      blurRadius: 3,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

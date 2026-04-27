@@ -63,13 +63,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.fromLTRB(22, 0, 22, 24),
             itemCount: chatProvider.chatRooms.length,
             separatorBuilder: (context, index) => const Divider(
               color: AppColors.divider,
               height: 1,
-              indent: 84,
-              endIndent: 16,
+              thickness: 1,
             ),
             itemBuilder: (context, index) {
               final chatRoom = chatProvider.chatRooms[index];
@@ -110,24 +109,26 @@ class _ChatListTile extends StatelessWidget {
     }
   }
 
-  Color _getAvatarColor(String name) {
-    final colors = [
-      const Color(0xFFE8A0BF),
-      const Color(0xFF7BB3FF),
-      const Color(0xFFB794F6),
-      const Color(0xFFF6B794),
-      const Color(0xFF94F6D6),
-      const Color(0xFFF694B8),
-      const Color(0xFF94C4F6),
+  LinearGradient _getAvatarGradient(String name) {
+    const swatches = <List<Color>>[
+      [Color(0xFF7A6450), Color(0xFF3A3026)],
+      [Color(0xFF3D2A26), Color(0xFF1A1010)],
+      [Color(0xFF4A3A30), Color(0xFF221A14)],
+      [Color(0xFF5A4030), Color(0xFF2C1E16)],
+      [Color(0xFF3A2A30), Color(0xFF1A1218)],
     ];
     final hash = name.codeUnits.fold(0, (prev, curr) => prev + curr);
-    return colors[hash % colors.length];
+    final pair = swatches[hash % swatches.length];
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: pair,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final userName = chatRoom.getOtherUserName(currentUserId);
-    final avatarColor = _getAvatarColor(userName);
 
     return InkWell(
       onTap: () {
@@ -136,50 +137,70 @@ class _ChatListTile extends StatelessWidget {
         );
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Avatar
+            // Avatar (62×62 rounded-square)
             Container(
-              width: 60,
-              height: 60,
+              width: 62,
+              height: 62,
               decoration: BoxDecoration(
-                color: avatarColor.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
+                gradient: _getAvatarGradient(userName),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Center(
-                child: Text(
-                  userName.isNotEmpty ? userName[0] : '?',
-                  style: TextStyle(
-                    color: avatarColor,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.2, -0.3),
+                          radius: 0.55,
+                          colors: [
+                            const Color(0x26FFDCC8),
+                            Colors.transparent,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                   ),
-                ),
+                  Center(
+                    child: Text(
+                      userName.isNotEmpty ? userName[0] : '?',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 12),
-            // Name + last message
+            const SizedBox(width: 16),
+            // Name + preview
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 2),
                   Text(
                     userName,
                     style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     chatRoom.lastMessage ?? '메시지가 없습니다',
                     style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
+                      color: Color(0xFFB8B8B8),
+                      fontSize: 13,
+                      height: 1.45,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -188,38 +209,41 @@ class _ChatListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Time + unread badge
+            // Time + gradient unread badge
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(height: 4),
                 Text(
                   _formatTime(chatRoom.lastMessageAt),
                   style: const TextStyle(
-                    color: AppColors.textTertiary,
-                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
                   ),
                 ),
-                const SizedBox(height: 6),
-                if (chatRoom.unreadCount > 0)
+                if (chatRoom.unreadCount > 0) ...[
+                  const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 3,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: AppColors.unreadBadge,
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    constraints: const BoxConstraints(minWidth: 28),
+                    height: 22,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.pillGradient,
+                      borderRadius: BorderRadius.circular(11),
                     ),
                     child: Text(
-                      chatRoom.unreadCount.toString(),
+                      chatRoom.unreadCount > 999
+                          ? '999'
+                          : chatRoom.unreadCount.toString(),
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
+                        color: Color(0xFF3A2A52),
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
+                ],
               ],
             ),
           ],

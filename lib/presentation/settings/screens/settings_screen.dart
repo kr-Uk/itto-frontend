@@ -203,12 +203,15 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: AppColors.textTertiary,
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
+    return Padding(
+      padding: const EdgeInsets.only(left: 6, top: 4),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -242,48 +245,33 @@ class _ProfileCard extends StatelessWidget {
         return GestureDetector(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
             decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
-                // Avatar
+                // Avatar — peach→purple gradient circle (matches prototype)
                 Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
+                  width: 54,
+                  height: 54,
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.surfaceLight,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                      width: 2,
-                    ),
+                    gradient: AppColors.pillGradient,
                   ),
                   child: ClipOval(
                     child: photoUrl != null
                         ? CachedNetworkImage(
                             imageUrl: photoUrl,
-                            width: 52,
-                            height: 52,
+                            width: 54,
+                            height: 54,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => const Icon(
-                              Icons.person,
-                              color: AppColors.textTertiary,
-                              size: 28,
-                            ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.person,
-                              color: AppColors.textTertiary,
-                              size: 28,
-                            ),
+                            placeholder: (context, url) => const SizedBox.shrink(),
+                            errorWidget: (context, url, error) =>
+                                const SizedBox.shrink(),
                           )
-                        : const Icon(
-                            Icons.person,
-                            color: AppColors.textTertiary,
-                            size: 28,
-                          ),
+                        : const SizedBox.shrink(),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -297,24 +285,26 @@ class _ProfileCard extends StatelessWidget {
                         style: const TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Text(
                         introduction,
-                        style: TextStyle(
-                          color: AppColors.textSecondary.withValues(alpha: 0.8),
-                          fontSize: 13,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
                 const Icon(
                   Icons.chevron_right,
-                  color: AppColors.textTertiary,
-                  size: 22,
+                  color: AppColors.textSecondary,
+                  size: 18,
                 ),
               ],
             ),
@@ -340,12 +330,12 @@ class _HighlightedSettingsItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.5),
+            color: AppColors.accent.withValues(alpha: 0.5),
             width: 1.2,
           ),
         ),
@@ -356,15 +346,15 @@ class _HighlightedSettingsItem extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             const Icon(
               Icons.chevron_right,
-              color: AppColors.textTertiary,
-              size: 22,
+              color: AppColors.textSecondary,
+              size: 18,
             ),
           ],
         ),
@@ -398,8 +388,8 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
         children: [
@@ -413,11 +403,11 @@ class _SettingsCard extends StatelessWidget {
             ),
             if (i < items.length - 1)
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 18),
                 child: Divider(
                   height: 0.5,
                   thickness: 0.5,
-                  color: AppColors.divider,
+                  color: Color(0x0DFFFFFF),
                 ),
               ),
           ],
@@ -451,7 +441,7 @@ class _SettingsRow extends StatelessWidget {
         bottom: isLast ? const Radius.circular(12) : Radius.zero,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
         child: Row(
           children: [
             Expanded(
@@ -459,15 +449,15 @@ class _SettingsRow extends StatelessWidget {
                 title,
                 style: TextStyle(
                   color: isDestructive ? Colors.red : AppColors.textPrimary,
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
             ),
             const Icon(
               Icons.chevron_right,
-              color: AppColors.textTertiary,
-              size: 22,
+              color: AppColors.textSecondary,
+              size: 18,
             ),
           ],
         ),

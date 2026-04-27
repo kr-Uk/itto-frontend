@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:itto/core/di/providers.dart';
+import 'package:itto/core/theme/app_colors.dart';
+import 'package:itto/presentation/common/widgets/itto_curve.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -17,66 +19,71 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeIn;
+  int _step = 0; // 0,1,2 for splashA/B/C
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 600),
     );
     _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
-    _checkLoginAndNavigate();
+    _runSplashSequence();
   }
 
-  Future<void> _checkLoginAndNavigate() async {
+  Future<void> _runSplashSequence() async {
+    // Run auth/version checks in parallel with the 3-step animation.
+    final navFuture = _checkLoginAndDecide();
+
+    for (int i = 1; i <= 2; i++) {
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!mounted) return;
+      _controller.reset();
+      setState(() => _step = i);
+      _controller.forward();
+    }
+    await Future.delayed(const Duration(milliseconds: 1200));
+    if (!mounted) return;
+
+    final destination = await navFuture;
+    if (!mounted || destination == null) return;
+    context.go(destination);
+  }
+
+  Future<String?> _checkLoginAndDecide() async {
     final authProv = ref.read(authChangeNotifierProvider);
     await authProv.checkLoginStatus();
 
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
-    // Force update check
+    if (!mounted) return null;
     final needsForceUpdate = await _checkForceUpdate();
-    if (needsForceUpdate) return;
+    if (needsForceUpdate) return null;
 
-    if (!mounted) return;
-
-    if (!authProv.isLoggedIn) {
-      context.go('/login');
-      return;
-    }
+    if (!authProv.isLoggedIn) return '/login';
 
     final profileProv = ref.read(profileChangeNotifierProvider);
     await profileProv.loadMyProfile();
 
-    if (!mounted) return;
-
     final profile = profileProv.myProfile;
-    if (profile == null) {
-      context.go('/login');
-      return;
-    }
+    if (profile == null) return '/login';
 
     if (profile.nickname.isEmpty ||
         profile.gender.isEmpty ||
         profile.birthDate.isEmpty) {
-      context.go('/signup');
-      return;
+      return '/signup';
     }
 
     switch (profile.verificationStatus) {
       case 'APPROVED':
       case 'NONE':
         ref.read(notificationChangeNotifierProvider).registerFcmToken();
-        context.go('/home');
+        return '/home';
       case 'PENDING':
-        context.go('/verification-pending');
+        return '/verification-pending';
       default:
-        context.go('/verification-rejected');
+        return '/verification-rejected';
     }
   }
 
@@ -141,100 +148,65 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final lines = ['한 번 마주치면 우연,', '두 번 마주치면 필연,', '세 번부터는 인연'];
+    final lineMargins = [80.0, 215.0, 235.0];
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: FadeTransition(
-        opacity: _fadeIn,
-        child: Stack(
-          children: [
-            Positioned(
-              bottom: -60,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 320,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(160),
-                    gradient: const RadialGradient(
-                      colors: [
-                        Color(0x66E8A0BF),
-                        Color(0x33B794F6),
-                        Colors.transparent,
-                      ],
-                      stops: [0.0, 0.5, 1.0],
-                      radius: 0.8,
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // Curve background — A: top only, B/C: both
+          Positioned.fill(
+            child: IttoCurve(
+              variant: _step == 0
+                  ? IttoCurveVariant.top
+                  : IttoCurveVariant.both,
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 100),
+                Text(
+                  'Itto',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 84,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -3,
+                    height: 1.0,
+                  ),
+                ),
+                SizedBox(height: lineMargins[_step]),
+                FadeTransition(
+                  opacity: _fadeIn,
+                  child: Text(
+                    lines[_step],
+                    style: const TextStyle(
+                      color: Color(0xFFE8E8E8),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
-              ),
-            ),
-            Positioned.fill(child: CustomPaint(painter: _CurvedLinePainter())),
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Itto',
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 60,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: 2,
+                const Spacer(),
+                if (_step == 2)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 24),
+                    child: Text(
+                      '스친 인연을, 이토로 잇다',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '스친 인연을, 이토로 잇다',
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
+                const SizedBox(height: 80),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class _CurvedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.12)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-
-    final path = Path();
-    path.moveTo(centerX - 120, centerY + 80);
-    path.cubicTo(centerX - 80, centerY + 20, centerX - 40, centerY - 60, centerX, centerY - 40);
-    path.cubicTo(centerX + 30, centerY - 25, centerX + 40, centerY + 15, centerX + 10, centerY + 20);
-    path.cubicTo(centerX - 10, centerY + 24, centerX + 20, centerY - 10, centerX + 50, centerY - 50);
-    path.cubicTo(centerX + 80, centerY - 90, centerX + 100, centerY - 20, centerX + 120, centerY + 80);
-    canvas.drawPath(path, paint);
-
-    final paint2 = Paint()
-      ..color = Colors.white.withValues(alpha: 0.06)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path2 = Path();
-    path2.moveTo(centerX - 140, centerY + 100);
-    path2.cubicTo(centerX - 60, centerY, centerX + 60, centerY - 80, centerX + 140, centerY + 100);
-    canvas.drawPath(path2, paint2);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

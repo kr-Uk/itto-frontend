@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-const String baseUrl = 'https://api.hguitto.site/api/v1';
+const String baseUrl = 'https://itto.hguitto.site/api/v1';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

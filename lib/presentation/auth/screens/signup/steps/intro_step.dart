@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
@@ -17,8 +16,14 @@ class IntroStep extends ConsumerStatefulWidget {
 
 class _IntroStepState extends ConsumerState<IntroStep> {
   final TextEditingController _controller = TextEditingController();
-  static const int _maxLength = 15;
+  static const int _maxLength = 24;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
@@ -54,83 +59,80 @@ class _IntroStepState extends ConsumerState<IntroStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          Text(
-            '나를 한 문장으로\n소개해 보세요!',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 24),
+          const Text(
+            '한 줄 소개를 적어주세요.',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            '언제든 변경할 수 있어요.',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 14,
+          const SizedBox(height: 10),
+          const Text(
+            '스쳐가는 인연들에게 보여질 첫인상이에요.',
+            style: TextStyle(
+              fontSize: 13,
               color: AppColors.textSecondary,
             ),
           ),
-          const SizedBox(height: 48),
-          TextField(
-            controller: _controller,
-            maxLength: _maxLength,
-            style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
-            decoration: InputDecoration(
-              hintText: '소개를 입력해 주세요',
-              hintStyle: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                color: AppColors.textTertiary,
-              ),
-              counterText: '최대 $_maxLength자',
-              counterStyle: GoogleFonts.notoSansKr(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.divider),
-              ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.primary),
+          const SizedBox(height: 32),
+          // Underline-style input matching prototype
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Color(0x2EFFFFFF), width: 1),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppColors.primaryGradient,
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    maxLength: _maxLength,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '나는 멋쟁이',
+                      hintStyle: TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                      counterText: '',
+                      filled: false,
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '너무 어렵다면, 지금 쓰지 않아도 괜찮아요.',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
+                Text(
+                  '${_controller.text.length}/$_maxLength',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const Spacer(),
           _isLoading
               ? const Center(
                   child: CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
+                      AppColors.accent,
                     ),
                   ),
                 )
               : PurpleButton(text: '다음', enabled: true, onPressed: _handleNext),
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
         ],
       ),
     );

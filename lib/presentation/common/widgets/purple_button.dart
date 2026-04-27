@@ -15,23 +15,36 @@ class PurpleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: enabled ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: enabled ? AppColors.primary : AppColors.surfaceLight,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.surfaceLight,
-          disabledForegroundColor: AppColors.textTertiary,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.4,
+      child: GestureDetector(
+        onTap: enabled ? onPressed : null,
+        child: Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: AppColors.pillGradient,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: enabled
+                ? const [
+                    BoxShadow(
+                      color: Color(0x40A78BFA),
+                      blurRadius: 20,
+                      offset: Offset(0, 6),
+                    ),
+                  ]
+                : null,
           ),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: AppColors.pillText,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
-        child: Text(text),
       ),
     );
   }

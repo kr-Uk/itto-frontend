@@ -46,31 +46,31 @@ class InyeonTab extends ConsumerWidget {
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+                padding: const EdgeInsets.fromLTRB(24, 18, 24, 4),
                 child: Text(
-                  '나의 인연 ${items.length}',
+                  '오늘 마주친 인연 ${items.length}',
                   style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ),
             const SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 16),
+                padding: EdgeInsets.fromLTRB(24, 0, 24, 16),
                 child: Text(
-                  '인연의 프로필을 확인해 보세요.',
+                  '24시간 안에 마음에 드는 인연에게 메시지를 보내보세요.',
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 14,
+                    fontSize: 13,
                   ),
                 ),
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = items[index];
@@ -101,31 +101,53 @@ class _InyeonProfileCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/profile/${item.otherUser.userId}'),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: SizedBox(
-          height: 420,
+          height: 440,
           child: Stack(
             fit: StackFit.expand,
             children: [
               // Photo or gradient placeholder
               _buildPhoto(),
+              // Itto watermark (prototype top-right corner)
+              Positioned(
+                right: 14,
+                bottom: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'Itto',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
               // Bottom dark overlay with profile info
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(18, 32, 18, 18),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.7),
                         Colors.black.withValues(alpha: 0.85),
                       ],
-                      stops: const [0.0, 0.4, 1.0],
+                      stops: const [0.0, 0.5],
                     ),
                   ),
                   child: Column(

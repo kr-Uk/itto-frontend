@@ -338,47 +338,63 @@ class _NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: notification.isRead
-              ? AppColors.cardBackground
-              : AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0x0FFFFFFF), width: 1),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon / Avatar
             _buildLeading(),
-            const SizedBox(width: 12),
-
-            // Content
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    notification.message.isNotEmpty
-                        ? notification.message
-                        : notification.title,
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 14,
-                      height: 1.4,
-                      fontWeight: notification.isRead
-                          ? FontWeight.normal
-                          : FontWeight.w500,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          notification.title.isNotEmpty
+                              ? notification.title
+                              : notification.message,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        formattedTime,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    formattedTime,
-                    style: const TextStyle(
-                      color: AppColors.textTertiary,
-                      fontSize: 12,
+                  if (notification.title.isNotEmpty &&
+                      notification.message.isNotEmpty &&
+                      notification.message != notification.title) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      notification.message,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -391,7 +407,7 @@ class _NotificationCard extends StatelessWidget {
   Widget _buildLeading() {
     final type = notification.type;
 
-    // INYEON_REQUEST, INYEON_ACCEPTED, INYEON_REJECTED, RESTORE_REQUEST → heart icon
+    // INYEON / RESTORE → gradient heart pill
     if (type == 'INYEON_REQUEST' ||
         type == 'INYEON_ACCEPTED' ||
         type == 'INYEON_REJECTED' ||
@@ -400,14 +416,14 @@ class _NotificationCard extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.15),
-          shape: BoxShape.circle,
+          gradient: AppColors.pillGradient,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(Icons.favorite, color: AppColors.primary, size: 20),
+        child: const Icon(Icons.favorite, color: AppColors.pillText, size: 20),
       );
     }
 
-    // MESSAGE → avatar style with first letter
+    // MESSAGE → avatar with first letter on tinted bg
     if (type == 'MESSAGE') {
       final firstLetter = notification.title.isNotEmpty
           ? notification.title[0]
@@ -416,14 +432,14 @@ class _NotificationCard extends StatelessWidget {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.3),
-          shape: BoxShape.circle,
+          color: AppColors.accent.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
           child: Text(
             firstLetter,
             style: const TextStyle(
-              color: AppColors.primary,
+              color: AppColors.accent,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -432,19 +448,15 @@ class _NotificationCard extends StatelessWidget {
       );
     }
 
-    // Others → notification bell icon
+    // Default: bell on neutral surface
     return Container(
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.15),
-        shape: BoxShape.circle,
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(
-        Icons.notifications,
-        color: AppColors.primary,
-        size: 20,
-      ),
+      child: const Icon(Icons.notifications, color: AppColors.accent, size: 20),
     );
   }
 }

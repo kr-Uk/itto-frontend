@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
@@ -21,9 +20,8 @@ class _NicknameStepState extends ConsumerState<NicknameStep> {
   String _errorText = '';
   bool _isValid = false;
 
-  static const int _maxLength = 8;
+  static const int _maxLength = 12;
 
-  // Characters not allowed: special characters except Korean, English, numbers
   static final _validPattern = RegExp(r'^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ]+$');
 
   @override
@@ -74,90 +72,99 @@ class _NicknameStepState extends ConsumerState<NicknameStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          Text(
-            '환영합니다!\n먼저 닉네임을\n만들어 볼까요?',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+          const SizedBox(height: 24),
+          const Text(
+            'Itto에서 사용할\n닉네임을 알려주세요.',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 32),
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            maxLength: _maxLength,
-            style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              color: AppColors.textPrimary,
+          const SizedBox(height: 36),
+          const Text(
+            '닉네임',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
+          // Underline-style input matching prototype
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: _errorText.isNotEmpty
+                      ? AppColors.error
+                      : const Color(0x2EFFFFFF),
+                  width: 1,
+                ),
+              ),
             ),
-            inputFormatters: [LengthLimitingTextInputFormatter(_maxLength)],
-            decoration: InputDecoration(
-              hintText: '닉네임을 입력해주세요',
-              hintStyle: GoogleFonts.notoSansKr(
-                fontSize: 16,
-                color: AppColors.textTertiary,
-              ),
-              counterText: '',
-              suffixText: '${_controller.text.length}/$_maxLength',
-              suffixStyle: GoogleFonts.notoSansKr(
-                fontSize: 13,
-                color: AppColors.textTertiary,
-              ),
-              filled: true,
-              fillColor: AppColors.surface,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: _errorText.isNotEmpty
-                      ? AppColors.error
-                      : AppColors.divider,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    maxLength: _maxLength,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(_maxLength),
+                    ],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '닉네임',
+                      hintStyle: TextStyle(
+                        fontSize: 18,
+                        color: AppColors.textSecondary,
+                      ),
+                      counterText: '',
+                      filled: false,
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.zero,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                    ),
+                  ),
                 ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(
-                  color: _errorText.isNotEmpty
-                      ? AppColors.error
-                      : AppColors.primary,
+                Text(
+                  '${_controller.text.length}/$_maxLength',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 14,
-              ),
+              ],
             ),
           ),
           if (_errorText.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               _errorText,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 13,
-                color: AppColors.error,
-              ),
+              style: const TextStyle(fontSize: 13, color: AppColors.error),
             ),
           ],
-          const SizedBox(height: 12),
-          Text(
-            '* 한글, 영문, 숫자 조합 가능 (최대 $_maxLength자)',
-            style: GoogleFonts.notoSansKr(
-              fontSize: 13,
-              color: AppColors.textTertiary,
-            ),
+          const SizedBox(height: 14),
+          const Text(
+            '닉네임은 한글, 영문, 숫자 포함 12자 이내로 작성해 주세요.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
           ),
           const Spacer(),
           PurpleButton(
             text: '다음',
             enabled: _isValid,
             onPressed: () {
-              ref.read(signupChangeNotifierProvider).nickname = _controller.text.trim();
+              ref.read(signupChangeNotifierProvider).nickname = _controller.text
+                  .trim();
               widget.onNext();
             },
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 36),
         ],
       ),
     );

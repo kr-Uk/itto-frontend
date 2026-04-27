@@ -135,10 +135,10 @@ class _ExcludedAreaScreenState extends ConsumerState<ExcludedAreaScreen> {
         id: 'h3_$i',
         coords: coords,
         color: isSelected
-            ? AppColors.primary.withValues(alpha: 0.4)
+            ? AppColors.accent.withValues(alpha: 0.55)
             : Colors.grey.withValues(alpha: 0.1),
         outlineColor: isSelected
-            ? AppColors.primary
+            ? AppColors.accent
             : Colors.grey.withValues(alpha: 0.4),
         outlineWidth: isSelected ? 2 : 1,
       );
@@ -210,23 +210,23 @@ class _ExcludedAreaScreenState extends ConsumerState<ExcludedAreaScreen> {
                 ),
                 // 안내 텍스트
                 Positioned(
-                  top: 12,
-                  left: 16,
-                  right: 16,
+                  top: 14,
+                  left: 24,
+                  right: 24,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
+                      horizontal: 14,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.tabBarBackground.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      '지도에서 제외할 영역을 탭하세요',
+                      '제외하기 원하는 지역을 지도에서 터치하세요.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: AppColors.textMid,
                         fontSize: 13,
                       ),
                     ),
@@ -235,21 +235,20 @@ class _ExcludedAreaScreenState extends ConsumerState<ExcludedAreaScreen> {
               ],
             ),
           ),
-          // 하단 바
+          // 하단 바 — 프로토타입의 cardSoft 배경 + gradient pill 저장 버튼
           Container(
             padding: EdgeInsets.fromLTRB(
-              24,
-              12,
-              24,
-              12 + MediaQuery.of(context).padding.bottom,
+              20,
+              14,
+              20,
+              16 + MediaQuery.of(context).padding.bottom,
             ),
-            decoration: const BoxDecoration(
-              color: AppColors.surface,
-              border: Border(
-                top: BorderSide(color: AppColors.divider, width: 0.5),
-              ),
-            ),
-            child: Consumer(builder: (context, ref, _) { final locationProvider = ref.watch(locationChangeNotifierProvider);
+            decoration: const BoxDecoration(color: AppColors.tabBarBackground),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final locationProvider = ref.watch(
+                  locationChangeNotifierProvider,
+                );
                 final count = locationProvider.selectedCells.length;
                 return Row(
                   children: [
@@ -257,51 +256,67 @@ class _ExcludedAreaScreenState extends ConsumerState<ExcludedAreaScreen> {
                       '$count/20 선택됨',
                       style: const TextStyle(
                         color: AppColors.textPrimary,
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Spacer(),
-                    TextButton(
-                      onPressed: _clearAll,
-                      child: const Text(
-                        '초기화',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
+                    GestureDetector(
+                      onTap: _clearAll,
+                      child: Container(
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        child: const Text(
+                          '초기화',
+                          style: TextStyle(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: locationProvider.isLoading ? null : _save,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: locationProvider.isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              '저장',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: locationProvider.isLoading ? null : _save,
+                      child: Container(
+                        height: 44,
+                        padding: const EdgeInsets.symmetric(horizontal: 28),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.pillGradient,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x40A78BFA),
+                              blurRadius: 12,
+                              offset: Offset(0, 4),
                             ),
+                          ],
+                        ),
+                        child: locationProvider.isLoading
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.pillText,
+                                ),
+                              )
+                            : const Text(
+                                '저장',
+                                style: TextStyle(
+                                  color: AppColors.pillText,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                      ),
                     ),
                   ],
                 );
