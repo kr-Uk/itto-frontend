@@ -7,8 +7,8 @@ import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/utils/snackbar_utils.dart';
 import 'package:itto/presentation/common/widgets/itto_dialog.dart';
 
-/// 본인인증 거부/미인증 화면
-/// 인증이 거부(REJECTED)되었거나 아직 제출하지 않은(NONE) 상태에서 표시됩니다.
+/// 얼굴 인증 거부/미인증 화면
+/// 얼굴 인증이 거부(REJECTED)되었거나 아직 제출하지 않은(NONE) 상태에서 표시됩니다.
 /// 사용자는 셀카를 촬영하여 재인증을 요청할 수 있습니다.
 class VerificationRejectedScreen extends ConsumerWidget {
   const VerificationRejectedScreen({super.key});

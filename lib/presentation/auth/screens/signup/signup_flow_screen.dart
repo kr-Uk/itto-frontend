@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/auth/screens/signup/steps/location_permission_step.dart';
-import 'package:itto/presentation/auth/screens/signup/steps/identity_verification_step.dart';
 import 'package:itto/presentation/auth/screens/signup/steps/nickname_step.dart';
+import 'package:itto/presentation/auth/screens/signup/steps/birthday_step.dart';
 import 'package:itto/presentation/auth/screens/signup/steps/gender_step.dart';
 import 'package:itto/presentation/auth/screens/signup/steps/hobby_step.dart';
 import 'package:itto/presentation/auth/screens/signup/steps/intro_step.dart';
@@ -99,10 +99,8 @@ class _SignupFlowScreenState extends State<SignupFlowScreen> {
               physics: const NeverScrollableScrollPhysics(),
               children: [
                 LocationPermissionStep(onNext: _goToNextStep), // 1. 위치 동의
-                IdentityVerificationStep(
-                  onNext: _goToNextStep,
-                ), // 2. 본인인증 (NICE)
-                NicknameStep(onNext: _goToNextStep), // 3. 닉네임
+                NicknameStep(onNext: _goToNextStep), // 2. 닉네임
+                BirthdayStep(onNext: _goToNextStep), // 3. 생년월일
                 GenderStep(onNext: _goToNextStep), // 4. 성별
                 HobbyStep(onNext: _goToNextStep), // 5. 취미 선택
                 IntroStep(onNext: _goToNextStep), // 6. 자기소개

@@ -5,8 +5,8 @@ import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/utils/snackbar_utils.dart';
 
-/// 본인인증 승인 대기 화면
-/// 프로필 설정은 완료했지만, 관리자의 인증 승인을 기다리는 상태에서 표시됩니다.
+/// 얼굴 인증 승인 대기 화면
+/// 프로필 설정은 완료했지만, 관리자의 얼굴 인증 승인을 기다리는 상태에서 표시됩니다.
 class VerificationPendingScreen extends ConsumerWidget {
   const VerificationPendingScreen({super.key});
 

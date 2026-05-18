@@ -13,19 +13,6 @@ class SignupProvider extends ChangeNotifier {
   List<Hobby> _hobbies = [];
   List<Hobby> get hobbies => _hobbies;
 
-  // Identity verification result (from NICE)
-  bool _identityVerified = false;
-  String? _verifiedName;
-  String? _verifiedPhone;
-  String? _verifiedGender;
-  String? _verifiedBirthDate;
-
-  bool get identityVerified => _identityVerified;
-  String? get verifiedName => _verifiedName;
-  String? get verifiedPhone => _verifiedPhone;
-  String? get verifiedGender => _verifiedGender;
-  String? get verifiedBirthDate => _verifiedBirthDate;
-
   // Form data collected across steps
   static const int maxPhotos = 1;
 
@@ -130,22 +117,6 @@ class SignupProvider extends ChangeNotifier {
     }
   }
 
-  void setIdentityResult({
-    required String name,
-    required String phone,
-    required String gender,
-    required String birthDate,
-  }) {
-    _identityVerified = true;
-    _verifiedName = name;
-    _verifiedPhone = phone;
-    _verifiedGender = gender;
-    _verifiedBirthDate = birthDate;
-    this.gender = gender;
-    this.birthDate = birthDate;
-    notifyListeners();
-  }
-
   Future<bool> completeSignup() async {
     _isLoading = true;
     _error = null;
@@ -176,11 +147,6 @@ class SignupProvider extends ChangeNotifier {
     photoFilePaths = [];
     representativePhotoIndex = 0;
     marketingConsent = false;
-    _identityVerified = false;
-    _verifiedName = null;
-    _verifiedPhone = null;
-    _verifiedGender = null;
-    _verifiedBirthDate = null;
     notifyListeners();
   }
 }

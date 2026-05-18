@@ -51,13 +51,13 @@ final appRouter = GoRouter(
       builder: (context, state) => const SignupFlowScreen(),
     ),
 
-    /// 본인인증 승인 대기 화면
+    /// 얼굴 인증 승인 대기 화면
     GoRoute(
       path: '/verification-pending',
       builder: (context, state) => const VerificationPendingScreen(),
     ),
 
-    /// 본인인증 거부/재인증 화면
+    /// 얼굴 인증 거부/재인증 화면
     GoRoute(
       path: '/verification-rejected',
       builder: (context, state) => const VerificationRejectedScreen(),

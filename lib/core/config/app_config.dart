@@ -10,7 +10,7 @@ class AppConfig {
   static const Duration sendTimeout = Duration(seconds: 30);
   static const Duration uploadTimeout = Duration(seconds: 60);
 
-  /// dev 모드: 본인인증/결제 등을 바이패스합니다.
+  /// dev 모드: 결제 등을 바이패스합니다.
   /// .env 파일에 DEV_MODE=true 를 추가하면 활성화됩니다.
   static bool get isDevMode =>
       dotenv.env['DEV_MODE']?.toLowerCase() == 'true';

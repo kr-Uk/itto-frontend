@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:itto/core/di/providers.dart';
 import 'package:itto/core/theme/app_colors.dart';
 import 'package:itto/presentation/common/widgets/purple_button.dart';
@@ -15,39 +16,36 @@ class BirthdayStep extends ConsumerStatefulWidget {
 
 class _BirthdayStepState extends ConsumerState<BirthdayStep> {
   DateTime? _selectedDate;
-  bool _isReadOnly = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final provider = ref.read(signupChangeNotifierProvider);
-    if (provider.identityVerified && provider.verifiedBirthDate != null) {
-      _selectedDate = DateTime.parse(provider.verifiedBirthDate!);
-      _isReadOnly = true;
-    }
-  }
+  static const int _minAge = 19;
 
-  bool get _isValid => _selectedDate != null;
+  static final DateFormat _displayFormat = DateFormat('yyyy년 M월 d일');
+  static final DateFormat _storageFormat = DateFormat('yyyy-MM-dd');
 
-  DateTime get _lastSelectableDate {
+  DateTime get _maxSelectableDate {
     final now = DateTime.now();
-    return DateTime(now.year - 14, now.month, now.day);
+    return DateTime(now.year - _minAge, now.month, now.day);
   }
 
-  Future<void> _showDatePickerDialog() async {
+  Future<void> _openPicker() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? _lastSelectableDate,
-      firstDate: DateTime(1930, 1, 1),
-      lastDate: _lastSelectableDate,
+      initialDate: _selectedDate ?? DateTime(_maxSelectableDate.year - 6, 1, 1),
+      firstDate: DateTime(1940, 1, 1),
+      lastDate: _maxSelectableDate,
+      helpText: '생년월일 선택',
+      cancelText: '취소',
+      confirmText: '확인',
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
+          data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.dark(
               primary: AppColors.accent,
-              onPrimary: AppColors.pillText,
               surface: AppColors.surface,
               onSurface: AppColors.textPrimary,
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: AppColors.surface,
             ),
           ),
           child: child!,
@@ -60,14 +58,10 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
     }
   }
 
-  String get _formattedDate {
-    if (_selectedDate == null) return '';
-    final d = _selectedDate!;
-    return '${d.year} . ${d.month.toString().padLeft(2, '0')} . ${d.day.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final hasDate = _selectedDate != null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -75,7 +69,7 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
         children: [
           const SizedBox(height: 24),
           const Text(
-            '만 14세 이상이신가요?',
+            '생년월일을\n알려주세요.',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -83,67 +77,63 @@ class _BirthdayStepState extends ConsumerState<BirthdayStep> {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            _isReadOnly
-                ? '본인인증으로 확인된 생년월일입니다.'
-                : 'Itto는 만 14세 이상의 사용자만 이용할 수 있어요.\n나이를 확인해 주세요.',
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              height: 1.6,
-            ),
+          const SizedBox(height: 10),
+          const Text(
+            '만 $_minAge세 이상만 가입할 수 있어요.',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 36),
+          const Text(
+            '생년월일',
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 10),
           GestureDetector(
-            onTap: _isReadOnly ? null : _showDatePickerDialog,
+            onTap: _openPicker,
             child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 18,
+              decoration: const BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0x2EFFFFFF), width: 1),
+                ),
               ),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceLight,
-                borderRadius: BorderRadius.circular(14),
-                border: _isValid
-                    ? Border.all(color: AppColors.accent, width: 1.5)
-                    : null,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '생년월일',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
+                  Expanded(
+                    child: Text(
+                      hasDate
+                          ? _displayFormat.format(_selectedDate!)
+                          : '날짜 선택',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: hasDate
+                            ? AppColors.textPrimary
+                            : AppColors.textSecondary,
+                      ),
                     ),
                   ),
-                  Text(
-                    _isValid ? _formattedDate : '생년월일을 선택해 주세요',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1,
-                      color: _isValid
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 20,
+                    color: AppColors.textSecondary,
                   ),
                 ],
               ),
             ),
           ),
+          const SizedBox(height: 14),
+          const Text(
+            '허위 정보 입력 시 이용이 제한될 수 있어요.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
           const Spacer(),
           PurpleButton(
             text: '다음',
-            enabled: _isValid,
+            enabled: hasDate,
             onPressed: () {
-              final d = _selectedDate!;
-              final formatted =
-                  '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-              ref.read(signupChangeNotifierProvider).birthDate = formatted;
+              ref.read(signupChangeNotifierProvider).birthDate =
+                  _storageFormat.format(_selectedDate!);
               widget.onNext();
             },
           ),

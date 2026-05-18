@@ -15,17 +15,6 @@ class GenderStep extends ConsumerStatefulWidget {
 
 class _GenderStepState extends ConsumerState<GenderStep> {
   String? _selectedGender;
-  bool _isReadOnly = false;
-
-  @override
-  void initState() {
-    super.initState();
-    final provider = ref.read(signupChangeNotifierProvider);
-    if (provider.identityVerified && provider.verifiedGender != null) {
-      _selectedGender = provider.verifiedGender == 'FEMALE' ? 'female' : 'male';
-      _isReadOnly = true;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +34,9 @@ class _GenderStepState extends ConsumerState<GenderStep> {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            _isReadOnly ? '본인인증으로 확인된 성별입니다.' : '등록 후 변경은 어려워요.',
-            style: const TextStyle(
+          const Text(
+            '등록 후 변경은 어려워요.',
+            style: TextStyle(
               fontSize: 13,
               color: AppColors.textSecondary,
             ),
@@ -56,17 +45,13 @@ class _GenderStepState extends ConsumerState<GenderStep> {
           _GenderOption(
             label: '여성',
             isSelected: _selectedGender == 'female',
-            onTap: _isReadOnly
-                ? () {}
-                : () => setState(() => _selectedGender = 'female'),
+            onTap: () => setState(() => _selectedGender = 'female'),
           ),
           const SizedBox(height: 12),
           _GenderOption(
             label: '남성',
             isSelected: _selectedGender == 'male',
-            onTap: _isReadOnly
-                ? () {}
-                : () => setState(() => _selectedGender = 'male'),
+            onTap: () => setState(() => _selectedGender = 'male'),
           ),
           const Spacer(),
           PurpleButton(

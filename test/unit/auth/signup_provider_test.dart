@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itto/presentation/auth/providers/signup_provider.dart';
 import 'package:itto/domain/auth/repositories/signup_repository.dart';
+
 class MockSignupRepository extends Mock implements SignupRepository {}
 
 void main() {
@@ -13,51 +14,8 @@ void main() {
     provider = SignupProvider(repository: mockRepository);
   });
 
-  group('SignupProvider - verification removal', () {
-    test('should NOT have verificationFilePath field', () {
-      final hasField = _hasPublicField(provider, 'verificationFilePath');
-      expect(
-        hasField,
-        isFalse,
-        reason: 'verificationFilePath should be removed from SignupProvider',
-      );
-    });
-
-    test('should NOT have uploadVerification method', () {
-      final dynamic dynamicProvider = provider;
-      bool hasMethod = true;
-      try {
-        dynamicProvider.uploadVerification;
-      } on NoSuchMethodError {
-        hasMethod = false;
-      }
-      expect(
-        hasMethod,
-        isFalse,
-        reason: 'uploadVerification should be removed from SignupProvider',
-      );
-    });
-  });
-
-  group('SignupProvider - identity result', () {
-    test('setIdentityResult stores birthDate correctly', () {
-      provider.setIdentityResult(
-        name: '홍길동',
-        phone: '01012345678',
-        gender: 'MALE',
-        birthDate: '1990-01-15',
-      );
-
-      expect(provider.identityVerified, isTrue);
-      expect(provider.birthDate, equals('1990-01-15'));
-      expect(provider.gender, equals('MALE'));
-      expect(provider.verifiedName, equals('홍길동'));
-      expect(provider.verifiedPhone, equals('01012345678'));
-      expect(provider.verifiedGender, equals('MALE'));
-      expect(provider.verifiedBirthDate, equals('1990-01-15'));
-    });
-
-    test('saveProfile includes birthDate from NICE identity result', () async {
+  group('SignupProvider - profile fields', () {
+    test('saveProfile passes birthDate set directly', () async {
       when(
         () => mockRepository.saveProfile(
           nickname: any(named: 'nickname'),
@@ -68,13 +26,9 @@ void main() {
         ),
       ).thenAnswer((_) async {});
 
-      provider.setIdentityResult(
-        name: '홍길동',
-        phone: '01012345678',
-        gender: 'MALE',
-        birthDate: '1990-01-15',
-      );
       provider.nickname = '테스트유저';
+      provider.gender = 'MALE';
+      provider.birthDate = '1990-01-15';
       provider.hobbyIds = [1, 2];
 
       await provider.saveProfile();
@@ -115,13 +69,9 @@ void main() {
 
   group('SignupProvider - resetForm', () {
     test('resetForm clears all fields properly', () {
-      provider.setIdentityResult(
-        name: '홍길동',
-        phone: '01012345678',
-        gender: 'MALE',
-        birthDate: '1990-01-15',
-      );
       provider.nickname = '테스트';
+      provider.gender = 'MALE';
+      provider.birthDate = '1990-01-15';
       provider.hobbyIds = [1];
       provider.introduction = '안녕하세요';
       provider.photoFilePaths = ['/path/to/photo.jpg'];
@@ -137,28 +87,6 @@ void main() {
       expect(provider.photoFilePaths, isEmpty);
       expect(provider.representativePhotoIndex, equals(0));
       expect(provider.marketingConsent, isFalse);
-      expect(provider.identityVerified, isFalse);
-      expect(provider.verifiedName, isNull);
-      expect(provider.verifiedPhone, isNull);
-      expect(provider.verifiedGender, isNull);
-      expect(provider.verifiedBirthDate, isNull);
     });
   });
-}
-
-/// Helper to check if a dynamic object has a public field via noSuchMethod
-bool _hasPublicField(dynamic obj, String fieldName) {
-  try {
-    final dynamic d = obj;
-    switch (fieldName) {
-      case 'verificationFilePath':
-        // ignore: unnecessary_statements
-        d.verificationFilePath;
-        return true;
-      default:
-        return false;
-    }
-  } on NoSuchMethodError {
-    return false;
-  }
 }
