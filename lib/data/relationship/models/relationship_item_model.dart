@@ -64,12 +64,14 @@ class RelationshipOtherUserModel {
   final String nickname;
   final String? representativePhoto;
   final bool isMosaic;
+  final String? introduction;
 
   const RelationshipOtherUserModel({
     required this.userId,
     required this.nickname,
     this.representativePhoto,
     this.isMosaic = false,
+    this.introduction,
   });
 
   factory RelationshipOtherUserModel.fromJson(Map<String, dynamic> json) =>
@@ -78,6 +80,7 @@ class RelationshipOtherUserModel {
         nickname: json['nickname'] as String,
         representativePhoto: json['representativePhoto'] as String?,
         isMosaic: json['isMosaic'] as bool? ?? false,
+        introduction: json['introduction'] as String?,
       );
 
   RelationshipOtherUser toEntity() => RelationshipOtherUser(
@@ -85,6 +88,7 @@ class RelationshipOtherUserModel {
         nickname: nickname,
         representativePhoto: representativePhoto,
         isMosaic: isMosaic,
+        introduction: introduction,
       );
 }
 

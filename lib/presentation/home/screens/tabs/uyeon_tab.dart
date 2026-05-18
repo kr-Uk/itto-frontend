@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itto/core/di/providers.dart';
@@ -12,7 +13,9 @@ class UyeonTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Consumer(builder: (context, ref, _) { final provider = ref.watch(relationshipChangeNotifierProvider);
+    return Consumer(
+      builder: (context, ref, _) {
+        final provider = ref.watch(relationshipChangeNotifierProvider);
         if (provider.isLoading && provider.getByStatus('UYEON').isEmpty) {
           return const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
@@ -70,16 +73,13 @@ class UyeonTab extends ConsumerWidget {
             ),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.0,
-                ),
+              sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = items[index];
-                  return _UyeonThumbnailCard(item: item);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: _UyeonProfileCard(item: item),
+                  );
                 }, childCount: items.length),
               ),
             ),
@@ -91,10 +91,10 @@ class UyeonTab extends ConsumerWidget {
   }
 }
 
-class _UyeonThumbnailCard extends ConsumerWidget {
+class _UyeonProfileCard extends ConsumerWidget {
   final Relationship item;
 
-  const _UyeonThumbnailCard({required this.item});
+  const _UyeonProfileCard({required this.item});
 
   void _showConvertDialog(BuildContext context, WidgetRef ref) {
     showDialog(
@@ -124,7 +124,10 @@ class _UyeonThumbnailCard extends ConsumerWidget {
             if (success) {
               SnackBarUtils.showSuccess(context, '프로필이 공개되었습니다!');
             } else {
-              SnackBarUtils.showError(context, provider.error ?? '요청에 실패했습니다.');
+              SnackBarUtils.showError(
+                context,
+                provider.error ?? '요청에 실패했습니다.',
+              );
             }
           }
         },
@@ -135,60 +138,20 @@ class _UyeonThumbnailCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final hashtags = item.hobbies.map((h) => '#${h.name}').toList();
+    final intro = item.otherUser.introduction;
 
     return GestureDetector(
       onTap: () => _showConvertDialog(context, ref),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Photo or gradient placeholder (simulating a blurred/mosaic image)
-            _buildPhoto(),
-            // Mosaic/blur simulation overlay
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
-                ),
-                child: CustomPaint(
-                  painter: _MosaicPainter(baseColor: AppColors.gradientStart),
-                ),
-              ),
-            ),
-            // Lock icon centered
-            Center(
-              child: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withValues(alpha: 0.45),
-                ),
-                child: const Icon(
-                  Icons.lock_rounded,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ),
-            // Bottom info overlay
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(10, 24, 10, 10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          color: AppColors.surface,
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              _buildBlurredAvatar(),
+              const SizedBox(width: 14),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -196,26 +159,107 @@ class _UyeonThumbnailCard extends ConsumerWidget {
                     Text(
                       item.otherUser.nickname,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (hashtags.isNotEmpty) ...[
-                      const SizedBox(height: 3),
+                    if (intro != null && intro.isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        hashtags.join(' '),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontSize: 10,
+                        intro,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
+                    if (hashtags.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: hashtags.take(3).map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceLight,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              tag,
+                              style: const TextStyle(
+                                color: AppColors.textMid,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlurredAvatar() {
+    final photoUrl = item.otherUser.representativePhoto;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 72,
+        height: 72,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (photoUrl != null && photoUrl.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: photoUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => _gradientPlaceholder(),
+                errorWidget: (context, url, error) => _gradientPlaceholder(),
+              )
+            else
+              _gradientPlaceholder(),
+            // Blur overlay
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(color: Colors.black.withValues(alpha: 0.25)),
+            ),
+            // Lock icon
+            Center(
+              child: Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withValues(alpha: 0.45),
+                ),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  color: Colors.white,
+                  size: 14,
                 ),
               ),
             ),
@@ -225,20 +269,7 @@ class _UyeonThumbnailCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildPhoto() {
-    final photoUrl = item.otherUser.representativePhoto;
-    if (photoUrl != null && photoUrl.isNotEmpty && !item.otherUser.isMosaic) {
-      return CachedNetworkImage(
-        imageUrl: photoUrl,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => _buildGradientPlaceholder(),
-        errorWidget: (context, url, error) => _buildGradientPlaceholder(),
-      );
-    }
-    return _buildGradientPlaceholder();
-  }
-
-  Widget _buildGradientPlaceholder() {
+  Widget _gradientPlaceholder() {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -247,48 +278,6 @@ class _UyeonThumbnailCard extends ConsumerWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Center(
-        child: Icon(
-          Icons.person,
-          size: 40,
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
-      ),
     );
-  }
-}
-
-/// Paints a simple mosaic/pixelation effect to simulate blurred photos.
-class _MosaicPainter extends CustomPainter {
-  final Color baseColor;
-
-  _MosaicPainter({required this.baseColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const blockSize = 20.0;
-    final rng = baseColor.toARGB32();
-
-    for (double x = 0; x < size.width; x += blockSize) {
-      for (double y = 0; y < size.height; y += blockSize) {
-        // Create pseudo-random color variation based on position
-        final seed = ((x * 7 + y * 13 + rng) % 255).toInt();
-        final variation = (seed % 60) - 30;
-        final r = (baseColor.r * 255 + variation).clamp(0, 255).toInt();
-        final g = (baseColor.g * 255 + variation ~/ 2).clamp(0, 255).toInt();
-        final b = (baseColor.b * 255 - variation).clamp(0, 255).toInt();
-
-        final paint = Paint()
-          ..color = Color.fromARGB(80, r, g, b)
-          ..style = PaintingStyle.fill;
-
-        canvas.drawRect(Rect.fromLTWH(x, y, blockSize, blockSize), paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _MosaicPainter oldDelegate) {
-    return oldDelegate.baseColor != baseColor;
   }
 }

@@ -29,12 +29,14 @@ class RelationshipOtherUser {
   final String nickname;
   final String? representativePhoto;
   final bool isMosaic;
+  final String? introduction;
 
   const RelationshipOtherUser({
     required this.userId,
     required this.nickname,
     this.representativePhoto,
     this.isMosaic = false,
+    this.introduction,
   });
 }
 
