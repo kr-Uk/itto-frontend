@@ -81,6 +81,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               title: '인연 범위 설정',
               onTap: () => context.push('/settings/range'),
             ),
+            const SizedBox(height: 10),
+            _SettingsCard(
+              items: [
+                _SettingsItemData(
+                  title: '매듭 관리',
+                  onTap: () => context.push('/settings/currency'),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
 
             // -- Settings section --
@@ -115,10 +124,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     );
                   },
-                ),
-                _SettingsItemData(
-                  title: '매듭 관리',
-                  onTap: () => context.push('/settings/currency'),
                 ),
                 _SettingsItemData(
                   title: '구독하기',
