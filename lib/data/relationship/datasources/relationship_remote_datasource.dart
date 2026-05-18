@@ -1,5 +1,6 @@
 import 'package:itto/core/network/api_client.dart';
 import 'package:itto/data/common/models/page_response.dart';
+import 'package:itto/data/relationship/models/encounter_heatmap_model.dart';
 import 'package:itto/data/relationship/models/encounter_location_model.dart';
 import 'package:itto/data/relationship/models/relationship_detail_model.dart';
 import 'package:itto/data/relationship/models/relationship_item_model.dart';
@@ -73,5 +74,17 @@ class RelationshipRemoteDataSource {
     );
     final data = json['data'] as Map<String, dynamic>? ?? json;
     return EncounterLocationModel.fromJson(data);
+  }
+
+  Future<EncounterHeatmapModel> getEncounterHeatmap({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final json = await _client.get(
+      '/relationships/encounter-heatmap',
+      queryParameters: {'lat': latitude, 'lng': longitude},
+    );
+    final data = json['data'] as Map<String, dynamic>? ?? json;
+    return EncounterHeatmapModel.fromJson(data);
   }
 }

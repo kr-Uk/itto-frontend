@@ -1,4 +1,5 @@
 import 'package:itto/data/common/models/page_response.dart';
+import 'package:itto/domain/relationship/entities/encounter_heatmap.dart';
 import 'package:itto/domain/relationship/entities/encounter_location.dart';
 import 'package:itto/domain/relationship/entities/relationship.dart';
 import 'package:itto/domain/relationship/entities/relationship_detail.dart';
@@ -72,6 +73,18 @@ class RelationshipRepositoryImpl implements RelationshipRepository {
   @override
   Future<EncounterLocation> getEncounterLocation(int relationshipId) async {
     final model = await remoteDataSource.getEncounterLocation(relationshipId);
+    return model.toEntity();
+  }
+
+  @override
+  Future<EncounterHeatmap> getEncounterHeatmap({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final model = await remoteDataSource.getEncounterHeatmap(
+      latitude: latitude,
+      longitude: longitude,
+    );
     return model.toEntity();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:itto/core/network/api_exception.dart';
 import 'package:itto/domain/chat/repositories/chat_repository.dart';
+import 'package:itto/domain/relationship/entities/encounter_heatmap.dart';
 import 'package:itto/domain/relationship/entities/encounter_location.dart';
 import 'package:itto/domain/relationship/entities/relationship.dart';
 import 'package:itto/domain/relationship/entities/relationship_detail.dart';
@@ -189,6 +190,16 @@ class RelationshipProvider extends ChangeNotifier {
 
   Future<EncounterLocation> getEncounterLocation(int relationshipId) {
     return _repository.getEncounterLocation(relationshipId);
+  }
+
+  Future<EncounterHeatmap> getEncounterHeatmap({
+    required double latitude,
+    required double longitude,
+  }) {
+    return _repository.getEncounterHeatmap(
+      latitude: latitude,
+      longitude: longitude,
+    );
   }
 
   Relationship? findByOtherUserId(int userId) {

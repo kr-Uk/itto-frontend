@@ -1,4 +1,5 @@
 import 'package:itto/domain/common/entities/page_response.dart';
+import 'package:itto/domain/relationship/entities/encounter_heatmap.dart';
 import 'package:itto/domain/relationship/entities/encounter_location.dart';
 import 'package:itto/domain/relationship/entities/relationship.dart';
 import 'package:itto/domain/relationship/entities/relationship_detail.dart';
@@ -20,4 +21,8 @@ abstract class RelationshipRepository {
   Future<void> restoreAccept(int relationshipId);
   Future<void> restoreReject(int relationshipId);
   Future<EncounterLocation> getEncounterLocation(int relationshipId);
+  Future<EncounterHeatmap> getEncounterHeatmap({
+    required double latitude,
+    required double longitude,
+  });
 }
