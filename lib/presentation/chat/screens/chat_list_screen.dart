@@ -25,22 +25,12 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
 
   void _loadChatRooms() {
     final profileProvider = ref.read(profileChangeNotifierProvider);
-    final relationshipProvider = ref.read(relationshipChangeNotifierProvider);
     final chatProvider = ref.read(chatChangeNotifierProvider);
 
     final currentUserId = profileProvider.myProfile?.userId;
     if (currentUserId == null) return;
 
-    final inyeonRelationships = relationshipProvider.getByStatus('INYEON');
-    final chatRoomIdToName = <String, String>{};
-
-    for (final rel in inyeonRelationships) {
-      if (rel.chatRoomId != null) {
-        chatRoomIdToName[rel.chatRoomId!] = rel.otherUser.nickname;
-      }
-    }
-
-    chatProvider.subscribeToChatRooms(currentUserId, chatRoomIdToName);
+    chatProvider.loadChatRooms();
   }
 
   @override

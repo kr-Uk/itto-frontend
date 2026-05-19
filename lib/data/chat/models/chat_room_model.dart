@@ -1,48 +1,56 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:itto/domain/chat/entities/chat_room.dart';
 
+/// 백엔드 ChatRoomSummary JSON 페이로드 매핑.
+///
+/// 백엔드 필드 → 도메인 엔티티 변환 규칙:
+///   - chatRoomId(BIGINT) → id(String)
+///   - otherUserId/otherUserNickname → participantIds=[otherUserId], participantNames={otherUserId: nickname}
+///   - lastMessage/lastMessageAt/unreadCount: 그대로 전달
 class ChatRoomModel {
-  final String id;
-  final List<int> participantIds;
-  final Map<int, String> participantNames;
+  final int chatRoomId;
+  final int? relationshipId;
+  final int otherUserId;
+  final String otherUserNickname;
+  final String? otherUserPhotoUrl;
   final String? lastMessage;
   final DateTime? lastMessageAt;
   final int unreadCount;
+  final DateTime? expiresAt;
 
   const ChatRoomModel({
-    required this.id,
-    required this.participantIds,
-    required this.participantNames,
-    this.lastMessage,
-    this.lastMessageAt,
-    this.unreadCount = 0,
+    required this.chatRoomId,
+    required this.relationshipId,
+    required this.otherUserId,
+    required this.otherUserNickname,
+    required this.otherUserPhotoUrl,
+    required this.lastMessage,
+    required this.lastMessageAt,
+    required this.unreadCount,
+    required this.expiresAt,
   });
 
-  factory ChatRoomModel.fromFirestore(
-    DocumentSnapshot doc, {
-    Map<int, String>? names,
-    int unreadCount = 0,
-  }) {
-    final data = doc.data() as Map<String, dynamic>? ?? {};
-    final participantIds = (data['participants'] as List<dynamic>?)
-            ?.map((e) => e as int)
-            .toList() ??
-        [];
-
+  factory ChatRoomModel.fromJson(Map<String, dynamic> json) {
     return ChatRoomModel(
-      id: doc.id,
-      participantIds: participantIds,
-      participantNames: names ?? {},
-      lastMessage: data['lastMessage'] as String?,
-      lastMessageAt: (data['lastMessageAt'] as Timestamp?)?.toDate(),
-      unreadCount: unreadCount,
+      chatRoomId: (json['chatRoomId'] as num).toInt(),
+      relationshipId: (json['relationshipId'] as num?)?.toInt(),
+      otherUserId: (json['otherUserId'] as num).toInt(),
+      otherUserNickname: json['otherUserNickname'] as String? ?? '',
+      otherUserPhotoUrl: json['otherUserPhotoUrl'] as String?,
+      lastMessage: json['lastMessage'] as String?,
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.parse(json['lastMessageAt'] as String)
+          : null,
+      unreadCount: (json['unreadCount'] as num?)?.toInt() ?? 0,
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'] as String)
+          : null,
     );
   }
 
   ChatRoom toEntity() => ChatRoom(
-        id: id,
-        participantIds: participantIds,
-        participantNames: participantNames,
+        id: chatRoomId.toString(),
+        participantIds: [otherUserId],
+        participantNames: {otherUserId: otherUserNickname},
         lastMessage: lastMessage,
         lastMessageAt: lastMessageAt,
         unreadCount: unreadCount,

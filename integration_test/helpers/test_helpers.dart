@@ -350,22 +350,30 @@ class MockSetup {
   }
 
   void _setupChatDefaults() {
-    when(() => mockChatRepo.getChatRoomsStream(any(), any()))
-        .thenAnswer((_) => Stream.value(testChatRooms));
-    when(() => mockChatRepo.getMessagesStream(any()))
-        .thenAnswer((_) => Stream.value(testMessages));
+    when(() => mockChatRepo.listRooms())
+        .thenAnswer((_) async => testChatRooms);
+    when(() => mockChatRepo.getMessages(
+          any(),
+          page: any(named: 'page'),
+          size: any(named: 'size'),
+        )).thenAnswer((_) async => testMessages);
+    when(() => mockChatRepo.connect()).thenAnswer((_) async {});
+    when(() => mockChatRepo.disconnect()).thenAnswer((_) async {});
+    when(() => mockChatRepo.subscribeToRoom(any()))
+        .thenAnswer((_) => const Stream.empty());
+    when(() => mockChatRepo.unsubscribeFromRoom(any()))
+        .thenAnswer((_) async {});
     when(() => mockChatRepo.sendMessage(
           chatRoomId: any(named: 'chatRoomId'),
-          senderId: any(named: 'senderId'),
-          text: any(named: 'text'),
-          type: any(named: 'type'),
+          content: any(named: 'content'),
+          imageUrl: any(named: 'imageUrl'),
         )).thenAnswer((_) async {});
-    when(() => mockChatRepo.markAsRead(any(), any()))
-        .thenAnswer((_) async {});
-    when(() => mockChatRepo.ensureChatRoomExists(
+    when(() => mockChatRepo.markAsRead(any()))
+        .thenAnswer((_) async => 0);
+    when(() => mockChatRepo.uploadImage(
           chatRoomId: any(named: 'chatRoomId'),
-          participantIds: any(named: 'participantIds'),
-        )).thenAnswer((_) async {});
+          filePath: any(named: 'filePath'),
+        )).thenAnswer((_) async => 'https://example.com/test.jpg');
   }
 
   void _setupBlockDefaults() {

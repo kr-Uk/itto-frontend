@@ -1,67 +1,77 @@
+import 'package:itto/data/chat/datasources/chat_remote_datasource.dart';
+import 'package:itto/data/chat/datasources/chat_websocket_datasource.dart';
 import 'package:itto/domain/chat/entities/chat_message.dart';
 import 'package:itto/domain/chat/entities/chat_room.dart';
 import 'package:itto/domain/chat/repositories/chat_repository.dart';
-import 'package:itto/data/chat/datasources/chat_firestore_datasource.dart';
-import 'package:itto/data/chat/models/chat_message_model.dart';
 
 class ChatRepositoryImpl implements ChatRepository {
-  final ChatFirestoreDataSource dataSource;
+  final ChatRemoteDataSource _remote;
+  final ChatWebSocketDataSource _webSocket;
 
-  ChatRepositoryImpl({required this.dataSource});
+  ChatRepositoryImpl({
+    required ChatRemoteDataSource remoteDataSource,
+    required ChatWebSocketDataSource webSocketDataSource,
+  })  : _remote = remoteDataSource,
+        _webSocket = webSocketDataSource;
 
   @override
-  Stream<List<ChatRoom>> getChatRoomsStream(
-    int userId,
-    Map<String, String> chatRoomIdToName,
-  ) {
-    return dataSource
-        .getChatRoomsStream(userId, chatRoomIdToName)
-        .map((models) => models.map((m) => m.toEntity()).toList());
+  Future<List<ChatRoom>> listRooms() async {
+    final models = await _remote.listRooms();
+    return models.map((m) => m.toEntity()).toList();
   }
 
   @override
-  Stream<List<ChatMessage>> getMessagesStream(String chatRoomId) {
-    return dataSource
-        .getMessagesStream(chatRoomId)
-        .map((models) => models.map((m) => m.toEntity()).toList());
+  Future<List<ChatMessage>> getMessages(
+    int chatRoomId, {
+    int page = 0,
+    int size = 30,
+  }) async {
+    final models = await _remote.getMessages(
+      chatRoomId,
+      page: page,
+      size: size,
+    );
+    return models.map((m) => m.toEntity()).toList();
+  }
+
+  @override
+  Future<void> connect() => _webSocket.connect();
+
+  @override
+  Future<void> disconnect() => _webSocket.disconnect();
+
+  @override
+  Stream<ChatMessage> subscribeToRoom(int chatRoomId) {
+    return _webSocket
+        .subscribeToRoom(chatRoomId)
+        .map((model) => model.toEntity());
+  }
+
+  @override
+  Future<void> unsubscribeFromRoom(int chatRoomId) {
+    return _webSocket.unsubscribeFromRoom(chatRoomId);
   }
 
   @override
   Future<void> sendMessage({
-    required String chatRoomId,
-    required int senderId,
-    required String text,
-    String type = 'text',
+    required int chatRoomId,
+    String? content,
+    String? imageUrl,
   }) {
-    final message = ChatMessageModel(
-      id: '',
-      senderId: senderId,
-      text: text,
-      type: type,
-      createdAt: DateTime.now(),
-      readBy: [senderId],
+    return _webSocket.sendMessage(
+      chatRoomId: chatRoomId,
+      content: content,
+      imageUrl: imageUrl,
     );
-    return dataSource.sendMessage(message, chatRoomId);
   }
 
   @override
-  Future<void> markAsRead(String chatRoomId, int userId) =>
-      dataSource.markAsRead(chatRoomId, userId);
+  Future<int> markAsRead(int chatRoomId) => _remote.markAsRead(chatRoomId);
 
   @override
   Future<String> uploadImage({
-    required String chatRoomId,
+    required int chatRoomId,
     required String filePath,
   }) =>
-      dataSource.uploadImage(chatRoomId: chatRoomId, filePath: filePath);
-
-  @override
-  Future<void> ensureChatRoomExists({
-    required String chatRoomId,
-    required List<int> participantIds,
-  }) =>
-      dataSource.ensureChatRoomExists(
-        chatRoomId: chatRoomId,
-        participantIds: participantIds,
-      );
+      _remote.uploadImage(chatRoomId: chatRoomId, filePath: filePath);
 }

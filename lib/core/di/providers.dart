@@ -9,7 +9,8 @@ import 'package:itto/data/auth/repositories/auth_repository_impl.dart';
 import 'package:itto/data/auth/repositories/signup_repository_impl.dart';
 import 'package:itto/data/block/datasources/block_remote_datasource.dart';
 import 'package:itto/data/block/repositories/block_repository_impl.dart';
-import 'package:itto/data/chat/datasources/chat_firestore_datasource.dart';
+import 'package:itto/data/chat/datasources/chat_remote_datasource.dart';
+import 'package:itto/data/chat/datasources/chat_websocket_datasource.dart';
 import 'package:itto/data/chat/repositories/chat_repository_impl.dart';
 import 'package:itto/data/contact_hash/datasources/contact_hash_remote_datasource.dart';
 import 'package:itto/data/contact_hash/repositories/contact_hash_repository_impl.dart';
@@ -111,9 +112,14 @@ final blockRemoteDataSourceProvider = Provider<BlockRemoteDataSource>((ref) {
   return BlockRemoteDataSource(ref.watch(apiClientProvider));
 });
 
-final chatFirestoreDataSourceProvider =
-    Provider<ChatFirestoreDataSource>((ref) {
-  return ChatFirestoreDataSource();
+final chatRemoteDataSourceProvider =
+    Provider<ChatRemoteDataSource>((ref) {
+  return ChatRemoteDataSource(apiClient: ref.watch(apiClientProvider));
+});
+
+final chatWebSocketDataSourceProvider =
+    Provider<ChatWebSocketDataSource>((ref) {
+  return ChatWebSocketDataSource(tokenStorage: ref.watch(tokenStorageProvider));
 });
 
 final contactHashRemoteDataSourceProvider =
@@ -186,7 +192,8 @@ final blockRepositoryProvider = Provider<BlockRepository>((ref) {
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   return ChatRepositoryImpl(
-    dataSource: ref.watch(chatFirestoreDataSourceProvider),
+    remoteDataSource: ref.watch(chatRemoteDataSourceProvider),
+    webSocketDataSource: ref.watch(chatWebSocketDataSourceProvider),
   );
 });
 
@@ -240,7 +247,6 @@ final relationshipChangeNotifierProvider =
     ChangeNotifierProvider<RelationshipProvider>((ref) {
   return RelationshipProvider(
     repository: ref.watch(relationshipRepositoryProvider),
-    chatRepository: ref.watch(chatRepositoryProvider),
   );
 });
 

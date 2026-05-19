@@ -31,24 +31,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   bool _showAttachmentMenu = false;
 
+  int? get _chatRoomIdInt => int.tryParse(widget.chatId);
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final currentUserId =
           ref.read(profileChangeNotifierProvider).myProfile?.userId ?? 0;
-      final chatProvider = ref.read(chatChangeNotifierProvider);
-
-      // Firestore에 채팅방이 없으면 생성
-      await chatProvider.ensureChatRoomExists(
-        chatRoomId: widget.chatId,
-        participantIds: [currentUserId],
-      );
-
-      chatProvider.subscribeToChatMessages(
-        widget.chatId,
-        currentUserId,
-      );
+      final roomId = _chatRoomIdInt;
+      if (roomId == null) return;
+      await ref.read(chatChangeNotifierProvider).openRoom(roomId, currentUserId);
     });
   }
 
@@ -56,12 +49,17 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
   void dispose() {
     _textController.dispose();
     _scrollController.dispose();
+    // 백그라운드에서 활성 방 정보를 비워 WS lifecycle 의 자동 재구독을 막는다.
+    ref.read(chatChangeNotifierProvider).closeRoom();
     super.dispose();
   }
 
   Future<void> _sendMessage() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
+
+    final roomId = _chatRoomIdInt;
+    if (roomId == null) return;
 
     final currentUserId = ref.read(profileChangeNotifierProvider).myProfile?.userId;
     if (currentUserId == null) return;
@@ -70,8 +68,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     setState(() => _showAttachmentMenu = false);
 
     final success = await ref.read(chatChangeNotifierProvider).sendMessage(
-      chatRoomId: widget.chatId,
-      senderId: currentUserId,
+      chatRoomId: roomId,
       text: text,
     );
 
@@ -143,6 +140,9 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       final currentUserId = ref.read(profileChangeNotifierProvider).myProfile?.userId;
       if (currentUserId == null) return;
 
+      final roomId = _chatRoomIdInt;
+      if (roomId == null) return;
+
       setState(() => _showAttachmentMenu = false);
 
       // 로딩 표시
@@ -151,8 +151,7 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
       }
 
       final success = await chatProvider.sendImageMessage(
-        chatRoomId: widget.chatId,
-        senderId: currentUserId,
+        chatRoomId: roomId,
         filePath: image.path,
       );
 

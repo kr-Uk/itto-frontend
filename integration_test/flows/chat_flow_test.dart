@@ -65,8 +65,8 @@ void main() {
 
     testWidgets('채팅방이 없으면 빈 상태 메시지 표시', (tester) async {
       // 빈 채팅방 목록
-      when(() => mocks.mockChatRepo.getChatRoomsStream(any(), any()))
-          .thenAnswer((_) => Stream.value([]));
+      when(() => mocks.mockChatRepo.listRooms())
+          .thenAnswer((_) async => []);
 
       await navigateToChat(tester);
 
@@ -135,8 +135,11 @@ void main() {
     });
 
     testWidgets('메시지가 없으면 빈 상태 안내 표시', (tester) async {
-      when(() => mocks.mockChatRepo.getMessagesStream(any()))
-          .thenAnswer((_) => Stream.value([]));
+      when(() => mocks.mockChatRepo.getMessages(
+            any(),
+            page: any(named: 'page'),
+            size: any(named: 'size'),
+          )).thenAnswer((_) async => []);
 
       await navigateToChat(tester);
 

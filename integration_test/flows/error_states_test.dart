@@ -1,8 +1,6 @@
 /// 에러/빈 상태 Integration Test.
 /// 프로필 로드 실패, 빈 채팅 목록, 빈 관계 목록 상태를 검증한다.
 
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,9 +54,9 @@ void main() {
       when(() => mocks.mockTokenStorage.hasTokens())
           .thenAnswer((_) async => true);
 
-      // 채팅방 스트림을 빈 목록으로 오버라이드
-      when(() => mocks.mockChatRepo.getChatRoomsStream(any(), any()))
-          .thenAnswer((_) => Stream.value(<ChatRoom>[]));
+      // 채팅방 목록을 빈 응답으로 오버라이드
+      when(() => mocks.mockChatRepo.listRooms())
+          .thenAnswer((_) async => <ChatRoom>[]);
 
       // 인연 데이터도 빈 목록으로 (채팅방 ID 매핑용)
       when(() => mocks.mockRelationshipRepo.getList(

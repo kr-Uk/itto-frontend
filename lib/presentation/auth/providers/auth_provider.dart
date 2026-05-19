@@ -49,14 +49,14 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> _loginWithProvider(
     String provider,
-    Future<String?> Function() firebaseSignIn,
+    Future<String?> Function() oauthSignIn,
   ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final oauthToken = await firebaseSignIn();
+      final oauthToken = await oauthSignIn();
       if (oauthToken == null) {
         _isLoading = false;
         notifyListeners();
