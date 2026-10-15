@@ -50,7 +50,7 @@
 	<key>TSLocationManager</key>
 	<dict>
 		<key>license</key>
-		<string>REDACTED_BG_GEO_LICENSE</string>
+		<string>$(BG_GEO_LICENSE)</string>
 	</dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>

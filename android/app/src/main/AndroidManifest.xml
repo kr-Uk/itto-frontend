@@ -55,7 +55,7 @@
         <!-- Background Geolocation License -->
         <meta-data
             android:name="com.transistorsoft.locationmanager.license"
-            android:value="REDACTED_BG_GEO_LICENSE" />
+            android:value="${bgGeoLicense}" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
