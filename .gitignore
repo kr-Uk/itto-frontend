@@ -52,3 +52,4 @@ app.*.map.json
 # Firebase config (download from Firebase Console)
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+ios/Flutter/BackgroundGeolocation.xcconfig
